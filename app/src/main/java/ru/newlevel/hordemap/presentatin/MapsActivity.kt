@@ -12,8 +12,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.data.repository.UserRepositoryImpl
 import ru.newlevel.hordemap.databinding.ActivityMainBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.domain.usecases.GetUserUseCase
+import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -29,12 +32,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
         supportActionBar?.hide()                  // Скрыть акшн бар
 
-        loginVM = ViewModelProvider(this)[LoginVM::class.java]
+        loginVM = ViewModelProvider(this, LoginVMFactory(this))[LoginVM::class.java]
 
-        val isLoggedIn = loginVM.getUser() // Проверить состояние входа пользователя здесь
-
-
-        if (isLoggedIn) {
+        if (!loginVM.getUser().name.isEmpty()) {
             Toast.makeText(this, "Привет", Toast.LENGTH_LONG).show()
             // Пользователь вошел в систему, отображаем карту
             val mapFragment = SupportMapFragment()
@@ -45,7 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             Toast.makeText(this, "Логина нет", Toast.LENGTH_LONG).show()
             // Пользователь не вошел в систему, отображаем фрагмент с логином
-            val loginFragment = LoginFragment()
+            val loginFragment = LoginFragment(loginVM)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, loginFragment)
                 .commit()

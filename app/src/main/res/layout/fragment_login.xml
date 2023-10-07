@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,24 +10,217 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Введите позывной"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="64dp"
+        android:text="@string/myName"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.147"
+        app:layout_constraintHorizontal_bias="0.315"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.146" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editTextTextPersonName"
+        android:id="@+id/edit_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="4dp"
+        android:autofillHints=""
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Name"
+        android:text="@string/hintAnonim"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        tools:ignore="LabelFor" />
+
+
+    <SeekBar
+        android:id="@+id/sb_users_marker_size"
+        style="@android:style/Widget.SeekBar"
+        android:layout_width="210dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="84dp"
+        android:max="100"
+        android:progress="60"
+        android:progressTint="#856C0E0E"
+        android:thumb="@android:drawable/title_bar_tall"
+        android:thumbOffset="0dp"
+        android:thumbTint="#5C0000"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView10" />
+
+    <SeekBar
+        android:id="@+id/sb_static_marker_size"
+        style="@android:style/Widget.SeekBar"
+        android:layout_width="210dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="160dp"
+        android:max="100"
+        android:progress="60"
+        android:progressTint="#856C0E0E"
+        android:thumb="@android:drawable/title_bar_tall"
+        android:thumbOffset="0dp"
+        android:thumbTint="#5C0000"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView10" />
+
+    <SeekBar
+        android:id="@+id/sb_timeToSendData"
+        style="@android:style/Widget.SeekBar"
+        android:layout_width="210dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="40dp"
+        android:max="120"
+        android:progress="30"
+        android:progressTint="#856C0E0E"
+        android:thumb="@android:drawable/title_bar_tall"
+        android:thumbOffset="0dp"
+        android:thumbTint="#5C0000"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView12" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="184dp"
+        android:layout_height="19dp"
+        android:layout_marginTop="64dp"
+        android:text="@string/user_marker_size"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView10" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="223dp"
+        android:layout_height="19dp"
+        android:layout_marginTop="140dp"
+        android:text="@string/statikMarkerSize"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView10" />
+
+    <TextView
+        android:id="@+id/textView10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:text="@string/timeToSenData"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/edit_name" />
+
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="163dp"
+        android:layout_height="24dp"
+        android:text="@string/myMarker"
+        app:layout_constraintBottom_toTopOf="@+id/radioGroup"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView10"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/textView12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/settings"
+        android:textColor="@color/black"
+        android:textSize="22sp"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/edit_name" />
+
+    <TextView
+        android:id="@+id/tv_time_to_send_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/sb_timeToSendData"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.24"
+        app:layout_constraintStart_toEndOf="@+id/textView10"
+        app:layout_constraintTop_toTopOf="@+id/textView10"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageView
+        android:id="@+id/imageUserMarker"
+        android:layout_width="60px"
+        android:layout_height="60px"
+        android:layout_marginStart="220dp"
+        android:layout_marginTop="84dp"
+        android:contentDescription="@string/todo"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView10"
+        app:srcCompat="@drawable/img_marker_red" />
+
+    <ImageView
+        android:id="@+id/imageCustomMarker"
+        android:layout_width="60px"
+        android:layout_height="60px"
+        android:layout_marginStart="220dp"
+        android:layout_marginTop="160dp"
+        android:contentDescription="@string/todo"
+        android:foregroundGravity="center"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView10"
+        app:srcCompat="@drawable/img_marker_swords" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginTop="236dp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="@+id/edit_name"
+        app:layout_constraintTop_toBottomOf="@+id/textView10">
+
+        <RadioButton
+            android:id="@+id/radioButton0"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="4dp"
+            android:alpha="0.3"
+            android:background="@drawable/img_marker_red"
+            android:button="@null"
+            android:tag="0" />
+
+        <RadioButton
+            android:id="@+id/radioButton1"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="4dp"
+            android:alpha="0.3"
+            android:background="@drawable/img_marker_yellow"
+            android:button="@null"
+            android:tag="1" />
+
+        <RadioButton
+            android:id="@+id/radioButton2"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="4dp"
+            android:alpha="0.3"
+            android:background="@drawable/img_marker_green"
+            android:button="@null"
+            android:tag="2" />
+
+        <RadioButton
+            android:id="@+id/radioButton3"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="4dp"
+            android:alpha="0.3"
+            android:background="@drawable/img_marker_blue"
+            android:button="@null"
+            android:tag="3" />
+
+        <RadioButton
+            android:id="@+id/radioButton4"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="4dp"
+            android:alpha="0.3"
+            android:background="@drawable/img_marker_purple"
+            android:button="@null"
+            android:tag="4" />
+
+    </RadioGroup>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

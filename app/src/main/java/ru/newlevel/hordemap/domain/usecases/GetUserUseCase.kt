@@ -1,9 +1,10 @@
 package ru.newlevel.hordemap.domain.usecases
 
 import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.domain.repository.UserRepository
 
-class GetUserUseCase {
-    fun execute(): UserDomainModel{
-        return UserDomainModel("Dron", 1, 1)
+class GetUserUseCase(private val userRepository: UserRepository) {
+    fun execute(): UserDomainModel {
+        return userRepository.getUser()
     }
 }

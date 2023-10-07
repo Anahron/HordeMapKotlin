@@ -1,4 +1,29 @@
 <resources>
     <string name="app_name">Horde Map</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="action_settings" />
+    <string name="Distance">Dist</string>
+    <string name="load_map">Загрузить полигон</string>
+    <string name="options">Настройки</string>
+    <string name="show_distance">Показать дистанцию</string>
+    <string name="relog">Сбросить логин</string>
+    <string name="exit">Закрыть</string>
+    <string name="info_button">Информация</string>
+    <string name="clear_path">Очистить путь</string>
+    <string name="show_path">Показать путь</string>
+    <string name="hide_path">Скрыть путь</string>
+    <string name="save_path">Сохранить путь</string>
+    <string name="Load_path">Загрузить путь</string>
+    <string name="delete_all_path">Удалить все пути</string>
+    <string name="self_marker_change">Выбор своего маркера</string>
+    <string name="time_to_send_data">Частота отправки данных</string>
+    <string name="marker_size">Размер меток</string>
+    <string name="user_marker_size">Размер маркеров игроков</string>
+    <string name="timeToSenData">Частота отправки данных</string>
+    <string name="myMarker">Выберете свой маркер</string>
+    <string name="settings">Настройки</string>
+    <string name="statikMarkerSize">Размер статичных маркеров</string>
+    <string name="myName">Мой позывной</string>
+    <string name="hintAnonim">Аноним</string>
+    <string name="todo">TODO</string>
 </resources>
