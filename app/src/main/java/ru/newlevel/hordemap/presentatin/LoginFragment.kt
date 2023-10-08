@@ -20,7 +20,7 @@ import ru.newlevel.hordemap.domain.models.UserDomainModel
 const val NAME_MUST_BE = "Имя должно быть длиннее 3-х букв"
 const val SEC = " сек"
 
-class LoginFragment(private val loginVM: LoginVM) : Fragment() {
+class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
     private lateinit var binding: FragmentLoginBinding
 
 

@@ -11,7 +11,7 @@ import ru.newlevel.hordemap.domain.usecases.ResetUserUseCase
 import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
 
 
-class LoginVM(private val getUserUseCase: GetUserUseCase, private val saveUserUseCase: SaveUserUseCase, private val resetUserUseCase: ResetUserUseCase): ViewModel() {
+class LoginViewModel(private val getUserUseCase: GetUserUseCase, private val saveUserUseCase: SaveUserUseCase, private val resetUserUseCase: ResetUserUseCase): ViewModel() {
 
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
     private val loginResultLiveDataMutable = MutableLiveData<String>()

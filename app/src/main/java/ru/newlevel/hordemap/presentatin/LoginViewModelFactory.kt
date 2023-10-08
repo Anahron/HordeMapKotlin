@@ -8,7 +8,7 @@ import ru.newlevel.hordemap.domain.usecases.GetUserUseCase
 import ru.newlevel.hordemap.domain.usecases.ResetUserUseCase
 import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
 
-class LoginVMFactory(context: Context) : ViewModelProvider.Factory {
+class LoginViewModelFactory(context: Context) : ViewModelProvider.Factory {
 
     private val userRepository by lazy(LazyThreadSafetyMode.NONE) { UserRepositoryImpl(context = context) }
     private val getUserUseCase by lazy(LazyThreadSafetyMode.NONE) {  GetUserUseCase(userRepository = userRepository)}
@@ -16,6 +16,6 @@ class LoginVMFactory(context: Context) : ViewModelProvider.Factory {
     private val resetUserUseCase by lazy(LazyThreadSafetyMode.NONE) { ResetUserUseCase(userRepository = userRepository) }
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return LoginVM(getUserUseCase = getUserUseCase, saveUserUseCase = saveUserUseCase, resetUserUseCase = resetUserUseCase ) as T
+        return LoginViewModel(getUserUseCase = getUserUseCase, saveUserUseCase = saveUserUseCase, resetUserUseCase = resetUserUseCase ) as T
     }
 }
