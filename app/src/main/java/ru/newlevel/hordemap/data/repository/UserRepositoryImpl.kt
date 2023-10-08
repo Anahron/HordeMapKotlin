@@ -28,10 +28,21 @@ class UserRepositoryImpl(context: Context): UserRepository {
 
     override fun getUser(): UserDomainModel {
         val userName = sharedPreferences.getString(KEY_NAME, "") ?: ""
-        val selectedMarker = sharedPreferences.getInt(KEY_NAME, 0)
+        val selectedMarker = sharedPreferences.getInt(KEY_MARKER, 0)
         val timeToSend = sharedPreferences.getInt(KEY_TIME_TO_SEND_DATA, DEFAULT_TIME)
-        val staticMarkerSize = sharedPreferences.getInt(KEY_NAME, DEFAULT_SIZE)
-        val usersMarkerSize = sharedPreferences.getInt(KEY_NAME, DEFAULT_SIZE)
+        val staticMarkerSize = sharedPreferences.getInt(KEY_STATIC_MARKER_SIZE, DEFAULT_SIZE)
+        val usersMarkerSize = sharedPreferences.getInt(KEY_USERS_MARKER_SIZE, DEFAULT_SIZE)
         return UserDomainModel(userName,timeToSend,usersMarkerSize,staticMarkerSize,selectedMarker)
+    }
+
+    override fun resetUser() {
+        sharedPreferences.edit()
+                //TODO удплить .remove(KEY_NAME)
+            .remove(KEY_NAME)
+            .remove(KEY_MARKER)
+            .remove(KEY_TIME_TO_SEND_DATA)
+            .remove(KEY_STATIC_MARKER_SIZE)
+            .remove(KEY_USERS_MARKER_SIZE)
+            .apply()
     }
 }

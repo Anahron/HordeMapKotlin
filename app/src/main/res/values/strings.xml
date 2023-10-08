@@ -26,4 +26,7 @@
     <string name="myName">Мой позывной</string>
     <string name="hintAnonim">Аноним</string>
     <string name="todo">TODO</string>
+    <string name="save">Сохранить</string>
+    <string name="reset">Сброс</string>
+    <string name="put_name_here">Введите позывной</string>
 </resources>

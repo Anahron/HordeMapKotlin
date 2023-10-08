@@ -12,11 +12,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.data.repository.UserRepositoryImpl
 import ru.newlevel.hordemap.databinding.ActivityMainBinding
-import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.domain.usecases.GetUserUseCase
-import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -29,26 +26,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
-        supportActionBar?.hide()                  // Скрыть акшн бар
-
+        windowSettings()
         loginVM = ViewModelProvider(this, LoginVMFactory(this))[LoginVM::class.java]
+        loginVM.reset()
+        loginVM.checkLogin()
 
-        if (!loginVM.getUser().name.isEmpty()) {
-            Toast.makeText(this, "Привет", Toast.LENGTH_LONG).show()
-            // Пользователь вошел в систему, отображаем карту
-            val mapFragment = SupportMapFragment()
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, mapFragment)
-                .commit()
-            mapFragment.getMapAsync(this)
-        } else {
-            Toast.makeText(this, "Логина нет", Toast.LENGTH_LONG).show()
-            // Пользователь не вошел в систему, отображаем фрагмент с логином
-            val loginFragment = LoginFragment(loginVM)
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, loginFragment)
-                .commit()
+        loginVM.loginResult.observe(this) {
+            if (it.isNotEmpty()) {
+                Toast.makeText(this, "Привет $it", Toast.LENGTH_LONG).show()
+                val mapFragment = SupportMapFragment()
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.container, mapFragment)
+                    .commit()
+                mapFragment.getMapAsync(this)
+            } else
+            {
+                val loginFragment = LoginFragment(loginVM)
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.container, loginFragment)
+                    .commit()
+            }
         }
     }
 
@@ -60,4 +57,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
     }
+
+
+    private fun windowSettings(){
+        window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
+        supportActionBar?.hide()                  // Скрыть акшн бар
+    }
+
 }
