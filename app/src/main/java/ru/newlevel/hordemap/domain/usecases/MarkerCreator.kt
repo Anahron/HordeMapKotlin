@@ -18,16 +18,14 @@ const val MARKER_SIZE_USERS = 40
 
 
 class MarkerCreator(private var context: Context, private var googleMap: GoogleMap) {
-    private val bitmap0: Bitmap =
-        BitmapFactory.decodeResource(context.resources, R.drawable.img_marker_red)
-    private val bitmap1: Bitmap =
-        BitmapFactory.decodeResource(context.resources, R.drawable.img_marker_yellow)
-    private val bitmap2 =
-        BitmapFactory.decodeResource(context.resources, R.drawable.img_marker_green)
-    private val bitmap3 =
-        BitmapFactory.decodeResource(context.resources, R.drawable.img_marker_blue)
-    private val bitmap4 =
-        BitmapFactory.decodeResource(context.resources, R.drawable.img_marker_purple)
+
+    private enum class MarkerItem(val resourceId: Int) {
+        RED(R.drawable.img_marker_red),
+        YELLOW(R.drawable.img_marker_yellow),
+        GREEN(R.drawable.img_marker_green),
+        BLUE(R.drawable.img_marker_blue),
+        PURPLE(R.drawable.img_marker_purple)
+    }
 
     private val savedMarkers: ArrayList<Marker> = ArrayList()
 
@@ -35,62 +33,41 @@ class MarkerCreator(private var context: Context, private var googleMap: GoogleM
         for (marker in savedMarkers)
             marker.remove()
         for (markerModel in markersModels) {
-            val marker = googleMap.addMarker(markerModelToMarkerOptions(markerModel))
+            val icon = MarkerItem.values().find { it.ordinal == markerModel.item }
+                ?.let { createScaledBitmap(context, it.resourceId) }
+                ?: createScaledBitmap(context, R.drawable.img_marker_red)
+
+            val marker = googleMap.addMarker(markerModelToMarkerOptions(markerModel, icon))
             if (marker != null) {
                 savedMarkers.add(marker)
             }
         }
     }
 
-    private fun markerModelToMarkerOptions(markerModel: MarkerModel): MarkerOptions {
+    companion object {
+        private fun markerModelToMarkerOptions(
+            markerModel: MarkerModel,
+            icon: BitmapDescriptor
+        ): MarkerOptions {
+            return MarkerOptions()
+                .title(markerModel.userName)
+                .position(LatLng(markerModel.latitude, markerModel.longitude))
+                .alpha(markerModel.alpha)
+                .snippet(dateFormat.format(Date(markerModel.timestamp)))
+                .icon(icon)
+        }
 
-        //  if (User.getInstance().getDeviceId().equals(myMarker.getDeviceId())) continue
-        val icon = when (markerModel.item) {
-            1 -> BitmapDescriptorFactory.fromBitmap(
+        private fun createScaledBitmap(context: Context, resourceId: Int): BitmapDescriptor {
+            val bitmap = BitmapFactory.decodeResource(context.resources, resourceId)
+            return BitmapDescriptorFactory.fromBitmap(
                 Bitmap.createScaledBitmap(
-                    bitmap1,
-                    MARKER_SIZE_USERS,
-                    MARKER_SIZE_USERS,
-                    false
-                )
-            )
-            2 -> BitmapDescriptorFactory.fromBitmap(
-                Bitmap.createScaledBitmap(
-                    bitmap2,
-                    MARKER_SIZE_USERS,
-                    MARKER_SIZE_USERS,
-                    false
-                )
-            )
-            3 -> BitmapDescriptorFactory.fromBitmap(
-                Bitmap.createScaledBitmap(
-                    bitmap3,
-                    MARKER_SIZE_USERS,
-                    MARKER_SIZE_USERS,
-                    false
-                )
-            )
-            4 -> BitmapDescriptorFactory.fromBitmap(
-                Bitmap.createScaledBitmap(
-                    bitmap4,
-                    MARKER_SIZE_USERS,
-                    MARKER_SIZE_USERS,
-                    false
-                )
-            )
-            else -> BitmapDescriptorFactory.fromBitmap(
-                Bitmap.createScaledBitmap(
-                    bitmap0,
+                    bitmap,
                     MARKER_SIZE_USERS,
                     MARKER_SIZE_USERS,
                     false
                 )
             )
         }
-
-        return MarkerOptions().title(markerModel.userName)
-            .position(LatLng(markerModel.latitude, markerModel.longitude)).alpha(markerModel.alpha)
-            .snippet(dateFormat.format(Date(markerModel.timestamp))).icon(icon)
     }
 }
 
