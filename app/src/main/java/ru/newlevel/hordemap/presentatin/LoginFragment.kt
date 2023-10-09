@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import ru.newlevel.hordemap.databinding.FragmentLoginBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.domain.usecases.Utils
 
 
 const val NAME_MUST_BE = "Имя должно быть длиннее 3-х букв"
@@ -37,7 +38,8 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        loginVM.getUser()
+        var deviceId = "0"
+
 
         val userName = binding.editName
         val timeToSendData = binding.sbTimeToSendData
@@ -59,8 +61,10 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
             layoutParamsStatic.height = user.staticMarkerSize
             layoutParamsUser.width = user.usersMarkerSize
             layoutParamsUser.height = user.usersMarkerSize
+            deviceId = user.deviceID
             binding.imageUserMarker.layoutParams = layoutParamsUser
             binding.imageCustomMarker.layoutParams = layoutParamsStatic
+            binding.tvDeviceId.text = deviceId
             if (user.name.isNotEmpty())
                 userName.setText(user.name)
             tvTimeToSend.text = user.timeToSendData.toString() + SEC
@@ -73,6 +77,8 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
 
             }
         }
+
+        loginVM.getUser()
 
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             val selectedRadioButton = binding.radioGroup.findViewById<RadioButton>(checkedId)
@@ -97,10 +103,10 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
                         timeToSendData.progress,
                         userMarkerSize.progress,
                         staticMarkerSize.progress,
-                        checkedRadioButton
+                        checkedRadioButton,
+                        deviceId
                     )
                 )
-                loginVM.loginSuccess(userName.text.toString())
             }
         }
 

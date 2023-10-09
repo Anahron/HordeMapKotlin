@@ -7,6 +7,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.models.MarkerModel
+import ru.newlevel.hordemap.domain.models.UserDomainModel
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -17,9 +18,9 @@ private val timeZone = TimeZone.getDefault()
 const val MARKER_SIZE_USERS = 40
 
 
-class MarkerCreator(private var context: Context, private var googleMap: GoogleMap) {
+class MarkerCreator(private var context: Context, private var googleMap: GoogleMap, private val userDomainModel: UserDomainModel) {
 
-    private enum class MarkerItem(val resourceId: Int) {
+    private enum class UsersMarkersItem(val resourceId: Int) {
         RED(R.drawable.img_marker_red),
         YELLOW(R.drawable.img_marker_yellow),
         GREEN(R.drawable.img_marker_green),
@@ -29,11 +30,13 @@ class MarkerCreator(private var context: Context, private var googleMap: GoogleM
 
     private val savedMarkers: ArrayList<Marker> = ArrayList()
 
-    fun createMarkers(markersModels: List<MarkerModel>) {
+    fun createUsersMarkers(markersModels: List<MarkerModel>) {
         for (marker in savedMarkers)
             marker.remove()
         for (markerModel in markersModels) {
-            val icon = MarkerItem.values().find { it.ordinal == markerModel.item }
+            if (userDomainModel.deviceID == markerModel.deviceId)
+                continue
+            val icon = UsersMarkersItem.values().find { it.ordinal == markerModel.item }
                 ?.let { createScaledBitmap(context, it.resourceId) }
                 ?: createScaledBitmap(context, R.drawable.img_marker_red)
 

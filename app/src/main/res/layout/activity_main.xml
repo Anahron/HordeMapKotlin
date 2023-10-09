@@ -5,5 +5,5 @@
     android:layout_height="match_parent"
     android:layout_gravity="center"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    tools:context=".presentatin.MapsActivity"
+    tools:context=".presentatin.MainActivity"
     xmlns:tools="http://schemas.android.com/tools" />

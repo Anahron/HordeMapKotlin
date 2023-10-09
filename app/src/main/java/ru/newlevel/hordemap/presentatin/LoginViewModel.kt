@@ -14,8 +14,8 @@ import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
 class LoginViewModel(private val getUserUseCase: GetUserUseCase, private val saveUserUseCase: SaveUserUseCase, private val resetUserUseCase: ResetUserUseCase): ViewModel() {
 
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
-    private val loginResultLiveDataMutable = MutableLiveData<String>()
-    val loginResult: LiveData<String> = loginResultLiveDataMutable
+    private val loginResultLiveDataMutable = MutableLiveData<UserDomainModel>()
+    val loginResult: LiveData<UserDomainModel> = loginResultLiveDataMutable
     val resultData: LiveData<UserDomainModel> = resultLiveDataMutable
 
     init {
@@ -23,9 +23,13 @@ class LoginViewModel(private val getUserUseCase: GetUserUseCase, private val sav
     }
     fun saveUser(userDomainModel: UserDomainModel){
         saveUserUseCase.execute(userDomainModel)
+        loginSuccess(userDomainModel)
     }
-    fun checkLogin(){
-        loginResultLiveDataMutable.value = getUserUseCase.execute().name
+
+    fun checkLogin(): UserDomainModel{
+        val user = getUserUseCase.execute()
+        loginResultLiveDataMutable.value = user
+        return user
     }
 
     fun getUser() {
@@ -35,7 +39,7 @@ class LoginViewModel(private val getUserUseCase: GetUserUseCase, private val sav
     fun reset() {
         resetUserUseCase.execute()
     }
-    fun loginSuccess(name: String){
-        loginResultLiveDataMutable.value = name
+    private fun loginSuccess(userDomainModel: UserDomainModel){
+        loginResultLiveDataMutable.value = userDomainModel
     }
 }

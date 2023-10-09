@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.repository.UserRepository
+import ru.newlevel.hordemap.domain.usecases.Utils
 
 const val SHARE_PREFS_NAME = "sharedHordeMap"
 const val KEY_NAME = "userName"
@@ -12,9 +13,9 @@ const val KEY_TIME_TO_SEND_DATA = "timeToSend"
 const val KEY_STATIC_MARKER_SIZE = "staticMarkerSize"
 const val KEY_USERS_MARKER_SIZE = "usersMarkerSize"
 const val DEFAULT_SIZE = 60
-const val DEFAULT_TIME = 60
+const val DEFAULT_TIME = 30
 
-class UserRepositoryImpl(context: Context): UserRepository {
+class UserRepositoryImpl(private val context: Context): UserRepository {
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(SHARE_PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -32,12 +33,12 @@ class UserRepositoryImpl(context: Context): UserRepository {
         val timeToSend = sharedPreferences.getInt(KEY_TIME_TO_SEND_DATA, DEFAULT_TIME)
         val staticMarkerSize = sharedPreferences.getInt(KEY_STATIC_MARKER_SIZE, DEFAULT_SIZE)
         val usersMarkerSize = sharedPreferences.getInt(KEY_USERS_MARKER_SIZE, DEFAULT_SIZE)
-        return UserDomainModel(userName,timeToSend,usersMarkerSize,staticMarkerSize,selectedMarker)
+        return UserDomainModel(userName,timeToSend,usersMarkerSize,staticMarkerSize,selectedMarker, Utils.getDeviceId(context))
     }
 
     override fun resetUser() {
         sharedPreferences.edit()
-                //TODO удплить .remove(KEY_NAME)
+             //TODO удплить .remove(KEY_NAME)
             .remove(KEY_NAME)
             .remove(KEY_MARKER)
             .remove(KEY_TIME_TO_SEND_DATA)
