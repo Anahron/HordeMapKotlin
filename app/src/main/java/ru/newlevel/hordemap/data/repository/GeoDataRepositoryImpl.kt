@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.database.*
-import ru.newlevel.hordemap.data.models.MarkerModel
+import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 
 private const val MESSAGE_PATH = "messages"
@@ -17,25 +17,25 @@ private const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах
 class GeoDataRepositoryImpl() : GeoDataRepository {
 
     private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
-    private val geoDataReference = databaseReference.child(GEO_DATA_PATH)
-    val markers: ArrayList<MarkerModel> = ArrayList()
 
-    private var valueEventListener: ValueEventListener? = null
+    private val savedUserMarkers: ArrayList<MarkerModel> = ArrayList()
+    private val savedStaticMarkers: ArrayList<MarkerModel> = ArrayList()
 
-    override fun startMarkerUpdates(): LiveData<List<MarkerModel>> {
-        val liveData = MutableLiveData<List<MarkerModel>>()
+    private var valueUserEventListener: ValueEventListener? = null
+    private var valueStaticEventListener: ValueEventListener? = null
 
-        if (valueEventListener != null) {
-            geoDataReference.removeEventListener(valueEventListener!!)
+    override fun startUserMarkerUpdates(): LiveData<List<MarkerModel>> {
+        val liveDataUserMarkers = MutableLiveData<List<MarkerModel>>()
+
+        if (valueUserEventListener != null) {
+            databaseReference.removeEventListener(valueUserEventListener!!)
         }
-
-        valueEventListener = geoDataReference.addValueEventListener(object : ValueEventListener {
+        valueUserEventListener = databaseReference.ref.child(GEO_DATA_PATH).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                markers.clear()
+                savedUserMarkers.clear()
                 val timeNow = System.currentTimeMillis()
                 for (snapshot in dataSnapshot.children) {
                     try {
-                        Log.e("AAA", snapshot.toString() + this)
                         var alpha: Float
                         val timestamp: Long? =
                             snapshot.child("timestamp").getValue(Long::class.java)
@@ -52,26 +52,54 @@ class GeoDataRepositoryImpl() : GeoDataRepository {
                         val myMarker: MarkerModel = snapshot.getValue(MarkerModel::class.java)!!
                         myMarker.deviceId = snapshot.key.toString()
                         myMarker.alpha = alpha
-                        markers.add(myMarker)
+                        savedUserMarkers.add(myMarker)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
                 }
-                liveData.postValue(markers)
+                liveDataUserMarkers.postValue(savedUserMarkers)
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
+        return liveDataUserMarkers
+    }
+
+    override fun startStaticMarkerUpdates(): LiveData<List<MarkerModel>> {
+        val liveDataStaticMarkers = MutableLiveData<List<MarkerModel>>()
+
+        if (valueStaticEventListener != null) {
+            databaseReference.removeEventListener(valueStaticEventListener!!)
+        }
+
+        valueStaticEventListener = databaseReference.ref.child(GEO_MARKERS_PATH).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                savedStaticMarkers.clear()
+                for (snapshot in dataSnapshot.children) {
+                    try {
+                        Log.e("AAA", snapshot.toString() + this)
+                        val myMarker: MarkerModel = snapshot.getValue(MarkerModel::class.java)!!
+                        savedStaticMarkers.add(myMarker)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                Log.e("AAA", savedStaticMarkers.toString())
+                liveDataStaticMarkers.postValue(savedStaticMarkers)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-                // Обработка ошибки
+                Log.e("AAA", "ошибка в startStaticMarkerUpdates")
             }
         })
-        return liveData
+        return liveDataStaticMarkers
     }
 
     override fun stopMarkerUpdates() {
         Log.e("AAA", "stopMarkerUpdates вызван")
-        if (valueEventListener != null) {
-            geoDataReference.removeEventListener(valueEventListener!!)
+        if (valueUserEventListener != null) {
+            databaseReference.removeEventListener(valueUserEventListener!!)
+            databaseReference.removeEventListener(valueStaticEventListener!!)
         }
     }
 }

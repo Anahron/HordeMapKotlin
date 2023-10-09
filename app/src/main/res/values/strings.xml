@@ -23,7 +23,9 @@
     <string name="myMarker">Выберете свой маркер</string>
     <string name="settings">Настройки</string>
     <string name="statikMarkerSize">Размер статичных маркеров</string>
+    <string name="name_must_be">Имя должно содержать минимум 3 буквы</string>
     <string name="myName">Мой позывной</string>
+    <string name="sec">сек</string>
     <string name="hintAnonim">Аноним</string>
     <string name="todo">TODO</string>
     <string name="save">Сохранить</string>

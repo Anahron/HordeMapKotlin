@@ -1,9 +1,13 @@
 package ru.newlevel.hordemap.data.storage
 
-import ru.newlevel.hordemap.data.models.UserDataModel
+import ru.newlevel.hordemap.data.storage.models.UserDataModel
+
 
 interface UserStorage {
-    fun save(user: UserDataModel): Boolean
+    fun save(userDataModel: UserDataModel)
 
-    fun load(): UserDataModel
+    fun get(): UserDataModel
+
+    fun reset()
 }
+

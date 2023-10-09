@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.data.models
+package ru.newlevel.hordemap.data.storage.models
 
 class MarkerModel() {
     var userName: String = ""

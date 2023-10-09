@@ -1,7 +1,7 @@
 package ru.newlevel.hordemap.domain.repository
 
 import androidx.lifecycle.LiveData
-import ru.newlevel.hordemap.data.models.MarkerModel
+import ru.newlevel.hordemap.data.storage.models.MarkerModel
 
 
 interface GeoDataRepository {
@@ -9,5 +9,7 @@ interface GeoDataRepository {
     fun stopMarkerUpdates() {
     }
 
-    fun startMarkerUpdates(): LiveData<List<MarkerModel>>
+    fun startUserMarkerUpdates(): LiveData<List<MarkerModel>>
+
+    fun startStaticMarkerUpdates(): LiveData<List<MarkerModel>>
 }
