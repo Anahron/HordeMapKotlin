@@ -3,7 +3,7 @@ package ru.newlevel.hordemap.data.storage
 import android.content.Context
 import android.content.SharedPreferences
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
-import ru.newlevel.hordemap.domain.usecases.Utils
+import ru.newlevel.hordemap.Utils
 
 
 const val SHARE_PREFS_NAME = "sharedHordeMap"

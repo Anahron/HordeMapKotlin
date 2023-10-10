@@ -19,11 +19,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.GpsForegroundService
+import ru.newlevel.hordemap.app.MyLocationManager
 import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.MarkerCreator
-import ru.newlevel.hordemap.presentatin.viewmodels.GpsServiceViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModelFactory
 
@@ -36,7 +36,7 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
     private var staticMarkersObserver: Observer<List<MarkerModel>>? = null
     private lateinit var markerViewModel: MarkerViewModel
     private val receiver = LocationUpdateReceiver()
-    private var gpsService = GpsServiceViewModel()
+    private var gpsService = LocationUpdateViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,7 +67,7 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
             markerCreator.createStaticMarkers(it)
         }
 
-        gpsService.startForegroundService(requireContext())
+        gpsService.startForegroundService(requireContext(), userDomainModel.timeToSendData)
 
         // настройки карты
         setupMap()
@@ -81,7 +81,7 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
         mMap.moveCamera(CameraUpdateFactory.newLatLng(location))
 
-        val filter = IntentFilter(GpsForegroundService.ACTION_LOCATION_UPDATE)
+        val filter = IntentFilter(MyLocationManager.ACTION_LOCATION_UPDATE)
         requireContext().registerReceiver(receiver, filter)
     }
 

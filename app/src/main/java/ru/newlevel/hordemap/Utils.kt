@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.domain.usecases
+package ru.newlevel.hordemap
 
 import android.annotation.SuppressLint
 import android.content.Context

@@ -55,10 +55,12 @@
         </activity>
         <receiver android:name=".presentatin.fragments.MapFragment$LocationUpdateReceiver" />
 
-
         <service
-            android:name=".app.GpsForegroundService"
-            android:exported="false" />
+            android:name=".app.MyLocationManager"
+            android:exported="false"
+            android:enabled="true"
+            android:foregroundServiceType="location"
+            />
 
     </application>
 
