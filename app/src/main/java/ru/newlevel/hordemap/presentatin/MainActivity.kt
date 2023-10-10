@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.google.firebase.FirebaseApp
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.ActivityMainBinding
 import ru.newlevel.hordemap.presentatin.fragments.LoginFragment
@@ -20,7 +19,7 @@ import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModelFactory
 
 class MainActivity : AppCompatActivity() {
 
-    private val REQUEST_LOCATION_PERMISSION = 1
+    private val requestLocationPermission = 1
     private lateinit var binding: ActivityMainBinding
     private lateinit var loginViewModel: LoginViewModel
 
@@ -44,7 +43,7 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(permission),
-                REQUEST_LOCATION_PERMISSION
+                requestLocationPermission
             )
         }
     }
@@ -54,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+        if (requestCode == requestLocationPermission) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Разрешение предоставлено, можно открыть карту
                 loginCheck()

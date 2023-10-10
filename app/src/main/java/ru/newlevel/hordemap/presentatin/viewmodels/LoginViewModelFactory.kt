@@ -16,6 +16,7 @@ class LoginViewModelFactory(context: Context) : ViewModelProvider.Factory {
     private val saveUserUseCase by lazy(LazyThreadSafetyMode.NONE) { SaveUserUseCase(userRepository = userRepository) }
     private val resetUserUseCase by lazy(LazyThreadSafetyMode.NONE) { ResetUserUseCase(userRepository = userRepository) }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return LoginViewModel(getUserUseCase = getUserUseCase, saveUserUseCase = saveUserUseCase, resetUserUseCase = resetUserUseCase ) as T
     }

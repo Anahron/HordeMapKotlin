@@ -7,8 +7,8 @@ import com.google.firebase.database.*
 import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 
-private const val MESSAGE_PATH = "messages"
-private const val MESSAGE_FILE_FOLDER = "MessengerFiles"
+//private const val MESSAGE_PATH = "messages"
+//private const val MESSAGE_FILE_FOLDER = "MessengerFiles"
 private const val GEO_USER_MARKERS_PATH = "geoData0"
 private const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
 private const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах

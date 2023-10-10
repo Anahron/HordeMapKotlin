@@ -33,7 +33,7 @@ class LoginViewModel(private val getUserUseCase: GetUserUseCase, private val sav
     }
 
     fun getUser() {
-       resultLiveDataMutable.value = getUserUseCase.execute();
+       resultLiveDataMutable.value = getUserUseCase.execute()
     }
 
     fun reset() {
