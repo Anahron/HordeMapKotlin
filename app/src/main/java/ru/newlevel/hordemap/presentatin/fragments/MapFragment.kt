@@ -61,12 +61,13 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
             markerCreator.createStaticMarkers(it)
         }
 
-        // Запускаем обсерверы
-        startObservers()
         // настройки карты
         setupMap()
         // слушатели нажатий на карте
         mapListenersSetup()
+
+        // Запускаем обсерверы
+        startObservers()
 
         //Камера на Красноярск
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
