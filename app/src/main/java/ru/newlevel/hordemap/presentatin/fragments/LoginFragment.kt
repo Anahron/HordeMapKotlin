@@ -84,7 +84,6 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
                 radioButton?.alpha = if (radioButton?.tag == checkedRadioButton.toString()) 1.0f else 0.3f
             }
         }
-
         loginVM.getUser()
     }
 
@@ -99,6 +98,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
             }
         }
     }
+
     private fun setupSaveButton() {
         binding.btnSave.setOnClickListener {
             val userName = binding.editName
@@ -123,6 +123,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
             }
         }
     }
+
     private fun setupResetButton() {
         binding.btnReset.setOnClickListener {
             loginVM.reset()

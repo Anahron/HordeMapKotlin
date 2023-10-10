@@ -33,7 +33,6 @@ class MarkerCreator(
             marker.remove()
         MarkerManager.clearSavedStaticMarker()
         MarkerManager.clearTextMarker()
-
         for (markerModel in markersModel) {
             if (markerModel.item > 10)
                 createTextMarker(markerModel)
@@ -43,7 +42,7 @@ class MarkerCreator(
                 ?: createScaledBitmap(context, R.drawable.marker_point0, MARKER_SIZE_STATIC)
 
             val marker: Marker? =
-                googleMap.addMarker(staticMarkerModelToMarkerOptions(markerModel, icon))
+                googleMap.addMarker(markerModelToMarkerOptions(markerModel, icon, 1))
 
             marker?.tag = markerModel.timestamp
             if (marker != null) {
@@ -52,8 +51,8 @@ class MarkerCreator(
         }
     }
 
-    private fun createTextMarker(myMarker: MarkerModel) {
-        val text = if (myMarker.title.length > 10) "${myMarker.title.substring(0, 7)}..." else myMarker.title
+    private fun createTextMarker(marker: MarkerModel) {
+        val text = if (marker.title.length > 10) "${marker.title.substring(0, 7)}..." else marker.title
 
         val paint = createPaint()
         val textBounds = Rect()
@@ -66,7 +65,7 @@ class MarkerCreator(
 
         val markerText = googleMap.addMarker(
             MarkerOptions()
-                .position(LatLng(myMarker.latitude, myMarker.longitude))
+                .position(LatLng(marker.latitude, marker.longitude))
                 .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
         )
 
@@ -90,7 +89,7 @@ class MarkerCreator(
                 ?.let { createScaledBitmap(context, it.resourceId, MARKER_SIZE_USERS) }
                 ?: createScaledBitmap(context, R.drawable.img_marker_red, MARKER_SIZE_USERS)
 
-            val marker = googleMap.addMarker(userMarkerModelToMarkerOptions(markerModel, icon))
+            val marker = googleMap.addMarker(markerModelToMarkerOptions(markerModel, icon, 0))
             if (marker != null) {
               MarkerManager.addSavedUserMarker(marker)
             }
@@ -137,30 +136,18 @@ class MarkerCreator(
             }
         }
 
-        private fun userMarkerModelToMarkerOptions(
+        private fun markerModelToMarkerOptions(
             markerModel: MarkerModel,
-            icon: BitmapDescriptor
+            icon: BitmapDescriptor,
+            flagToChooseTitle: Int
         ): MarkerOptions {
             return MarkerOptions()
-                .title(markerModel.userName)
+                .title(if (flagToChooseTitle == 0) markerModel.userName else markerModel.title)
                 .position(LatLng(markerModel.latitude, markerModel.longitude))
                 .alpha(markerModel.alpha)
                 .snippet(dateFormat.format(Date(markerModel.timestamp)))
                 .icon(icon)
         }
-
-        private fun staticMarkerModelToMarkerOptions(
-            markerModel: MarkerModel,
-            icon: BitmapDescriptor
-        ): MarkerOptions {
-            return MarkerOptions()
-                .title(markerModel.title)
-                .position(LatLng(markerModel.latitude, markerModel.longitude))
-                .alpha(markerModel.alpha)
-                .snippet(dateFormat.format(Date(markerModel.timestamp)))
-                .icon(icon)
-        }
-
 
         private fun createScaledBitmap(
             context: Context,

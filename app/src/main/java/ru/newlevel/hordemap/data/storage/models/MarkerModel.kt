@@ -1,6 +1,6 @@
 package ru.newlevel.hordemap.data.storage.models
 
-class MarkerModel() {
+class MarkerModel {
     var userName: String = ""
     var latitude = 0.0
     var longitude = 0.0
@@ -8,5 +8,5 @@ class MarkerModel() {
     var timestamp: Long = 0
     var item = 0
     var title: String = ""
-    var alpha = 0f
+    var alpha = 1f
 }

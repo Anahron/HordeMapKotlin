@@ -13,6 +13,7 @@ class MarkerViewModel(private val geoDataRepository: GeoDataRepository) : ViewMo
     init {
         Log.e("AAA", "MV marker started")
     }
+
     lateinit var userMarkersLiveData: LiveData<List<MarkerModel>>
     lateinit var staticMarkersLiveData: LiveData<List<MarkerModel>>
 

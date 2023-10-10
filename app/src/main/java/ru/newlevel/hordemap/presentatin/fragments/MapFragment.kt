@@ -48,7 +48,8 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
         mMap = googleMap
 
         markerCreator = MarkerCreator(requireContext(), mMap, userDomainModel)
-        markerViewModel = ViewModelProvider(this, MarkerViewModelFactory())[MarkerViewModel::class.java]
+        markerViewModel =
+            ViewModelProvider(this, MarkerViewModelFactory())[MarkerViewModel::class.java]
 
         userMarkersObserver = Observer {
             Log.e("AAA", "Пришло в  userMarkersObserver" + it.toString())
@@ -72,19 +73,27 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
         mMap.moveCamera(CameraUpdateFactory.newLatLng(location))
     }
 
-    private fun mapListenersSetup(){
+    private fun mapListenersSetup() {
         // Скрываем диалог при коротком клике по нему
         mMap.setOnInfoWindowClickListener { obj: Marker -> obj.hideInfoWindow() }
 
         //Показываем только текст маркера, без перемещения к нему камеры
+        var isInfoWindowOpen = false
         mMap.setOnMarkerClickListener { marker: Marker ->
-            marker.showInfoWindow()
+            if (isInfoWindowOpen) {
+                // Если информационное окно открыто, закрываем его
+                isInfoWindowOpen = false
+            } else {
+                // Если информационное окно закрыто, открываем его
+                marker.showInfoWindow()
+                isInfoWindowOpen = true
+            }
             true
         }
     }
 
     @SuppressLint("MissingPermission")
-    private fun setupMap(){
+    private fun setupMap() {
         mMap.uiSettings.isZoomControlsEnabled = true
         mMap.isMyLocationEnabled = true
         mMap.uiSettings.isMyLocationButtonEnabled = true
