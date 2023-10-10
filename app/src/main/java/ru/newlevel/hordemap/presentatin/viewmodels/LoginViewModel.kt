@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin
+package ru.newlevel.hordemap.presentatin.viewmodels
 
 
 import android.util.Log

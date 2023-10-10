@@ -1,27 +1,16 @@
-package ru.newlevel.hordemap.presentatin
+package ru.newlevel.hordemap.presentatin.fragments
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.DialogInterface
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMap.OnMapClickListener
-import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
@@ -30,6 +19,8 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.MarkerCreator
+import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModelFactory
 
 
 class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), OnMapReadyCallback {
@@ -58,50 +49,59 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
 
         markerCreator = MarkerCreator(requireContext(), mMap, userDomainModel)
         markerViewModel = ViewModelProvider(this, MarkerViewModelFactory())[MarkerViewModel::class.java]
-        markerViewModel.startMarkerUpdates()
 
         userMarkersObserver = Observer {
             Log.e("AAA", "Пришло в  userMarkersObserver" + it.toString())
             markerCreator.createUsersMarkers(it)
-        }
-        userMarkersObserver?.let {
-            markerViewModel.userMarkersLiveData.observe(viewLifecycleOwner, it)
         }
 
         staticMarkersObserver = Observer {
             Log.e("AAA", "Пришло в staticMarkersObserver" + it.toString())
             markerCreator.createStaticMarkers(it)
         }
-        staticMarkersObserver?.let {
-            markerViewModel.staticMarkersLiveData.observe(viewLifecycleOwner, it)
-        }
 
+        // Запускаем обсерверы
+        startObservers()
         // настройки карты
-        mMap.uiSettings.isZoomControlsEnabled = true
+        setupMap()
+        // слушатели нажатий на карте
+        mapListenersSetup()
 
-//      Камера на Красноярск
+        //Камера на Красноярск
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
-
         mMap.moveCamera(CameraUpdateFactory.newLatLng(location))
+    }
 
-        mMap.isMyLocationEnabled = true
-        mMap.uiSettings.isMyLocationButtonEnabled = true
-        mMap.uiSettings.isCompassEnabled = true
-        mMap.uiSettings.isZoomControlsEnabled = true
-
+    private fun mapListenersSetup(){
         // Скрываем диалог при коротком клике по нему
         mMap.setOnInfoWindowClickListener { obj: Marker -> obj.hideInfoWindow() }
 
-//      Показываем только текст маркера, без перемещения к нему камеры
+        //Показываем только текст маркера, без перемещения к нему камеры
         mMap.setOnMarkerClickListener { marker: Marker ->
             marker.showInfoWindow()
             true
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private fun setupMap(){
+        mMap.uiSettings.isZoomControlsEnabled = true
+        mMap.isMyLocationEnabled = true
+        mMap.uiSettings.isMyLocationButtonEnabled = true
+        mMap.uiSettings.isCompassEnabled = true
+    }
 
-    override fun onStart() {
-        super.onStart()
+    private fun stopObservers() {
+        userMarkersObserver?.let {
+            markerViewModel.userMarkersLiveData.removeObserver(it)
+            markerViewModel.stopMarkerUpdates()
+        }
+        staticMarkersObserver?.let {
+            markerViewModel.staticMarkersLiveData.removeObserver(it)
+        }
+    }
+
+    private fun startObservers() {
         userMarkersObserver?.let {
             markerViewModel.startMarkerUpdates()
             markerViewModel.userMarkersLiveData.observe(viewLifecycleOwner, it)
@@ -113,12 +113,11 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
 
     override fun onPause() {
         super.onPause()
-        userMarkersObserver?.let {
-            markerViewModel.userMarkersLiveData.removeObserver(it)
-            markerViewModel.stopMarkerUpdates()
-        }
-        staticMarkersObserver?.let {
-            markerViewModel.staticMarkersLiveData.removeObserver(it)
-        }
+        stopObservers()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        startObservers()
     }
 }

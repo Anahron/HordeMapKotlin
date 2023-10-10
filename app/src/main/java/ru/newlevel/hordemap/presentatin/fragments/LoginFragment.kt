@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin
+package ru.newlevel.hordemap.presentatin.fragments
 
 import android.content.Context
 import android.os.Bundle
@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.FragmentLoginBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
 import kotlin.properties.Delegates
 
 class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {

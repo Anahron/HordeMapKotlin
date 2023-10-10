@@ -13,6 +13,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.FirebaseApp
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.ActivityMainBinding
+import ru.newlevel.hordemap.presentatin.fragments.LoginFragment
+import ru.newlevel.hordemap.presentatin.fragments.MapFragment
+import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModelFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,7 +28,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        FirebaseApp.initializeApp(applicationContext);
 
         windowSettings()
 

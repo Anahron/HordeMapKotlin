@@ -1,11 +1,10 @@
-package ru.newlevel.hordemap.presentatin
+package ru.newlevel.hordemap.presentatin.viewmodels
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import ru.newlevel.hordemap.data.repository.UserRepositoryImpl
 import ru.newlevel.hordemap.data.storage.SharedPrefUserStorage
-import ru.newlevel.hordemap.data.storage.UserStorage
 import ru.newlevel.hordemap.domain.usecases.GetUserUseCase
 import ru.newlevel.hordemap.domain.usecases.ResetUserUseCase
 import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
