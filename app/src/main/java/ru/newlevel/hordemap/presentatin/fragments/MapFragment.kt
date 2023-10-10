@@ -1,15 +1,10 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
+
 import android.annotation.SuppressLint
-import android.app.Notification
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
+import android.location.Location
 import android.os.Bundle
-import android.os.IBinder
-import android.service.notification.NotificationListenerService
-import android.service.notification.StatusBarNotification
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -40,7 +35,8 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
     private var userMarkersObserver: Observer<List<MarkerModel>>? = null
     private var staticMarkersObserver: Observer<List<MarkerModel>>? = null
     private lateinit var markerViewModel: MarkerViewModel
-
+    private val receiver = LocationUpdateReceiver()
+    private var gpsService = GpsServiceViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,10 +53,6 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        val serviceIntent = Intent(activity, GpsForegroundService::class.java)
-        activity?.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-
-
         markerCreator = MarkerCreator(requireContext(), mMap, userDomainModel)
         markerViewModel =
             ViewModelProvider(this, MarkerViewModelFactory())[MarkerViewModel::class.java]
@@ -75,8 +67,7 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
             markerCreator.createStaticMarkers(it)
         }
 
-        val gpsViewModel = ViewModelProvider(this)[GpsServiceViewModel::class.java]
-        gpsViewModel.startForegroundService(context = requireContext())
+        gpsService.startForegroundService(requireContext())
 
         // настройки карты
         setupMap()
@@ -89,38 +80,31 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
         //Камера на Красноярск
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
         mMap.moveCamera(CameraUpdateFactory.newLatLng(location))
+
+        val filter = IntentFilter(GpsForegroundService.ACTION_LOCATION_UPDATE)
+        requireContext().registerReceiver(receiver, filter)
     }
 
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as GpsForegroundService.MyBinder
-            binder.getService().locationLiveData.observe(this@MapFragment) { location ->
+    inner class LocationUpdateReceiver : BroadcastReceiver() {
+        val ACTION_LOCATION_UPDATE = "ru.newlevel.hordemap.ACTION_LOCATION_UPDATE"
+        val EXTRA_LOCATION = "extra_location"
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_LOCATION_UPDATE) {
+                val location = intent.getParcelableExtra<Location>(EXTRA_LOCATION)
+                if (location != null) {
                     markerViewModel.sendCoordinates(location, userDomainModel)
                 }
-            // Вызывайте методы службы, если это необходимо
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            // Вызывается при разрыве связи с службой
+            }
         }
     }
-
 
     private fun mapListenersSetup() {
         // Скрываем диалог при коротком клике по нему
         mMap.setOnInfoWindowClickListener { obj: Marker -> obj.hideInfoWindow() }
 
         //Показываем только текст маркера, без перемещения к нему камеры
-        var isInfoWindowOpen = false
         mMap.setOnMarkerClickListener { marker: Marker ->
-            if (isInfoWindowOpen) {
-                // Если информационное окно открыто, закрываем его
-                isInfoWindowOpen = false
-            } else {
-                // Если информационное окно закрыто, открываем его
-                marker.showInfoWindow()
-                isInfoWindowOpen = true
-            }
+            marker.showInfoWindow()
             true
         }
 
@@ -157,6 +141,7 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
         }
     }
 
+
     override fun onPause() {
         super.onPause()
         stopObservers()
@@ -165,5 +150,10 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
     override fun onStart() {
         super.onStart()
         startObservers()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        gpsService.stopForegroundService(requireContext())
     }
 }

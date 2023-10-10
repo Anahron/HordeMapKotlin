@@ -2,75 +2,50 @@ package ru.newlevel.hordemap.app
 
 import android.Manifest
 import android.app.*
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.presentatin.MainActivity
 
-class GpsForegroundService: Service() {
 
-    val locationLiveData = MutableLiveData<Location>()
-
-    private val locationRequest = com.google.android.gms.location.LocationRequest().apply {
-        interval = 60000 // Обновление раз в минуту
-        fastestInterval = 30000
-    }
+class GpsForegroundService : Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
+
+    companion object {
+        const val ACTION_LOCATION_UPDATE = "ru.newlevel.hordemap.ACTION_LOCATION_UPDATE"
+        const val EXTRA_LOCATION = "extra_location"
+    }
 
     override fun onCreate() {
         super.onCreate()
-        Log.e("AAA", "GpsForegroundService создан")
-        ServiceLocator.gpsService = this
+        Log.e("AAA", "onCreate в LocationUpdateService вызван")
+        startForeground(1, createNotification())
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        createLocationCallback()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground()
+        Log.e("AAA", "onStartCommand в LocationUpdateService вызван")
         requestLocationUpdates()
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder {
-        // Возвращает объект, который реализует интерфейс для взаимодействия с фрагментом
-        return MyBinder()
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
     }
 
-    inner class MyBinder : Binder() {
-        // Метод для получения экземпляра службы
-        fun getService(): GpsForegroundService {
-            return this@GpsForegroundService
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        removeLocationUpdates()
-    }
-    private fun startForeground() {
-        startForeground(FOREGROUND_SERVICE_ID, createNotification())
-    }
 
     private fun createNotification(): Notification {
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        val pendingIntent = PendingIntent.getActivity(this, 9990, intent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent =
+            PendingIntent.getActivity(this, 9990, intent, PendingIntent.FLAG_IMMUTABLE)
 
         val channel = NotificationChannel("CHANNEL_1", "GPS", NotificationManager.IMPORTANCE_HIGH)
         val notificationManager = getSystemService(NotificationManager::class.java)
@@ -88,36 +63,45 @@ class GpsForegroundService: Service() {
 
         return builder.build()
     }
+
     private fun requestLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
+
+     //   val locationRequest = LocationRequest.Builder(30000)
+
+        val locationRequest = LocationRequest.create().apply {
+            interval = 60000 // Интервал обновления местоположения в миллисекундах (10 секунд)
+            fastestInterval = 30000 // Самый быстрый интервал обновления в миллисекундах (5 секунд)
+            priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY // Приоритет обновления
         }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
-    }
 
-    private fun removeLocationUpdates() {
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-    }
-
-    private fun createLocationCallback() {
-        locationCallback = object : LocationCallback() {
+        val locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
                 p0.lastLocation?.let { location ->
-                    locationLiveData.postValue(location)
+                    // Ваш код обработки нового местоположения
+                    Log.e("AAA", "Новое местоположение: $location")
+                    sendLocationUpdate(location)
                 }
             }
         }
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        }
     }
 
 
-    companion object {
-        private const val FOREGROUND_SERVICE_ID = 1
+    private fun sendLocationUpdate(location: Location) {
+        Log.e("AAA", "Местоположение отправлено в бродкаст")
+        val intent = Intent(ACTION_LOCATION_UPDATE)
+        intent.putExtra(EXTRA_LOCATION, location)
+        sendBroadcast(intent)
     }
 }

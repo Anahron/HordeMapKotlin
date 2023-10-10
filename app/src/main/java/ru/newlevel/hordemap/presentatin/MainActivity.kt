@@ -79,13 +79,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun loginCheck() {
         loginViewModel =
             ViewModelProvider(this, LoginViewModelFactory(this))[LoginViewModel::class.java]
 
         //TODO удалить ресет (тест первого запуска)
-        loginViewModel.reset()
+    //    loginViewModel.reset()
         loginViewModel.checkLogin()
 
         loginViewModel.loginResult.observe(this) {
