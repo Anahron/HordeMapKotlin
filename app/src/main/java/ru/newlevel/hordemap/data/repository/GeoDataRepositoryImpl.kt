@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.data.repository
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -7,6 +8,9 @@ import com.google.android.gms.maps.model.Marker
 import com.google.firebase.database.*
 import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 //private const val MESSAGE_PATH = "messages"
 //private const val MESSAGE_FILE_FOLDER = "MessengerFiles"
@@ -30,6 +34,11 @@ class GeoDataRepositoryImpl : GeoDataRepository {
 
     override fun deleteStaticMarker(marker: Marker) {
         staticDatabaseReference.child(marker.tag.toString()).removeValue()
+    }
+
+    override fun sendCoordinates(markerModel: MarkerModel) {
+        Log.e("AAA", "Координаты отправлены")
+        userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
     override fun startUserMarkerUpdates(): LiveData<List<MarkerModel>> {

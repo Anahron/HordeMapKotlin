@@ -1,7 +1,15 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
+import android.service.notification.NotificationListenerService
+import android.service.notification.StatusBarNotification
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,9 +24,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.GpsForegroundService
 import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.MarkerCreator
+import ru.newlevel.hordemap.presentatin.viewmodels.GpsServiceViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModelFactory
 
@@ -47,6 +57,10 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
+        val serviceIntent = Intent(activity, GpsForegroundService::class.java)
+        activity?.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+
+
         markerCreator = MarkerCreator(requireContext(), mMap, userDomainModel)
         markerViewModel =
             ViewModelProvider(this, MarkerViewModelFactory())[MarkerViewModel::class.java]
@@ -61,6 +75,9 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
             markerCreator.createStaticMarkers(it)
         }
 
+        val gpsViewModel = ViewModelProvider(this)[GpsServiceViewModel::class.java]
+        gpsViewModel.startForegroundService(context = requireContext())
+
         // настройки карты
         setupMap()
         // слушатели нажатий на карте
@@ -73,6 +90,21 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
         mMap.moveCamera(CameraUpdateFactory.newLatLng(location))
     }
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as GpsForegroundService.MyBinder
+            binder.getService().locationLiveData.observe(this@MapFragment) { location ->
+                    markerViewModel.sendCoordinates(location, userDomainModel)
+                }
+            // Вызывайте методы службы, если это необходимо
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            // Вызывается при разрыве связи с службой
+        }
+    }
+
 
     private fun mapListenersSetup() {
         // Скрываем диалог при коротком клике по нему

@@ -14,6 +14,8 @@ interface GeoDataRepository {
     fun startStaticMarkerUpdates(): LiveData<List<MarkerModel>>
 
     fun deleteStaticMarker(marker: Marker)
+
+    fun sendCoordinates(markerModel: MarkerModel)
 }
 
 

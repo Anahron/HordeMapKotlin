@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.presentatin
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 
@@ -20,6 +21,8 @@ import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModelFactory
 class MainActivity : AppCompatActivity() {
 
     private val requestLocationPermission = 1
+    private val requestCodeBackgroundLocation = 2
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var loginViewModel: LoginViewModel
 
@@ -31,6 +34,18 @@ class MainActivity : AppCompatActivity() {
         windowSettings()
 
         val permission = Manifest.permission.ACCESS_FINE_LOCATION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val permissionBackgroundLocation = Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            val granted = PackageManager.PERMISSION_GRANTED
+            if (ContextCompat.checkSelfPermission(this, permissionBackgroundLocation) != granted) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(permissionBackgroundLocation),
+                    requestCodeBackgroundLocation
+                )
+            }
+        }
+
         if (ContextCompat.checkSelfPermission(
                 this,
                 permission
@@ -47,6 +62,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
     }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -58,11 +74,10 @@ class MainActivity : AppCompatActivity() {
                 // Разрешение предоставлено, можно открыть карту
                 loginCheck()
             } else {
-               Toast.makeText(this, "Разрешите геолокацию", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Разрешите геолокацию", Toast.LENGTH_LONG).show()
             }
         }
     }
-
 
 
     private fun loginCheck() {

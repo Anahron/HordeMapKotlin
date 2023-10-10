@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap
+package ru.newlevel.hordemap.app
 
 import android.app.Application
 
