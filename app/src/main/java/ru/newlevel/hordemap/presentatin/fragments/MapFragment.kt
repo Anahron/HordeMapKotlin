@@ -91,6 +91,10 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
             }
             true
         }
+
+        mMap.setOnInfoWindowLongClickListener {
+            markerViewModel.deleteStaticMarker(it)
+        }
     }
 
     @SuppressLint("MissingPermission")

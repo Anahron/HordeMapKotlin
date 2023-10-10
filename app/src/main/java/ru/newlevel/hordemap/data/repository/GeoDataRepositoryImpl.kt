@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.data.repository
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.maps.model.Marker
 import com.google.firebase.database.*
 import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
@@ -26,6 +27,10 @@ class GeoDataRepositoryImpl : GeoDataRepository {
 
     private var valueUserEventListener: ValueEventListener? = null
     private var valueStaticEventListener: ValueEventListener? = null
+
+    override fun deleteStaticMarker(marker: Marker) {
+        staticDatabaseReference.child(marker.tag.toString()).removeValue()
+    }
 
     override fun startUserMarkerUpdates(): LiveData<List<MarkerModel>> {
         val liveDataUserMarkers = MutableLiveData<List<MarkerModel>>()
