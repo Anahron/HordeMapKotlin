@@ -14,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
@@ -28,16 +27,11 @@ private const val TAG = "AAA"
 
 class PermissionRequestFragment : Fragment() {
 
-    // Type of permission to request (fine or background). Set by calling Activity.
     private lateinit var binding: FragmentPermissionRequestBinding
 
     private var activityListener: Callbacks? = null
     private var fineLocationPermissionApproved: Boolean = false
     private var backgroundLocationPermissionApproved: Boolean = false
-
-    // If the user denied a previous permission request, but didn't check "Don't ask again", these
-    // Snackbars provided an explanation for why user should approve, i.e., the additional
-    // rationale.
 
     private val backgroundRationalSnackbar by lazy {
         Snackbar.make(

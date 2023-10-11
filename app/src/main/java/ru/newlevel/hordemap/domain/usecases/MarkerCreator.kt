@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.app
+package ru.newlevel.hordemap.domain.usecases
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -7,7 +7,7 @@ import android.os.Build
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.data.storage.models.MarkerModel
+import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.repository.MarkerRepository
 import java.text.DateFormat
@@ -22,21 +22,21 @@ private var MARKER_SIZE_STATIC = 40
 
 class MarkerCreator(
     private var context: Context,
-    private var googleMap: GoogleMap,
-    private val userDomainModel: UserDomainModel
+    private val userDomainModel: UserDomainModel,
+    private val markerRepository: MarkerRepository
 ) {
 
-    fun createStaticMarkers(markersModel: List<MarkerModel>) {
+    fun createStaticMarkers(markersModel: List<MarkerDataModel>, googleMap: GoogleMap) {
         MARKER_SIZE_STATIC = userDomainModel.staticMarkerSize
-        for (marker in MarkerRepository.getSavedStaticMarkers())
+        for (marker in markerRepository.getSavedStaticMarkers())
             marker.remove()
-        for (marker in MarkerRepository.getTextMarkers())
+        for (marker in markerRepository.getTextMarkers())
             marker.remove()
-        MarkerRepository.clearSavedStaticMarker()
-        MarkerRepository.clearTextMarker()
+        markerRepository.clearSavedStaticMarker()
+        markerRepository.clearTextMarker()
         for (markerModel in markersModel) {
             if (markerModel.item > 10)
-                createTextMarker(markerModel)
+                createTextMarker(markerModel,googleMap)
             val icon = StaticMarkersItem.values()
                 .find { it.ordinal == if (markerModel.item > 10) markerModel.item - 6 else markerModel.item }
                 ?.let { createScaledBitmap(context, it.resourceId, MARKER_SIZE_STATIC) }
@@ -47,12 +47,12 @@ class MarkerCreator(
 
             marker?.tag = markerModel.timestamp
             if (marker != null) {
-                MarkerRepository.addSavedStaticMarker(marker)
+                markerRepository.addSavedStaticMarker(marker)
             }
         }
     }
 
-    private fun createTextMarker(marker: MarkerModel) {
+    private fun createTextMarker(marker: MarkerDataModel, googleMap: GoogleMap) {
         val text = if (marker.title.length > 10) "${marker.title.substring(0, 7)}..." else marker.title
 
         val paint = createPaint()
@@ -73,15 +73,15 @@ class MarkerCreator(
         markerText?.setAnchor(0.5f, 0f)
 
         if (markerText != null) {
-            MarkerRepository.addTextMarker(markerText)
+            markerRepository.addTextMarker(markerText)
         }
     }
 
-    fun createUsersMarkers(markersModels: List<MarkerModel>) {
+    fun createUsersMarkers(markersModels: List<MarkerDataModel>, googleMap: GoogleMap) {
         MARKER_SIZE_USERS = userDomainModel.usersMarkerSize
-        for (marker in MarkerRepository.getSavedUsersMarkers())
+        for (marker in markerRepository.getSavedUsersMarkers())
             marker.remove()
-        MarkerRepository.clearSavedUserMarker()
+        markerRepository.clearSavedUserMarker()
 
         for (markerModel in markersModels) {
             if (userDomainModel.deviceID == markerModel.deviceId)
@@ -92,7 +92,7 @@ class MarkerCreator(
 
             val marker = googleMap.addMarker(markerModelToMarkerOptions(markerModel, icon, 0))
             if (marker != null) {
-              MarkerRepository.addSavedUserMarker(marker)
+              markerRepository.addSavedUserMarker(marker)
             }
         }
     }
@@ -138,7 +138,7 @@ class MarkerCreator(
         }
 
         private fun markerModelToMarkerOptions(
-            markerModel: MarkerModel,
+            markerModel: MarkerDataModel,
             icon: BitmapDescriptor,
             flagToChooseTitle: Int
         ): MarkerOptions {

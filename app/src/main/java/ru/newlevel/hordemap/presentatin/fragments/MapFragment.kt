@@ -3,18 +3,14 @@ package ru.newlevel.hordemap.presentatin.fragments
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.*
 import android.location.Location
-import android.net.Uri
 import android.os.Bundle
-import android.os.PowerManager
-import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -25,27 +21,22 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.MarkerCreator
 import ru.newlevel.hordemap.app.MyLocationManager
-import ru.newlevel.hordemap.data.storage.models.MarkerModel
+import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.hasPermission
 import ru.newlevel.hordemap.presentatin.MainActivity
-
-import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModelFactory
 
 
 class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), OnMapReadyCallback {
 
-    private lateinit var mMap: GoogleMap
-    private lateinit var markerCreator: MarkerCreator
-    private var userMarkersObserver: Observer<List<MarkerModel>>? = null
-    private var staticMarkersObserver: Observer<List<MarkerModel>>? = null
+    private lateinit var googleMap: GoogleMap
+    private var userMarkersObserver: Observer<List<MarkerDataModel>>? = null
+    private var staticMarkersObserver: Observer<List<MarkerDataModel>>? = null
     private lateinit var markerViewModel: MarkerViewModel
     private val receiver = LocationUpdateReceiver()
-    private var gpsService = LocationUpdateViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,23 +51,21 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
 
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
+        this.googleMap = googleMap
 
-        markerCreator = MarkerCreator(requireContext(), mMap, userDomainModel)
-        markerViewModel =
-            ViewModelProvider(this, MarkerViewModelFactory())[MarkerViewModel::class.java]
+        markerViewModel = ViewModelProvider(this, MarkerViewModelFactory(requireContext()))[MarkerViewModel::class.java]
 
         userMarkersObserver = Observer {
             Log.e("AAA", "Пришло в  userMarkersObserver" + it.toString())
-            markerCreator.createUsersMarkers(it)
+           markerViewModel.createUsersMarkers(it, googleMap)
         }
 
         staticMarkersObserver = Observer {
             Log.e("AAA", "Пришло в staticMarkersObserver" + it.toString())
-            markerCreator.createStaticMarkers(it)
+            markerViewModel.createStaticMarkers(it, googleMap)
         }
 
-        gpsService.startForegroundService(requireContext(), userDomainModel.timeToSendData)
+      //  startForegroundService(requireContext(), userDomainModel.timeToSendData)
 
         // настройки карты
         setupMap()
@@ -87,7 +76,7 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
 
         //Камера на Красноярск
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(location))
+        this.googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
 
         val filter = IntentFilter(MyLocationManager.ACTION_LOCATION_UPDATE)
         requireContext().registerReceiver(receiver, filter)
@@ -108,29 +97,29 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
 
     private fun mapListenersSetup() {
         // Скрываем диалог при коротком клике по нему
-        mMap.setOnInfoWindowClickListener { obj: Marker -> obj.hideInfoWindow() }
+        googleMap.setOnInfoWindowClickListener { obj: Marker -> obj.hideInfoWindow() }
 
         //Показываем только текст маркера, без перемещения к нему камеры
-        mMap.setOnMarkerClickListener { marker: Marker ->
+        googleMap.setOnMarkerClickListener { marker: Marker ->
             marker.showInfoWindow()
             true
         }
 
-        mMap.setOnInfoWindowLongClickListener {
+        googleMap.setOnInfoWindowLongClickListener {
             markerViewModel.deleteStaticMarker(it)
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun setupMap() {
-        mMap.uiSettings.isZoomControlsEnabled = true
+        googleMap.uiSettings.isZoomControlsEnabled = true
         val permissionApproved =
             context?.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ?: return
         if (permissionApproved) {
-            mMap.isMyLocationEnabled = true
+            googleMap.isMyLocationEnabled = true
 
-            mMap.uiSettings.isMyLocationButtonEnabled = true
-            mMap.uiSettings.isCompassEnabled = true
+            googleMap.uiSettings.isMyLocationButtonEnabled = true
+            googleMap.uiSettings.isCompassEnabled = true
         } else {
             (activity as MainActivity).requestFineLocationPermission()
         }
@@ -155,9 +144,20 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
             markerViewModel.staticMarkersLiveData.observe(viewLifecycleOwner, it)
         }
     }
+    fun startForegroundService(context: Context, timeToSendData: Int) {
+        Log.e("AAA", "startForegroundService вызван")
+        val serviceIntent = Intent(context, MyLocationManager::class.java)
+        serviceIntent.putExtra("timeToSendData", timeToSendData)
+        ContextCompat.startForegroundService(context, serviceIntent)
+    }
 
+    fun stopForegroundService(context: Context) {
+        val serviceIntent = Intent(context, MyLocationManager::class.java)
+        context.stopService(serviceIntent)
+    }
 
     override fun onPause() {
+        startForegroundService(requireContext(), userDomainModel.timeToSendData)
         super.onPause()
         stopObservers()
     }
@@ -165,10 +165,11 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
     override fun onStart() {
         super.onStart()
         startObservers()
+        stopForegroundService(requireContext())
     }
 
     override fun onDestroy() {
+        stopForegroundService(requireContext())
         super.onDestroy()
-        gpsService.stopForegroundService(requireContext())
     }
 }

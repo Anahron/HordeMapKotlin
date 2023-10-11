@@ -1,20 +1,17 @@
-package ru.newlevel.hordemap.domain.repository
+package ru.newlevel.hordemap.data.storage
 
 import androidx.lifecycle.LiveData
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 
-interface GeoDataRepository {
+interface GeoDataStorage {
+    fun deleteStaticMarker(marker: Marker)
 
-    fun stopMarkerUpdates()
+    fun sendCoordinates(markerModel: MarkerDataModel)
 
     fun startUserMarkerUpdates(): LiveData<List<MarkerDataModel>>
 
     fun startStaticMarkerUpdates(): LiveData<List<MarkerDataModel>>
 
-    fun deleteStaticMarker(marker: Marker)
-
-    fun sendCoordinates(markerModel: MarkerDataModel)
+    fun stopMarkerUpdates()
 }
-
-

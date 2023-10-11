@@ -2,46 +2,23 @@ package ru.newlevel.hordemap.domain.repository
 
 import com.google.android.gms.maps.model.Marker
 
-object  MarkerRepository {
-    private val savedUsersMarkers: ArrayList<Marker> = ArrayList()
-    private val savedStaticMarkers: ArrayList<Marker> = ArrayList()
-    private val savedTextMarkers: ArrayList<Marker> = ArrayList()
+interface MarkerRepository {
 
-    @Synchronized
-    fun clearSavedUserMarker() {
-        savedUsersMarkers.clear()
-    }
-    @Synchronized
-    fun clearSavedStaticMarker() {
-        savedStaticMarkers.clear()
-    }
-    @Synchronized
-    fun clearTextMarker() {
-        savedTextMarkers.clear()
-    }
+    fun clearSavedUserMarker()
 
-    @Synchronized
-    fun addSavedUserMarker(marker: Marker) {
-        savedUsersMarkers.add(marker)
-    }
-    @Synchronized
-    fun addSavedStaticMarker(marker: Marker) {
-        savedStaticMarkers.add(marker)
-    }
-    @Synchronized
-    fun addTextMarker(marker: Marker) {
-        savedTextMarkers.add(marker)
-    }
-    @Synchronized
-    fun getSavedUsersMarkers(): List<Marker> {
-        return savedUsersMarkers
-    }
-    @Synchronized
-    fun getSavedStaticMarkers(): List<Marker> {
-        return savedStaticMarkers
-    }
-    @Synchronized
-    fun getTextMarkers(): List<Marker> {
-        return savedTextMarkers
-    }
+    fun clearSavedStaticMarker()
+
+    fun clearTextMarker()
+
+    fun addSavedUserMarker(marker: Marker)
+
+    fun addSavedStaticMarker(marker: Marker)
+
+    fun addTextMarker(marker: Marker)
+
+    fun getSavedUsersMarkers(): List<Marker>
+
+    fun getSavedStaticMarkers(): List<Marker>
+
+    fun getTextMarkers(): List<Marker>
 }

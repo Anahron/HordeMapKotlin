@@ -1,6 +1,6 @@
 package ru.newlevel.hordemap.data.storage.models
 
-class MarkerModel {
+class MarkerDataModel {
     var userName: String = ""
     var latitude = 0.0
     var longitude = 0.0
