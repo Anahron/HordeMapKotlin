@@ -1,8 +1,8 @@
-package ru.newlevel.hordemap.domain.usecases
+package ru.newlevel.hordemap.domain.repository
 
 import com.google.android.gms.maps.model.Marker
 
-object  MarkerManager {
+object  MarkerRepository {
     private val savedUsersMarkers: ArrayList<Marker> = ArrayList()
     private val savedStaticMarkers: ArrayList<Marker> = ArrayList()
     private val savedTextMarkers: ArrayList<Marker> = ArrayList()

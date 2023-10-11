@@ -32,4 +32,38 @@
     <string name="reset">Сброс</string>
     <string name="put_name_here">Введите позывной</string>
     <string name="deviceID">DeviceID: </string>
+
+    <string name="fine_location_permission_rationale">Сбор данных необходим для корректной работы приложения, пожалуйста предоставьте разрешение.</string>
+    <string name="fine_permission_denied_explanation">Вы запретили сбор данных, но он необходим для корректной работы приложения, пожалуйста предоставьте разрешение.</string>
+
+    <string name="ok">OK</string>
+
+    <string name="background_location_permission_rationale">Выберите "Разрешить в любое время".</string>
+    <string name="background_permission_denied_explanation">Вы запретили фоновый сбор данных, но он необходим для корректной работы приложения, пожалуйста предоставьте разрешение вручную.</string>
+
+    <string name="fine_location_access_rationale_title_text">Пожалуйста разрешите приложению доступ к геоданным</string>
+
+    <string name="fine_location_access_rationale_details_text">\tДля корректной работы приложения требуется собирать Ваши данные о местоположении для работы функции обмена геоданными и построения маршрута пройденого пути, в том числе в фоновом режиме, даже если приложение закрыто и не используется.
+        \n \n\tМы не передаем данные о вашем местоположении третьим лицам и используем их только внутри нашего приложения, в том числе для передачи другим пользователям.
+    </string>
+
+    <string name="background_location_access_rationale_title_text">Improve location accuracy!</string>
+
+    <string name="background_location_access_rationale_details_text">
+        Dev Tip: Unless you have a valid use case for background location updates, you should instead only request updates while your app is in the foreground (app/foreground service).
+        \n\n
+        For this app, you would explain why the particular use case requires background location updates and direct user to click \"Allow all the time\" below.
+        \n\n
+    </string>
+
+
+    <string name="enable_fine_location_button_text">РАЗРЕШИТЬ ПЕРЕДАЧУ</string>
+    <string name="enable_background_location_button_text">РАЗРЕШИТЬ ФОНОВУЮ ПЕРЕДАЧУ</string>
+
+    <string name="start_receiving_location">Start Receiving Location Updates</string>
+    <string name="stop_receiving_location">Stop Receiving Location Updates</string>
+
+    <string name="enhance_with_background_location_button_text">Enhance with Background Location</string>
+
+    <string name="emptyLocationDatabaseMessage">To start receiving location updates, please click the button below!</string>
 </resources>

@@ -1,14 +1,20 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.*
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -19,10 +25,13 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.MarkerCreator
 import ru.newlevel.hordemap.app.MyLocationManager
 import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.domain.usecases.MarkerCreator
+import ru.newlevel.hordemap.hasPermission
+import ru.newlevel.hordemap.presentatin.MainActivity
+
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModelFactory
@@ -73,7 +82,6 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
         setupMap()
         // слушатели нажатий на карте
         mapListenersSetup()
-
         // Запускаем обсерверы
         startObservers()
 
@@ -116,9 +124,16 @@ class MapFragment(private val userDomainModel: UserDomainModel) : Fragment(), On
     @SuppressLint("MissingPermission")
     private fun setupMap() {
         mMap.uiSettings.isZoomControlsEnabled = true
-        mMap.isMyLocationEnabled = true
-        mMap.uiSettings.isMyLocationButtonEnabled = true
-        mMap.uiSettings.isCompassEnabled = true
+        val permissionApproved =
+            context?.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ?: return
+        if (permissionApproved) {
+            mMap.isMyLocationEnabled = true
+
+            mMap.uiSettings.isMyLocationButtonEnabled = true
+            mMap.uiSettings.isCompassEnabled = true
+        } else {
+            (activity as MainActivity).requestFineLocationPermission()
+        }
     }
 
     private fun stopObservers() {

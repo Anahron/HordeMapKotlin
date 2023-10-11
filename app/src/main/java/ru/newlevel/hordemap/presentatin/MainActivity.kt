@@ -1,27 +1,26 @@
 package ru.newlevel.hordemap.presentatin
 
+
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
-
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.ActivityMainBinding
+import ru.newlevel.hordemap.hasPermission
 import ru.newlevel.hordemap.presentatin.fragments.LoginFragment
 import ru.newlevel.hordemap.presentatin.fragments.MapFragment
+import ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModelFactory
 
-class MainActivity : AppCompatActivity() {
 
-    private val requestLocationPermission = 1
-    private val requestCodeBackgroundLocation = 2
+class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var loginViewModel: LoginViewModel
@@ -33,58 +32,19 @@ class MainActivity : AppCompatActivity() {
 
         windowSettings()
 
-        val permission = Manifest.permission.ACCESS_FINE_LOCATION
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val permissionBackgroundLocation = Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            val granted = PackageManager.PERMISSION_GRANTED
-            if (ContextCompat.checkSelfPermission(this, permissionBackgroundLocation) != granted) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(permissionBackgroundLocation),
-                    requestCodeBackgroundLocation
-                )
-            }
-        }
-
-        if (ContextCompat.checkSelfPermission(
-                this,
-                permission
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            // Разрешение уже предоставлено
+        if (!applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION))
+            requestFineLocationPermission()
+        else
             loginCheck()
-        } else {
-            // Запросить разрешение у пользователя
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(permission),
-                requestLocationPermission
-            )
-        }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == requestLocationPermission) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Разрешение предоставлено, можно открыть карту
-                loginCheck()
-            } else {
-                Toast.makeText(this, "Разрешите геолокацию", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
 
     private fun loginCheck() {
         loginViewModel =
             ViewModelProvider(this, LoginViewModelFactory(this))[LoginViewModel::class.java]
 
         //TODO удалить ресет (тест первого запуска)
-    //    loginViewModel.reset()
+        //    loginViewModel.reset()
         loginViewModel.checkLogin()
 
         loginViewModel.loginResult.observe(this) {
@@ -104,7 +64,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun windowSettings() {
-        window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
+      //  window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
         supportActionBar?.hide()                  // Скрыть акшн бар
+    }
+
+
+    override fun displayLocationUI() {
+        loginCheck()
+    }
+
+    fun requestFineLocationPermission() {
+        val fragment = PermissionRequestFragment()
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 }

@@ -13,8 +13,6 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.presentatin.MainActivity
-import java.util.concurrent.TimeUnit
-
 
 class MyLocationManager : Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -72,15 +70,14 @@ class MyLocationManager : Service() {
 
     private fun requestLocationUpdates() {
         val locationRequest = LocationRequest.create().apply {
-            interval = TimeUnit.SECONDS.toMillis(timeToSendData.toLong()) // Интервал обновления местоположения в миллисекундах
-            fastestInterval = TimeUnit.SECONDS.toMillis(timeToSendData.toLong()/2)   // // Самый быстрый интервал обновления в миллисекундах
-            priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY // Приоритет обновления
+            interval = timeToSendData * 1000L // Интервал обновления местоположения в миллисекундах
+            fastestInterval = timeToSendData * 1000L/2   // // Самый быстрый интервал обновления в миллисекундах
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY // Приоритет обновления
         }
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
                 p0.lastLocation?.let { location ->
-                    // Ваш код обработки нового местоположения
                     Log.e("AAA", "Новое местоположение: $location")
                     sendLocationUpdate(location)
                 }

@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.domain.usecases
+package ru.newlevel.hordemap.app
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,6 +9,7 @@ import com.google.android.gms.maps.model.*
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.storage.models.MarkerModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.domain.repository.MarkerRepository
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -27,12 +28,12 @@ class MarkerCreator(
 
     fun createStaticMarkers(markersModel: List<MarkerModel>) {
         MARKER_SIZE_STATIC = userDomainModel.staticMarkerSize
-        for (marker in MarkerManager.getSavedStaticMarkers())
+        for (marker in MarkerRepository.getSavedStaticMarkers())
             marker.remove()
-        for (marker in MarkerManager.getTextMarkers())
+        for (marker in MarkerRepository.getTextMarkers())
             marker.remove()
-        MarkerManager.clearSavedStaticMarker()
-        MarkerManager.clearTextMarker()
+        MarkerRepository.clearSavedStaticMarker()
+        MarkerRepository.clearTextMarker()
         for (markerModel in markersModel) {
             if (markerModel.item > 10)
                 createTextMarker(markerModel)
@@ -46,7 +47,7 @@ class MarkerCreator(
 
             marker?.tag = markerModel.timestamp
             if (marker != null) {
-                MarkerManager.addSavedStaticMarker(marker)
+                MarkerRepository.addSavedStaticMarker(marker)
             }
         }
     }
@@ -72,15 +73,15 @@ class MarkerCreator(
         markerText?.setAnchor(0.5f, 0f)
 
         if (markerText != null) {
-            MarkerManager.addTextMarker(markerText)
+            MarkerRepository.addTextMarker(markerText)
         }
     }
 
     fun createUsersMarkers(markersModels: List<MarkerModel>) {
         MARKER_SIZE_USERS = userDomainModel.usersMarkerSize
-        for (marker in MarkerManager.getSavedUsersMarkers())
+        for (marker in MarkerRepository.getSavedUsersMarkers())
             marker.remove()
-        MarkerManager.clearSavedUserMarker()
+        MarkerRepository.clearSavedUserMarker()
 
         for (markerModel in markersModels) {
             if (userDomainModel.deviceID == markerModel.deviceId)
@@ -91,7 +92,7 @@ class MarkerCreator(
 
             val marker = googleMap.addMarker(markerModelToMarkerOptions(markerModel, icon, 0))
             if (marker != null) {
-              MarkerManager.addSavedUserMarker(marker)
+              MarkerRepository.addSavedUserMarker(marker)
             }
         }
     }

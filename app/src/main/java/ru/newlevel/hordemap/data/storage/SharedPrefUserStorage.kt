@@ -3,7 +3,7 @@ package ru.newlevel.hordemap.data.storage
 import android.content.Context
 import android.content.SharedPreferences
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
-import ru.newlevel.hordemap.Utils
+import ru.newlevel.hordemap.getDeviceId
 
 
 const val SHARE_PREFS_NAME = "sharedHordeMap"
@@ -33,7 +33,7 @@ class SharedPrefUserStorage(private val context: Context): UserStorage {
         val timeToSend = sharedPreferences.getInt(KEY_TIME_TO_SEND_DATA, DEFAULT_TIME)
         val staticMarkerSize = sharedPreferences.getInt(KEY_STATIC_MARKER_SIZE, DEFAULT_SIZE)
         val usersMarkerSize = sharedPreferences.getInt(KEY_USERS_MARKER_SIZE, DEFAULT_SIZE)
-        return UserDataModel(userName,timeToSend,usersMarkerSize,staticMarkerSize,selectedMarker, Utils.getDeviceId(context))
+        return UserDataModel(userName,timeToSend,usersMarkerSize,staticMarkerSize,selectedMarker, getDeviceId(context))
     }
 
     override fun reset() {
