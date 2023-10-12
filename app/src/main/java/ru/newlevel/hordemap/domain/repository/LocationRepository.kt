@@ -1,4 +1,9 @@
 package ru.newlevel.hordemap.domain.repository
 
-class LocationRepository {
+interface LocationRepository {
+
+    fun startLocationUpdates()
+
+    fun stopLocationUpdates()
+
 }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.location.Location
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
@@ -43,6 +44,8 @@ class MarkerViewModel(
     fun createStaticMarkers(it: List<MarkerDataModel>, googleMap: GoogleMap) {
         markerCreator.createStaticMarkers(it,googleMap)
     }
+    private var userMarkersObserver: Observer<List<MarkerDataModel>>? = null
+
 
     @SuppressLint("SimpleDateFormat")
     private fun mapLocationToMarker(

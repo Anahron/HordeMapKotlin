@@ -108,7 +108,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
             val deviceId = binding.tvDeviceId.text.toString()
 
             if (userName.text.toString().length < 3)
-                Toast.makeText(requireContext(), getString(R.string.name_must_be), Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext().applicationContext, getString(R.string.name_must_be), Toast.LENGTH_LONG).show()
             else {
                 loginVM.saveUser(
                     UserDomainModel(
@@ -188,7 +188,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
             override fun onEditorAction(v: TextView, actionId: Int, event: KeyEvent?): Boolean {
                 if (actionId == EditorInfo.IME_ACTION_DONE || (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Скрыть клавиатуру
-                    val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    val imm = requireContext().applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.hideSoftInputFromWindow(binding.editName.windowToken, 0)
                     return true
                 }

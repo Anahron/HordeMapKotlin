@@ -2,11 +2,7 @@ package ru.newlevel.hordemap.presentatin
 
 
 import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -32,10 +28,8 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
 
         windowSettings()
 
-        if (!applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION))
-            requestFineLocationPermission()
-        else
-            loginCheck()
+        if (!applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) requestFineLocationPermission()
+        else loginCheck()
     }
 
 
@@ -50,24 +44,21 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
         loginViewModel.loginResult.observe(this) {
             if (it.name.isNotEmpty()) {
                 Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()
-                val mapFragment = MapFragment(it)
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, mapFragment)
+                val mapFragment = MapFragment()
+                supportFragmentManager.beginTransaction().replace(R.id.container, mapFragment)
                     .commit()
             } else {
                 val loginFragment = LoginFragment(loginViewModel)
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, loginFragment)
+                supportFragmentManager.beginTransaction().replace(R.id.container, loginFragment)
                     .commit()
             }
         }
     }
 
     private fun windowSettings() {
-      //  window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
+        //  window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
         supportActionBar?.hide()                  // Скрыть акшн бар
     }
-
 
     override fun displayLocationUI() {
         loginCheck()
@@ -76,10 +67,7 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
     fun requestFineLocationPermission() {
         val fragment = PermissionRequestFragment()
 
-        supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.container, fragment)
-            .addToBackStack(null)
-            .commit()
+        supportFragmentManager.beginTransaction().replace(R.id.container, fragment)
+            .addToBackStack(null).commit()
     }
 }
