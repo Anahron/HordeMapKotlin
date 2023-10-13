@@ -7,7 +7,7 @@ import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 interface GeoDataStorage {
     fun deleteStaticMarker(marker: Marker)
 
-    fun sendCoordinates(markerModel: MarkerDataModel)
+  fun sendCoordinates(markerModel: MarkerDataModel)
 
     fun startUserMarkerUpdates(): LiveData<List<MarkerDataModel>>
 

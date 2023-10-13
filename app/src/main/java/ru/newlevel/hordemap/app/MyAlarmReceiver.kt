@@ -23,10 +23,11 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
+private const val TAG = "AAA"
+private const val GEO_USER_MARKERS_PATH = "geoData0"
 
 class MyAlarmReceiver : WakefulBroadcastReceiver() {
     private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
-    private val GEO_USER_MARKERS_PATH = "geoData0"
     private var time = 60000
 
     @SuppressLint("MissingPermission")
@@ -46,7 +47,7 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
             pendingIntent
         )
 
-        Log.e("AAA", "onReceive в аларм менеджер")
+        Log.e(TAG, "onReceive в аларм менеджер")
         val fusedLocationClient: FusedLocationProviderClient by lazy {
             LocationServices.getFusedLocationProviderClient(context)
         }
@@ -61,7 +62,7 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
                 override fun isCancellationRequested() = false
             })
             .addOnSuccessListener {
-                Log.e("AAA", "onReceive getCurrentLocation = " + it.toString())
+                Log.e(TAG, "onReceive getCurrentLocation = " + it.toString())
                 if (it != null && userEntity != null) {
                     val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
                     userDatabaseReference.child(userEntity.deviceID)

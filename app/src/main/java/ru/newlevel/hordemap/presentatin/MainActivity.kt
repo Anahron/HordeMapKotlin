@@ -1,11 +1,10 @@
 package ru.newlevel.hordemap.presentatin
 
-
 import android.Manifest
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.ActivityMainBinding
 import ru.newlevel.hordemap.hasPermission
@@ -13,13 +12,11 @@ import ru.newlevel.hordemap.presentatin.fragments.LoginFragment
 import ru.newlevel.hordemap.presentatin.fragments.MapFragment
 import ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModelFactory
-
 
 class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var loginViewModel: LoginViewModel
+    private val loginViewModel by viewModel<LoginViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,9 +31,6 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
 
 
     private fun loginCheck() {
-        loginViewModel =
-            ViewModelProvider(this, LoginViewModelFactory(this))[LoginViewModel::class.java]
-
         //TODO удалить ресет (тест первого запуска)
         //    loginViewModel.reset()
         loginViewModel.checkLogin()

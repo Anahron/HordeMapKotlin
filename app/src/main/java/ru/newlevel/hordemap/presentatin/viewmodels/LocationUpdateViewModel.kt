@@ -1,13 +1,12 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
-import ru.newlevel.hordemap.data.repository.LocationRepositoryImpl
+import ru.newlevel.hordemap.domain.repository.LocationRepository
 
-class LocationUpdateViewModel(context: Context) : ViewModel() {
-
-    private val locationRepository = LocationRepositoryImpl(context)
+class LocationUpdateViewModel(
+    private val locationRepository: LocationRepository
+    ) : ViewModel() {
 
     fun startLocationUpdates() = locationRepository.startLocationUpdates()
 

@@ -12,6 +12,8 @@ import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 private const val GEO_USER_MARKERS_PATH = "geoData0"
 private const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
 private const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах
+private const val TIMESTAMP_PATH = "timestamp"
+private const val TAG = "AAA"
 
 class FirebaseStorage: GeoDataStorage {
 
@@ -31,7 +33,7 @@ class FirebaseStorage: GeoDataStorage {
     }
 
     override fun sendCoordinates(markerModel: MarkerDataModel) {
-        Log.e("AAA", "Координаты отправлены")
+        Log.e(TAG, "Координаты отправлены")
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
@@ -43,13 +45,13 @@ class FirebaseStorage: GeoDataStorage {
         }
         valueUserEventListener = userDatabaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                Log.e("AAA", "данные в startUserMarkerUpdates обновлены")
+                Log.e(TAG, "данные в startUserMarkerUpdates обновлены")
                 savedUserMarkers.clear()
                 val timeNow = System.currentTimeMillis()
                 for (snapshot in dataSnapshot.children) {
                     try {
                         var alpha: Float
-                        val timestamp: Long? = snapshot.child("timestamp").getValue(Long::class.java)
+                        val timestamp: Long? = snapshot.child(TIMESTAMP_PATH).getValue(Long::class.java)
                         val timeDiffMillis = timeNow - timestamp!!
                         val timeDiffMinutes = timeDiffMillis / 60000
                         // Удаляем маркера, которым больше TIME_TO_DELETE_USER_MARKER минут
@@ -84,7 +86,7 @@ class FirebaseStorage: GeoDataStorage {
 
         valueStaticEventListener = staticDatabaseReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                Log.e("AAA", "данные в startStaticMarkerUpdates обновлены")
+                Log.e(TAG, "данные в startStaticMarkerUpdates обновлены")
                 savedStaticMarkers.clear()
                 for (snapshot in dataSnapshot.children) {
                     try {
@@ -104,7 +106,7 @@ class FirebaseStorage: GeoDataStorage {
     }
 
     override fun stopMarkerUpdates() {
-        Log.e("AAA", "stopMarkerUpdates вызван")
+        Log.e(TAG, "stopMarkerUpdates вызван")
         if (valueUserEventListener != null) {
             userDatabaseReference.removeEventListener(valueUserEventListener!!)
             staticDatabaseReference.removeEventListener(valueStaticEventListener!!)

@@ -7,8 +7,8 @@ import android.os.Build
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.repository.MarkerRepository
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -20,14 +20,13 @@ private var MARKER_SIZE_USERS = 40
 private var MARKER_SIZE_STATIC = 40
 
 
-class MarkerCreator(
+class CreateMarkersUseCase(
     private var context: Context,
-    private val userDomainModel: UserDomainModel,
     private val markerRepository: MarkerRepository
 ) {
 
     fun createStaticMarkers(markersModel: List<MarkerDataModel>, googleMap: GoogleMap) {
-        MARKER_SIZE_STATIC = userDomainModel.staticMarkerSize
+        MARKER_SIZE_STATIC = UserEntityProvider.userEntity?.staticMarkerSize!!
         for (marker in markerRepository.getSavedStaticMarkers())
             marker.remove()
         for (marker in markerRepository.getTextMarkers())
@@ -78,13 +77,13 @@ class MarkerCreator(
     }
 
     fun createUsersMarkers(markersModels: List<MarkerDataModel>, googleMap: GoogleMap) {
-        MARKER_SIZE_USERS = userDomainModel.usersMarkerSize
+        MARKER_SIZE_USERS = UserEntityProvider.userEntity?.usersMarkerSize!!
         for (marker in markerRepository.getSavedUsersMarkers())
             marker.remove()
         markerRepository.clearSavedUserMarker()
 
         for (markerModel in markersModels) {
-            if (userDomainModel.deviceID == markerModel.deviceId)
+            if (UserEntityProvider.userEntity?.deviceID == markerModel.deviceId)
                 continue
             val icon = UsersMarkersItem.values().find { it.ordinal == markerModel.item }
                 ?.let { createScaledBitmap(context, it.resourceId, MARKER_SIZE_USERS) }

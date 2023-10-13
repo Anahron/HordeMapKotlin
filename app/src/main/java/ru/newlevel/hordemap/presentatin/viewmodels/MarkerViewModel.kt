@@ -10,10 +10,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 import ru.newlevel.hordemap.domain.usecases.DeleteMarkerUseCase
-import ru.newlevel.hordemap.domain.usecases.MarkerCreator
+import ru.newlevel.hordemap.domain.usecases.CreateMarkersUseCase
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -21,7 +20,7 @@ import java.util.*
 class MarkerViewModel(
     private val geoDataRepository: GeoDataRepository,
     private val deleteMarkerUseCase: DeleteMarkerUseCase,
-    private val markerCreator: MarkerCreator
+    private val createMarkersUseCase: CreateMarkersUseCase
 ) : ViewModel() {
 
 
@@ -39,10 +38,10 @@ class MarkerViewModel(
 
 
     fun createUsersMarkers(it: List<MarkerDataModel>, googleMap: GoogleMap) {
-        markerCreator.createUsersMarkers(it,googleMap)
+        createMarkersUseCase.createUsersMarkers(it,googleMap)
     }
     fun createStaticMarkers(it: List<MarkerDataModel>, googleMap: GoogleMap) {
-        markerCreator.createStaticMarkers(it,googleMap)
+        createMarkersUseCase.createStaticMarkers(it,googleMap)
     }
     private var userMarkersObserver: Observer<List<MarkerDataModel>>? = null
 

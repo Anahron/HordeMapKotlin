@@ -41,7 +41,13 @@ dependencies {
     //DB
     implementation 'androidx.room:room-runtime:2.4.2'
     annotationProcessor "androidx.room:room-compiler:2.4.2"
-    
+
+    //DI
+    def koin_version= "3.1.2"
+    implementation "io.insert-koin:koin-core:$koin_version"
+    implementation "io.insert-koin:koin-android:$koin_version"
+    implementation "io.insert-koin:koin-test:$koin_version"
+
     implementation 'com.firebaseui:firebase-ui-storage:8.0.0'
     implementation 'com.google.gms:google-services:4.3.15'
     implementation 'com.google.firebase:firebase-analytics'

@@ -12,13 +12,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.app.MyAlarmReceiver
@@ -26,9 +26,7 @@ import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.hasPermission
 import ru.newlevel.hordemap.presentatin.MainActivity
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModelFactory
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModelFactory
 import java.util.*
 
 
@@ -37,10 +35,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var googleMap: GoogleMap
     private var userMarkersObserver: Observer<List<MarkerDataModel>>? = null
     private var staticMarkersObserver: Observer<List<MarkerDataModel>>? = null
-    private lateinit var markerViewModel: MarkerViewModel
+    private val markerViewModel by viewModel<MarkerViewModel>()
     private val receiver = LocationUpdatesBroadcastReceiver()
-
-    private lateinit var locationUpdateViewModel: LocationUpdateViewModel
+    private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -54,12 +51,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
-        markerViewModel = ViewModelProvider(
-            this, MarkerViewModelFactory(requireContext().applicationContext)
-        )[MarkerViewModel::class.java]
-        locationUpdateViewModel = ViewModelProvider(
-            this, LocationUpdateViewModelFactory(requireContext().applicationContext)
-        )[LocationUpdateViewModel::class.java]
 
         userMarkersObserver = Observer {
             markerViewModel.createUsersMarkers(it, googleMap)

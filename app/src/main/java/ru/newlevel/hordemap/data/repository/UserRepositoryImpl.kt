@@ -3,7 +3,6 @@ package ru.newlevel.hordemap.data.repository
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.data.storage.UserStorage
-
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.repository.UserRepository
 

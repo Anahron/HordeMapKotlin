@@ -17,15 +17,14 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 private const val TAG = "AAA"
+private const val GEO_USER_MARKERS_PATH = "geoData0"
 
 class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
     private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
-    private val GEO_USER_MARKERS_PATH = "geoData0"
 
     @SuppressLint("SuspiciousIndentation")
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == ACTION_PROCESS_UPDATES) {
-            // Checks for location availability changes.
             LocationAvailability.extractLocationAvailability(intent)?.let { locationAvailability ->
                 if (!locationAvailability.isLocationAvailable) {
                     Log.e(TAG, "Location services are no longer available!")
@@ -38,7 +37,7 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     val userEntity = UserEntityProvider.userEntity
                     val location = locationResult.lastLocation
                     if (location != null && userEntity != null) {
-                        Log.e("AAA", "Отправляется на сервер" + location.toString())
+                        Log.e(TAG, "Отправляется на сервер" + location.toString())
                         val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
                             userDatabaseReference.child(userEntity.deviceID).setValue(mapLocationToMarker(location, userEntity))
                     }
