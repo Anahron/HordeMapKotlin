@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.*
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.LayoutInflater
@@ -23,29 +24,32 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.app.MyAlarmReceiver
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.hasPermission
 import ru.newlevel.hordemap.presentatin.MainActivity
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 import java.util.*
 
 
-class MapFragment : Fragment(), OnMapReadyCallback {
+class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMapReadyCallback {
 
+    private lateinit var binding: FragmentMapsBinding
     private lateinit var googleMap: GoogleMap
     private var userMarkersObserver: Observer<List<MarkerDataModel>>? = null
     private var staticMarkersObserver: Observer<List<MarkerDataModel>>? = null
-    private val markerViewModel by viewModel<MarkerViewModel>()
+    private val mapViewModel by viewModel<MapViewModel>()
     private val receiver = LocationUpdatesBroadcastReceiver()
     private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_maps, container, false)
+    ): View {
+        binding = FragmentMapsBinding.inflate(inflater, container, false)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        return view
+        return binding.root
     }
 
     @SuppressLint("MissingPermission")
@@ -53,19 +57,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         this.googleMap = googleMap
 
         userMarkersObserver = Observer {
-            markerViewModel.createUsersMarkers(it, googleMap)
+            mapViewModel.createUsersMarkers(it, googleMap)
         }
 
         staticMarkersObserver = Observer {
-            markerViewModel.createStaticMarkers(it, googleMap)
+            mapViewModel.createStaticMarkers(it, googleMap)
         }
-
-       locationUpdateViewModel.startLocationUpdates()
+        locationUpdateViewModel.startLocationUpdates()
+        mapViewModel._isShowMarkers.observe(this) {
+            if (it)
+                binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
+            else
+                binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_off)
+        }
 
         // настройки карты
         setupMap()
-        // слушатели нажатий на карте
+        // слушатели кликов
         mapListenersSetup()
+        menuListenersSetup()
         // Запускаем обсерверы
         startObservers()
 
@@ -75,7 +85,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         val filter = IntentFilter(LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES)
         requireContext().applicationContext.registerReceiver(receiver, filter)
+        startAlarmManager()
+    }
 
+    private fun  startAlarmManager(){
         val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             requireContext().applicationContext,
@@ -90,6 +103,27 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
+    private fun menuListenersSetup(){
+        binding.ibMapType.setOnClickListener {
+            if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {
+                googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
+                it.setBackgroundResource(R.drawable.map_type_normal)
+            } else if (googleMap.mapType == GoogleMap.MAP_TYPE_HYBRID) {
+                googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
+                it.setBackgroundResource(R.drawable.map_type_hybrid)
+            }
+        }
+
+        binding.ibMarkers.setOnClickListener{
+            mapViewModel.showOrHideMarkers()
+        }
+
+        binding.ibSettings.setOnClickListener{
+            val loginFragment = LoginFragment(loginViewModel)
+            this.fragmentManager?.beginTransaction()?.replace(R.id.container, loginFragment)
+                ?.commit()
+        }
+    }
 
     private fun mapListenersSetup() {
         // Скрываем диалог при коротком клике по нему
@@ -102,7 +136,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         googleMap.setOnInfoWindowLongClickListener {
-            markerViewModel.deleteStaticMarker(it)
+            mapViewModel.deleteStaticMarker(it)
         }
     }
 
@@ -113,7 +147,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             context?.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ?: return
         if (permissionApproved) {
             googleMap.isMyLocationEnabled = true
-
             googleMap.uiSettings.isMyLocationButtonEnabled = true
             googleMap.uiSettings.isCompassEnabled = true
         } else {
@@ -123,21 +156,21 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun stopObservers() {
         userMarkersObserver?.let {
-            markerViewModel.stopMarkerUpdates()
-            markerViewModel.userMarkersLiveData.removeObserver(it)
+            mapViewModel.stopMarkerUpdates()
+            mapViewModel.userMarkersLiveData.removeObserver(it)
         }
         staticMarkersObserver?.let {
-            markerViewModel.staticMarkersLiveData.removeObserver(it)
+            mapViewModel.staticMarkersLiveData.removeObserver(it)
         }
     }
 
     private fun startObservers() {
         userMarkersObserver?.let {
-            markerViewModel.startMarkerUpdates()
-            markerViewModel.userMarkersLiveData.observe(viewLifecycleOwner, it)
+            mapViewModel.startMarkerUpdates()
+            mapViewModel.userMarkersLiveData.observe(viewLifecycleOwner, it)
         }
         staticMarkersObserver?.let {
-            markerViewModel.staticMarkersLiveData.observe(viewLifecycleOwner, it)
+            mapViewModel.staticMarkersLiveData.observe(viewLifecycleOwner, it)
         }
     }
 
@@ -153,6 +186,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onDetach() {
         locationUpdateViewModel.stopLocationUpdates()
+        val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            requireContext().applicationContext,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.cancel(pendingIntent)
         super.onDetach()
     }
 }

@@ -1,7 +1,6 @@
 package ru.newlevel.hordemap.di
 
 import org.koin.dsl.module
-import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 import ru.newlevel.hordemap.domain.usecases.*
 
 
@@ -22,5 +21,10 @@ val domainModule = module {
     factory<CreateMarkersUseCase> {
         CreateMarkersUseCase(context = get(), markerRepository = get())
     }
-
+    factory<ShowMarkersUseCase> {
+        ShowMarkersUseCase(markerRepository = get())
+    }
+    factory<HideMarkersUseCase> {
+        HideMarkersUseCase(markerRepository = get())
+    }
 }

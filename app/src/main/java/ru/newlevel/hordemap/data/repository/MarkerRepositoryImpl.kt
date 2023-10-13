@@ -45,4 +45,22 @@ class MarkerRepositoryImpl: MarkerRepository {
     override fun getTextMarkers(): List<Marker> {
         return savedTextMarkers
     }
+
+    override fun hideMarkers() {
+        for (marker in savedStaticMarkers)
+            marker.isVisible = false
+        for (marker in savedUsersMarkers)
+            marker.isVisible = false
+        for (marker in savedTextMarkers)
+            marker.isVisible = false
+    }
+
+    override fun showMarkers() {
+        for (marker in savedStaticMarkers)
+            marker.isVisible = true
+        for (marker in savedUsersMarkers)
+            marker.isVisible = true
+        for (marker in savedTextMarkers)
+            marker.isVisible = true
+    }
 }

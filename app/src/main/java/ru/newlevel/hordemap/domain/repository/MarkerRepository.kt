@@ -21,4 +21,8 @@ interface MarkerRepository {
     fun getSavedStaticMarkers(): List<Marker>
 
     fun getTextMarkers(): List<Marker>
+
+    fun hideMarkers()
+
+    fun showMarkers()
 }

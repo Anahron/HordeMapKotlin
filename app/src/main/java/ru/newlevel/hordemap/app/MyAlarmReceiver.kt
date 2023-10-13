@@ -52,7 +52,6 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
             LocationServices.getFusedLocationProviderClient(context)
         }
 
-
         fusedLocationClient.getCurrentLocation(
             Priority.PRIORITY_HIGH_ACCURACY,
             object : CancellationToken() {
@@ -69,7 +68,6 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
                         .setValue(mapLocationToMarker(it, userEntity))
                 }
             }
-
     }
 
     private fun mapLocationToMarker(

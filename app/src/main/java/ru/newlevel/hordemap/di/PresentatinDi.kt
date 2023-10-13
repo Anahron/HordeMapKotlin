@@ -4,7 +4,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 
 val presentationModule = module {
     viewModel<LoginViewModel> {
@@ -14,11 +14,13 @@ val presentationModule = module {
             resetUserUseCase = get()
         )
     }
-    viewModel<MarkerViewModel>{
-        MarkerViewModel(
+    viewModel<MapViewModel>{
+        MapViewModel(
             geoDataRepository = get(),
             deleteMarkerUseCase = get(),
-            createMarkersUseCase = get()
+            createMarkersUseCase = get(),
+            hideMarkersUserCase = get(),
+            showMarkersUseCase = get()
         )
     }
     viewModel<LocationUpdateViewModel>{

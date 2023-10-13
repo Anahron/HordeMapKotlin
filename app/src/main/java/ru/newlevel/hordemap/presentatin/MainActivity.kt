@@ -16,7 +16,7 @@ import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
 class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
 
     private lateinit var binding: ActivityMainBinding
-    private val loginViewModel by viewModel<LoginViewModel>()
+    val loginViewModel by viewModel<LoginViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
         loginViewModel.loginResult.observe(this) {
             if (it.name.isNotEmpty()) {
                 Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()
-                val mapFragment = MapFragment()
+                val mapFragment = MapFragment(loginViewModel)
                 supportFragmentManager.beginTransaction().replace(R.id.container, mapFragment)
                     .commit()
             } else {
