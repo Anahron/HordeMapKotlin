@@ -2,9 +2,11 @@ package ru.newlevel.hordemap.presentatin.fragments
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
-import android.util.Log
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +21,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
+import ru.newlevel.hordemap.app.MyAlarmReceiver
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.hasPermission
 import ru.newlevel.hordemap.presentatin.MainActivity
@@ -26,6 +29,8 @@ import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModelFactory
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MarkerViewModelFactory
+import java.util.*
+
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
@@ -57,16 +62,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         )[LocationUpdateViewModel::class.java]
 
         userMarkersObserver = Observer {
-            Log.e("AAA", "Пришло в  userMarkersObserver" + it.toString())
             markerViewModel.createUsersMarkers(it, googleMap)
         }
 
         staticMarkersObserver = Observer {
-            Log.e("AAA", "Пришло в staticMarkersObserver" + it.toString())
             markerViewModel.createStaticMarkers(it, googleMap)
         }
 
-        locationUpdateViewModel.startLocationUpdates()
+       locationUpdateViewModel.startLocationUpdates()
 
         // настройки карты
         setupMap()
@@ -81,7 +84,21 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         val filter = IntentFilter(LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES)
         requireContext().applicationContext.registerReceiver(receiver, filter)
+
+        val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            requireContext().applicationContext,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + 30000,
+            pendingIntent
+        )
     }
+
 
     private fun mapListenersSetup() {
         // Скрываем диалог при коротком клике по нему

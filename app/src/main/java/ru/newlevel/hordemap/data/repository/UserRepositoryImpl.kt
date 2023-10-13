@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.data.repository
 
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.data.storage.UserStorage
 
@@ -13,7 +14,9 @@ class UserRepositoryImpl(private val userStorage: UserStorage): UserRepository {
     }
 
     override fun getUser(): UserDomainModel {
-        return mapToDomain(userStorage.get())
+        val user = userStorage.get()
+        UserEntityProvider.userEntity = UserDataModel(user.name,user.timeToSendData,user.usersMarkerSize,user.staticMarkerSize,user.selectedMarker,user.deviceID)
+        return mapToDomain(user)
     }
 
     override fun resetUser() {

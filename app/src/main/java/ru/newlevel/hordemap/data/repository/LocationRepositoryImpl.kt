@@ -12,8 +12,8 @@ class LocationRepositoryImpl(
 
     @MainThread
     override fun startLocationUpdates(){
-        val serviceIntent = Intent(context, MyLocationManager::class.java)
-        context.startForegroundService(serviceIntent)
+        val serviceIntent = Intent(context.applicationContext, MyLocationManager::class.java)
+        context.applicationContext.startForegroundService(serviceIntent)
     }
 
     @MainThread

@@ -9,13 +9,12 @@ import android.util.Log
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationResult
 import com.google.firebase.database.FirebaseDatabase
-import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 
 private const val TAG = "AAA"
 
@@ -25,7 +24,6 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
 
     @SuppressLint("SuspiciousIndentation")
     override fun onReceive(context: Context, intent: Intent) {
-        Log.e(TAG, "onReceive() context:$context, intent:$intent")
         if (intent.action == ACTION_PROCESS_UPDATES) {
             // Checks for location availability changes.
             LocationAvailability.extractLocationAvailability(intent)?.let { locationAvailability ->
@@ -35,17 +33,12 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
             }
 
             LocationResult.extractResult(intent)?.let { locationResult ->
-                val locations = locationResult.locations.map { location ->
-                    MyLocationEntity(
-                        latitude = location.latitude,
-                        longitude = location.longitude,
-                        date = Date(location.time)
-                    )
-                }
+                val locations = locationResult.locations
                 if (locations.isNotEmpty()) {
                     val userEntity = UserEntityProvider.userEntity
                     val location = locationResult.lastLocation
                     if (location != null && userEntity != null) {
+                        Log.e("AAA", "Отправляется на сервер" + location.toString())
                         val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
                             userDatabaseReference.child(userEntity.deviceID).setValue(mapLocationToMarker(location, userEntity))
                     }

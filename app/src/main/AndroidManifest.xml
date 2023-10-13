@@ -62,9 +62,11 @@
 
         </activity>
         <receiver android:name=".app.LocationUpdatesBroadcastReceiver" />
+        <receiver android:name=".app.MyAlarmReceiver" />
 
         <service
             android:name=".data.MyLocationManager"
+            android:stopWithTask="false"
             android:exported="false"
             android:enabled="true"
             android:foregroundServiceType="location"

@@ -6,5 +6,6 @@ import ru.newlevel.hordemap.domain.repository.UserRepository
 class SaveUserUseCase(private val userRepository: UserRepository) {
     fun execute(user: UserDomainModel){
         userRepository.saveUser(user)
+        userRepository.getUser()
     }
 }

@@ -29,7 +29,7 @@ class MyLocationManager : Service() {
     private val locationUpdatePendingIntent: PendingIntent by lazy {
         val intent = Intent(this.applicationContext, LocationUpdatesBroadcastReceiver::class.java)
         intent.action = LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES
-        PendingIntent.getBroadcast(this.applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getBroadcast(this.applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
     @Throws(SecurityException::class)
@@ -73,7 +73,7 @@ class MyLocationManager : Service() {
         startLocationUpdates()
         val notification = createNotification()
         startForeground(1, notification)
-        return Service.START_STICKY
+        return START_STICKY
     }
 
     private fun createNotification(): Notification {
@@ -93,7 +93,7 @@ class MyLocationManager : Service() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-            .setCategory(Notification.CATEGORY_SERVICE)
+            .setCategory(Notification.CATEGORY_LOCATION_SHARING)
             .setTimeoutAfter(500)
 
         return builder.build()
