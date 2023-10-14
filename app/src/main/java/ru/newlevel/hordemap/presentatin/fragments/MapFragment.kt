@@ -13,6 +13,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -21,6 +24,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.BgLocationWorker
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.app.MyAlarmReceiver
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
@@ -31,6 +35,7 @@ import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMapReadyCallback {
@@ -63,7 +68,6 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         staticMarkersObserver = Observer {
             mapViewModel.createStaticMarkers(it, googleMap)
         }
-        locationUpdateViewModel.startLocationUpdates()
         mapViewModel._isShowMarkers.observe(this) {
             if (it)
                 binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
@@ -85,10 +89,21 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 
         val filter = IntentFilter(LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES)
         requireContext().applicationContext.registerReceiver(receiver, filter)
+        //запуск обновления местоположений
+        locationUpdateViewModel.startLocationUpdates()
         startAlarmManager()
+
+//        val workManager = WorkManager.getInstance(requireContext().applicationContext)
+//        workManager.enqueueUniquePeriodicWork(
+//            BgLocationWorker.workName,
+//            ExistingPeriodicWorkPolicy.KEEP,
+//            PeriodicWorkRequestBuilder<BgLocationWorker>(
+//                1,
+//                TimeUnit.MINUTES,
+//            ).build(),)
     }
 
-    private fun  startAlarmManager(){
+    private fun startAlarmManager() {
         val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             requireContext().applicationContext,
@@ -103,7 +118,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         )
     }
 
-    private fun menuListenersSetup(){
+    private fun menuListenersSetup() {
         binding.ibMapType.setOnClickListener {
             if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {
                 googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
@@ -114,11 +129,11 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             }
         }
 
-        binding.ibMarkers.setOnClickListener{
+        binding.ibMarkers.setOnClickListener {
             mapViewModel.showOrHideMarkers()
         }
 
-        binding.ibSettings.setOnClickListener{
+        binding.ibSettings.setOnClickListener {
             val loginFragment = LoginFragment(loginViewModel)
             this.fragmentManager?.beginTransaction()?.replace(R.id.container, loginFragment)
                 ?.commit()
@@ -193,7 +208,9 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             intent,
             PendingIntent.FLAG_IMMUTABLE
         )
-        (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.cancel(pendingIntent)
+        (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.cancel(
+            pendingIntent
+        )
         super.onDetach()
     }
 }
