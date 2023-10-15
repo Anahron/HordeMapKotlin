@@ -6,11 +6,9 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
 import java.io.OutputStream
 
-class FilesLocalStorage(private val context: Context): GameMapLocalStorage {
+class FilesLocalStorage(private val context: Context) : GameMapLocalStorage {
 
     override suspend fun saveGameMapToFile(uri: Uri) {
         val filename = "lastSavedMap.kmz"
@@ -18,7 +16,8 @@ class FilesLocalStorage(private val context: Context): GameMapLocalStorage {
             val inputStream = context.contentResolver.openInputStream(uri)
 
             if (inputStream != null) {
-                val outputStream: OutputStream = context.openFileOutput(filename, Context.MODE_PRIVATE)
+                val outputStream: OutputStream =
+                    context.openFileOutput(filename, Context.MODE_PRIVATE)
                 inputStream.copyTo(outputStream)
                 withContext(Dispatchers.IO) {
                     inputStream.close()
@@ -34,18 +33,9 @@ class FilesLocalStorage(private val context: Context): GameMapLocalStorage {
         }
     }
 
-    override suspend fun loadLastMapFromFile(): InputStream? {
-        try {
-            val filename = "lastSavedMap.kmz"
-            val file = File(context.filesDir, filename)
-            if (file.exists()) {
-                return withContext(Dispatchers.IO) {
-                    FileInputStream(file)
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return null
+    override suspend fun loadLastMapFromFile(): Uri? {
+        val filename = "lastSavedMap.kmz"
+        val file = File(context.filesDir, filename)
+        return Uri.fromFile(file)
     }
 }

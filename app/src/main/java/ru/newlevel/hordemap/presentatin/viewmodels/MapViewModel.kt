@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
+import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 import ru.newlevel.hordemap.domain.usecases.*
@@ -23,7 +24,6 @@ class MapViewModel(
     private val createMarkersUseCase: CreateMarkersUseCase,
     private val hideMarkersUserCase: HideMarkersUseCase,
     private val showMarkersUseCase: ShowMarkersUseCase,
-    private val loadGameMapFromUriUseCase: LoadGameMapFromUriUseCase,
     private val saveGameMapToFileUseCase: SaveGameMapToFileUseCase,
     private val loadLastGameMapUseCase: LoadLastGameMapUseCase,
     private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase
@@ -36,26 +36,29 @@ class MapViewModel(
     private var isShowMarkers = MutableLiveData<Boolean>()
     val _isShowMarkers: LiveData<Boolean> = isShowMarkers
 
-    var _kmzInputStream = MutableLiveData<InputStream>()
+    var _kmzUri = MutableLiveData<Uri?>()
 
 
     init {
         isShowMarkers.value = true
     }
 
-    suspend fun loadGameMapFromUri(uri: Uri, context: Context) {
-        _kmzInputStream.value = loadGameMapFromUriUseCase.execute(uri, context)
+    fun setUriForMap(uri: Uri) {
+        _kmzUri.value = uri
     }
 
     suspend fun saveGameMapToFile(uri: Uri) {
         saveGameMapToFileUseCase.execute(uri)
     }
 
+    suspend fun getInputSteam(uri: Uri, context: Context): InputStream? {
+       return getInputSteamFromUri(uri, context)
+    }
 
     suspend fun loadMapFromServer(context: Context): Boolean {
         val uri = loadGameMapFromServerUseCase.execute(context)
         return if (uri != null) {
-            loadGameMapFromUri(uri, context)
+            setUriForMap(uri)
             true
         } else false
     }
@@ -70,7 +73,7 @@ class MapViewModel(
     suspend fun loadLastGameMap(): Boolean {
         val uri = loadLastGameMapUseCase.execute()
         return if (uri != null) {
-            _kmzInputStream.value = loadLastGameMapUseCase.execute()
+            _kmzUri.value = uri
             true
         } else false
     }

@@ -22,14 +22,16 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.maps.android.data.kml.KmlLayer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.app.MyAlarmReceiver
+import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
-import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.presentatin.MainActivity
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
@@ -71,12 +73,34 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             else binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_off)
         }
 
-        mapViewModel._kmzInputStream.observe(this) { inputStream ->
-            inputStream?.use {
-                val kmlLayer = KmlLayer(googleMap, it, requireContext().applicationContext)
-                kmlLayer.addLayerToMap()
+        mapViewModel._kmzUri.observe(this) {
+            lifecycleScope.launch {
+                val inputStream = it?.let { mapViewModel.getInputSteam(it, requireContext()) }
+                if (inputStream != null) {
+                    val kmlLayer =
+                        KmlLayer(googleMap, inputStream, requireContext().applicationContext)
+                    kmlLayer.addLayerToMap()
+                    if (kmlLayer.isLayerOnMap && kmlLayer.groundOverlays != null) {
+                        kmlLayer.groundOverlays.any { _it ->
+                            googleMap.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    LatLng(
+                                        _it.latLngBox.center.latitude,
+                                        _it.latLngBox.center.longitude
+                                    ), 12F
+                                )
+                            )
+                            true
+                        }
+                    }
+                    withContext(Dispatchers.IO) {
+                        inputStream.close()
+                    }
+                }
+
             }
         }
+
         // настройки карты
         setupMap()
         // слушатели кликов
@@ -110,7 +134,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             if (uri != null) {
                 lifecycleScope.launch {
                     mapViewModel.saveGameMapToFile(uri)
-                    mapViewModel.loadGameMapFromUri(uri, requireContext())
+                    mapViewModel.setUriForMap(uri)
                 }
             }
         }
@@ -270,3 +294,4 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         super.onDetach()
     }
 }
+

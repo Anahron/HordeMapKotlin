@@ -27,9 +27,7 @@ val domainModule = module {
     factory<HideMarkersUseCase> {
         HideMarkersUseCase(markerRepository = get())
     }
-    factory<LoadGameMapFromUriUseCase> {
-       LoadGameMapFromUriUseCase()
-    }
+
     factory<LoadLastGameMapUseCase> {
        LoadLastGameMapUseCase(gameMapRepository = get())
     }

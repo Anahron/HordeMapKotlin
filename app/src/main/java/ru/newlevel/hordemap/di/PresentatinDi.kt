@@ -21,7 +21,6 @@ val presentationModule = module {
             createMarkersUseCase = get(),
             hideMarkersUserCase = get(),
             showMarkersUseCase = get(),
-            loadGameMapUseCase = get(),
             saveGameMapToFileUseCase = get(),
             loadLastGameMapUseCase = get(),
             loadGameMapFromServerUseCase = get()

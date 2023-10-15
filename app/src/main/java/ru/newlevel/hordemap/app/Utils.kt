@@ -4,10 +4,14 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.InputStream
 import java.util.*
 
 
@@ -39,5 +43,14 @@ fun Fragment.requestPermissionWithRationale(
         snackbar.show()
     } else {
         requestPermissions(arrayOf(permission), requestCode)
+    }
+}
+suspend fun getInputSteamFromUri(uri: Uri, context: Context): InputStream? {
+    return withContext(Dispatchers.IO) {
+        try {
+            context.contentResolver.openInputStream(uri)
+        } catch (e: Exception) {
+            null
+        }
     }
 }

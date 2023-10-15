@@ -5,7 +5,6 @@ import android.net.Uri
 import ru.newlevel.hordemap.data.storage.FirebaseMapStorage
 import ru.newlevel.hordemap.data.storage.GameMapLocalStorage
 import ru.newlevel.hordemap.domain.repository.GameMapRepository
-import java.io.InputStream
 
 class GameMapRepositoryImpl(private val gameMapLocalStorage: GameMapLocalStorage, private val firebaseMapStorage: FirebaseMapStorage): GameMapRepository {
 
@@ -13,7 +12,7 @@ class GameMapRepositoryImpl(private val gameMapLocalStorage: GameMapLocalStorage
        return firebaseMapStorage.loadGameMapFromServer(context)
     }
 
-    override suspend fun loadLastGameMap(): InputStream? {
+    override suspend fun loadLastGameMap(): Uri? {
        return gameMapLocalStorage.loadLastMapFromFile()
     }
 
