@@ -21,13 +21,13 @@ class LoadMapDialogFragment(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = LoadMapDialogBinding.inflate(inflater, container, false)
-        val boolean = mapViewModel._isAutoLoadMap.value
+        val boolean = mapViewModel.isAutoLoadMap.value
         if (boolean != null) {
             binding.checkBox.isChecked = boolean
         }
 
         binding.checkBox.setOnClickListener {
-            mapViewModel._isAutoLoadMap.value = binding.checkBox.isChecked
+            mapViewModel.setIsAutoLoadMap(binding.checkBox.isChecked)
             loginViewModel.saveAutoLoad(binding.checkBox.isChecked)
         }
 

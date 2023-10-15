@@ -34,21 +34,26 @@ class MapViewModel(
 
     lateinit var staticMarkersLiveData: LiveData<List<MarkerDataModel>>
 
-    private var isShowMarkers = MutableLiveData<Boolean>()
-    val _isShowMarkers: LiveData<Boolean> = isShowMarkers
+    private var _isShowMarkers = MutableLiveData<Boolean>()
+    val isShowMarkers: LiveData<Boolean> = _isShowMarkers
 
-    var _kmzUri = MutableLiveData<Uri?>()
+    private var _kmzUri = MutableLiveData<Uri?>()
+    val kmzUri: LiveData<Uri?> = _kmzUri
 
-    var _isAutoLoadMap = MutableLiveData<Boolean>()
-
+    private var _isAutoLoadMap = MutableLiveData<Boolean>()
+    val isAutoLoadMap: LiveData<Boolean> = _isAutoLoadMap
 
     init {
-        isShowMarkers.value = true
+        _isShowMarkers.value = true
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
     }
 
     fun setUriForMap(uri: Uri) {
         _kmzUri.value = uri
+    }
+
+    fun setIsAutoLoadMap(boolean: Boolean){
+        _isAutoLoadMap.value = boolean
     }
 
     suspend fun saveGameMapToFile(uri: Uri) {
@@ -84,9 +89,9 @@ class MapViewModel(
 
     fun showOrHideMarkers() {
         if (_isShowMarkers.value == true)
-            isShowMarkers.value = hideMarkersUserCase.execute()
+            _isShowMarkers.value = hideMarkersUserCase.execute()
         else
-            isShowMarkers.value = showMarkersUseCase.execute()
+            _isShowMarkers.value = showMarkersUseCase.execute()
     }
 
     fun createUsersMarkers(it: List<MarkerDataModel>, googleMap: GoogleMap) {

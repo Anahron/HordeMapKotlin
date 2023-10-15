@@ -66,17 +66,17 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         staticMarkersObserver = Observer {
             mapViewModel.createStaticMarkers(it, googleMap)
         }
-        mapViewModel._isShowMarkers.observe(this) {
+        mapViewModel.isShowMarkers.observe(this) {
             if (it) binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
             else binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_off)
         }
-        mapViewModel._isAutoLoadMap.observe(this) {
+        mapViewModel.isAutoLoadMap.observe(this) {
             if (it)
                 lifecycleScope.launch {
                      mapViewModel.loadLastGameMap()
                 }
         }
-        mapViewModel._kmzUri.observe(this) {
+        mapViewModel.kmzUri.observe(this) {
             lifecycleScope.launch {
                 val inputStream = it?.let { mapViewModel.getInputSteam(it, requireContext()) }
                 if (inputStream != null) {
