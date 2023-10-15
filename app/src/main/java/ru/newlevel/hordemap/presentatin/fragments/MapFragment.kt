@@ -181,7 +181,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 
     private fun createAlertDialog() {
         val dialogFragment =
-            LoadMapDialogFragment(mapViewModel = mapViewModel, loginViewModel = loginViewModel)
+            LoadMapDialogFragment(mapViewModel = mapViewModel, loginViewModel = loginViewModel, this)
         dialogFragment.show(this.childFragmentManager, "customDialog")
     }
 

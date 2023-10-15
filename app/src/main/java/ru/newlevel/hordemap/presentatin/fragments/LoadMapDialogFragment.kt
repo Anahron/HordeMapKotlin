@@ -13,7 +13,9 @@ import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 
 class LoadMapDialogFragment(
-    private val mapViewModel: MapViewModel, private val loginViewModel: LoginViewModel
+    private val mapViewModel: MapViewModel,
+    private val loginViewModel: LoginViewModel,
+    private val mapFragment: MapFragment
 ) : DialogFragment() {
     private lateinit var binding: LoadMapDialogBinding
 
@@ -38,30 +40,37 @@ class LoadMapDialogFragment(
                     "Загрузка началась, подождите...",
                     Toast.LENGTH_LONG
                 ).show()
-                if (!mapViewModel.loadMapFromServer(requireContext().applicationContext)) Toast.makeText(
-                    requireContext().applicationContext, "Неудачно", Toast.LENGTH_LONG
-                ).show()
-                else Toast.makeText(
-                    requireContext().applicationContext, "Карта загружена", Toast.LENGTH_LONG
-                ).show()
+                if (!mapViewModel.loadMapFromServer(requireContext().applicationContext)) {
+                    Toast.makeText(
+                        requireContext().applicationContext,
+                        "Неудачно",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    dialog?.dismiss()
+                } else {
+                    Toast.makeText(
+                        requireContext().applicationContext, "Карта загружена", Toast.LENGTH_LONG
+                    ).show()
+                    dialog?.dismiss()
+                }
             }
+            dialog?.hide()
+        }
+
+        binding.btnFromFiles.setOnClickListener {
+            mapViewModel.loadGameMapFromFiles(mapFragment)
             dialog?.dismiss()
         }
 
-        binding.btnFromFiles.setOnClickListener{
-            mapViewModel.loadGameMapFromFiles(this)
-            dialog?.dismiss()
-        }
-
-        binding.btnLastSaved.setOnClickListener{
+        binding.btnLastSaved.setOnClickListener {
             lifecycleScope.launch {
                 if (!mapViewModel.loadLastGameMap()) Toast.makeText(
                     requireContext().applicationContext,
                     "Сохраненная карта отсутствует",
                     Toast.LENGTH_LONG
                 ).show()
+                dialog?.dismiss()
             }
-            dialog?.dismiss()
         }
 
         return binding.root
