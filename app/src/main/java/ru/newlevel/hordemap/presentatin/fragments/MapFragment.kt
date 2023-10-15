@@ -3,7 +3,6 @@ package ru.newlevel.hordemap.presentatin.fragments
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
-import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
@@ -11,7 +10,6 @@ import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -72,7 +70,12 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             if (it) binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
             else binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_off)
         }
-
+        mapViewModel._isAutoLoadMap.observe(this) {
+            if (it)
+                lifecycleScope.launch {
+                     mapViewModel.loadLastGameMap()
+                }
+        }
         mapViewModel._kmzUri.observe(this) {
             lifecycleScope.launch {
                 val inputStream = it?.let { mapViewModel.getInputSteam(it, requireContext()) }
@@ -100,7 +103,6 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 
             }
         }
-
         // настройки карты
         setupMap()
         // слушатели кликов
@@ -178,48 +180,9 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
     }
 
     private fun createAlertDialog() {
-        val options = arrayOf("С сервера", "Из файла", "Последняя сохраненная")
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("Выберите источник для загрузки:")
-        builder.setItems(options) { _, which ->
-            when (which) {
-                0 -> {
-                    lifecycleScope.launch {
-                        Toast.makeText(
-                            requireContext().applicationContext,
-                            "Загрузка началась, подождите...",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        if (!mapViewModel.loadMapFromServer(requireContext().applicationContext))
-                            Toast.makeText(
-                                requireContext().applicationContext,
-                                "Неудачно",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        else
-                            Toast.makeText(
-                                requireContext().applicationContext,
-                                "Карта загружена",
-                                Toast.LENGTH_LONG
-                            ).show()
-                    }
-                }
-                1 -> {
-                    mapViewModel.loadGameMapFromFiles(this)
-                }
-                2 -> {
-                    lifecycleScope.launch {
-                        if (!mapViewModel.loadLastGameMap())
-                            Toast.makeText(
-                                requireContext().applicationContext,
-                                "Сохраненная карта отсутствует",
-                                Toast.LENGTH_LONG
-                            ).show()
-                    }
-                }
-            }
-        }
-        builder.show()
+        val dialogFragment =
+            LoadMapDialogFragment(mapViewModel = mapViewModel, loginViewModel = loginViewModel)
+        dialogFragment.show(this.childFragmentManager, "customDialog")
     }
 
     @SuppressLint("PotentialBehaviorOverride")

@@ -37,4 +37,7 @@ val domainModule = module {
     factory<LoadGameMapFromServerUseCase> {
         LoadGameMapFromServerUseCase(gameMapRepository = get())
     }
+    factory<SaveAutoLoadUseCase> {
+        SaveAutoLoadUseCase(userRepository = get())
+    }
 }

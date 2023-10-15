@@ -9,5 +9,7 @@ interface UserStorage {
     fun get(): UserDataModel
 
     fun reset()
+
+    fun saveAutoLoad(boolean: Boolean)
 }
 

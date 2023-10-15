@@ -8,12 +8,14 @@ import androidx.lifecycle.ViewModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.GetUserUseCase
 import ru.newlevel.hordemap.domain.usecases.ResetUserUseCase
+import ru.newlevel.hordemap.domain.usecases.SaveAutoLoadUseCase
 import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
 
 class LoginViewModel(
     private val getUserUseCase: GetUserUseCase,
     private val saveUserUseCase: SaveUserUseCase,
     private val resetUserUseCase: ResetUserUseCase,
+    private val saveAutoLoadUseCase : SaveAutoLoadUseCase,
 ) : ViewModel() {
 
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
@@ -27,7 +29,11 @@ class LoginViewModel(
 
     fun saveUser(userDomainModel: UserDomainModel) {
         saveUserUseCase.execute(userDomainModel)
-        loginSuccess(userDomainModel)
+        loginSuccess(getUserUseCase.execute())
+    }
+
+    fun saveAutoLoad(boolean: Boolean){
+        saveAutoLoadUseCase.execute(boolean)
     }
 
     fun checkLogin(): UserDomainModel {

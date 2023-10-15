@@ -4,16 +4,17 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.app.getInputSteamFromUri
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 import ru.newlevel.hordemap.domain.usecases.*
-import ru.newlevel.hordemap.presentatin.fragments.MapFragment
 import java.io.InputStream
 
 const val REQUEST_CODE_PICK_KMZ_FILE = 100
@@ -38,9 +39,12 @@ class MapViewModel(
 
     var _kmzUri = MutableLiveData<Uri?>()
 
+    var _isAutoLoadMap = MutableLiveData<Boolean>()
+
 
     init {
         isShowMarkers.value = true
+        _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
     }
 
     fun setUriForMap(uri: Uri) {
@@ -63,7 +67,7 @@ class MapViewModel(
         } else false
     }
 
-    fun loadGameMapFromFiles(fragment: MapFragment) {
+    fun loadGameMapFromFiles(fragment: Fragment) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "application/vnd.google-earth.kmz"

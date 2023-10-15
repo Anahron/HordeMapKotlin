@@ -9,4 +9,6 @@ interface UserRepository {
     fun getUser(): UserDomainModel
 
     fun resetUser()
+
+    fun saveAutoLoad(boolean: Boolean)
 }

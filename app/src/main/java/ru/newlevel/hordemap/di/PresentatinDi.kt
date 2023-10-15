@@ -12,6 +12,7 @@ val presentationModule = module {
             getUserUseCase = get(),
             saveUserUseCase = get(),
             resetUserUseCase = get(),
+            saveAutoLoadUseCase = get()
         )
     }
     viewModel<MapViewModel>{

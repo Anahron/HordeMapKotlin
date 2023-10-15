@@ -24,6 +24,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
     private lateinit var binding: FragmentLoginBinding
     private lateinit var layoutParamsUser: LayoutParams
     private lateinit var layoutParamsStatic: LayoutParams
+    private var isAutoLoad: Boolean = false
     private var checkedRadioButton by Delegates.notNull<Int>()
 
     override fun onCreateView(
@@ -59,10 +60,10 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
             val staticMarkerSize = binding.sbStaticMarkerSize
             val userMarkerSize = binding.sbUsersMarkerSize
             val deviceId = user.deviceID
-
             timeToSendData.progress = user.timeToSendData
             staticMarkerSize.progress = user.staticMarkerSize
             userMarkerSize.progress = user.usersMarkerSize
+            isAutoLoad = user.autoLoad
 
             layoutParamsStatic.width = user.staticMarkerSize
             layoutParamsStatic.height = user.staticMarkerSize
@@ -81,7 +82,8 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
 
             for (i in 0 until binding.radioGroup.childCount) {
                 val radioButton = binding.radioGroup.getChildAt(i) as? RadioButton
-                radioButton?.alpha = if (radioButton?.tag == checkedRadioButton.toString()) 1.0f else 0.3f
+                radioButton?.alpha =
+                    if (radioButton?.tag == checkedRadioButton.toString()) 1.0f else 0.3f
             }
         }
         loginVM.getUser()
@@ -108,7 +110,11 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
             val deviceId = binding.tvDeviceId.text.toString()
 
             if (userName.text.toString().length < 3)
-                Toast.makeText(requireContext().applicationContext, getString(R.string.name_must_be), Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext().applicationContext,
+                    getString(R.string.name_must_be),
+                    Toast.LENGTH_LONG
+                ).show()
             else {
                 loginVM.saveUser(
                     UserDomainModel(
@@ -117,7 +123,8 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
                         userMarkerSize.progress,
                         staticMarkerSize.progress,
                         checkedRadioButton,
-                        deviceId
+                        deviceId,
+                        isAutoLoad
                     )
                 )
             }
@@ -174,7 +181,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
                 progress: Int,
                 fromUser: Boolean
             ) {
-               binding.tvTimeToSendData.text = "$progress ${getString(R.string.sec)}"
+                binding.tvTimeToSendData.text = "$progress ${getString(R.string.sec)}"
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -188,7 +195,8 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
             override fun onEditorAction(v: TextView, actionId: Int, event: KeyEvent?): Boolean {
                 if (actionId == EditorInfo.IME_ACTION_DONE || (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Скрыть клавиатуру
-                    val imm = requireContext().applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    val imm =
+                        requireContext().applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.hideSoftInputFromWindow(binding.editName.windowToken, 0)
                     return true
                 }

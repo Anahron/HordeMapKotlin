@@ -6,6 +6,7 @@ class UserDomainModel(
     val usersMarkerSize: Int,
     val staticMarkerSize: Int,
     val selectedMarker: Int,
-    val deviceID: String
+    val deviceID: String,
+    var autoLoad: Boolean
 ) {
 }
