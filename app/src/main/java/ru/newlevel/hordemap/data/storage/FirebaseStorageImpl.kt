@@ -16,8 +16,6 @@ import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import java.io.File
 import kotlin.coroutines.resume
 
-//private const val MESSAGE_PATH = "messages"
-//private const val MESSAGE_FILE_FOLDER = "MessengerFiles"
 private const val GEO_USER_MARKERS_PATH = "geoData0"
 private const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
 private const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах
@@ -139,7 +137,7 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
                     continuation.resume(Uri.fromFile(file))
                 }
                 .addOnFailureListener {
-                    continuation.resume(null)// Вернуть null в случае ошибки
+                    continuation.resume(null)
                 }
             continuation.invokeOnCancellation {
                 // При отмене можно предпринять соответствующие действия, если необходимо

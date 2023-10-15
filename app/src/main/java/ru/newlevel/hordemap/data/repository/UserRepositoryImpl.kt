@@ -23,14 +23,6 @@ class UserRepositoryImpl(private val userStorage: UserStorage): UserRepository {
         userStorage.reset()
     }
 
-    override fun saveUri(uri: Uri) {
-        userStorage.saveUri(uri)
-    }
-
-    override fun getMapUri(): Uri {
-        return userStorage.getMapUri()
-    }
-
     private fun mapToDomain(user: UserDataModel) : UserDomainModel{
         return UserDomainModel(user.name,user.timeToSendData,user.usersMarkerSize,user.staticMarkerSize,user.selectedMarker,user.deviceID)
     }

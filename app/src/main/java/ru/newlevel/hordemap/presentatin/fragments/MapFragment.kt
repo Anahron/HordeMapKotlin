@@ -77,7 +77,6 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
                 kmlLayer.addLayerToMap()
             }
         }
-
         // настройки карты
         setupMap()
         // слушатели кликов
@@ -85,7 +84,6 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         menuListenersSetup()
         // Запускаем обсерверы
         startObservers()
-
         //Камера на Красноярск
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
@@ -125,7 +123,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         )
         (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + 30000,
+            SystemClock.elapsedRealtime() + 1000,
             pendingIntent
         )
     }
@@ -151,49 +149,53 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
                 ?.commit()
         }
         binding.ibLoadMap.setOnClickListener {
-            val options = arrayOf("С сервера", "Из файла", "Последняя сохраненная")
-            val builder = AlertDialog.Builder(requireContext())
-            builder.setTitle("Выберите источник для загрузки:")
-            builder.setItems(options) { _, which ->
-                when (which) {
-                    0 -> {
-                        viewLifecycleOwner.lifecycleScope.launch {
+            createAlertDialog()
+        }
+    }
+
+    private fun createAlertDialog() {
+        val options = arrayOf("С сервера", "Из файла", "Последняя сохраненная")
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Выберите источник для загрузки:")
+        builder.setItems(options) { _, which ->
+            when (which) {
+                0 -> {
+                    lifecycleScope.launch {
+                        Toast.makeText(
+                            requireContext().applicationContext,
+                            "Загрузка началась, подождите...",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        if (!mapViewModel.loadMapFromServer(requireContext().applicationContext))
                             Toast.makeText(
                                 requireContext().applicationContext,
-                                "Загрузка началась, подождите...",
+                                "Неудачно",
                                 Toast.LENGTH_LONG
                             ).show()
-                            if (!mapViewModel.loadMapFromServer(requireContext().applicationContext))
-                                Toast.makeText(
-                                    requireContext().applicationContext,
-                                    "Неудачно",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            else
-                                Toast.makeText(
-                                    requireContext().applicationContext,
-                                    "Карта загружена",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                        }
+                        else
+                            Toast.makeText(
+                                requireContext().applicationContext,
+                                "Карта загружена",
+                                Toast.LENGTH_LONG
+                            ).show()
                     }
-                    1 -> {
-                        mapViewModel.loadGameMapFromFiles(this)
-                    }
-                    2 -> {
-                        lifecycleScope.launch {
-                            if (!mapViewModel.loadLastGameMap())
-                                Toast.makeText(
-                                    requireContext().applicationContext,
-                                    "Сохраненная карта отсутствует",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                        }
+                }
+                1 -> {
+                    mapViewModel.loadGameMapFromFiles(this)
+                }
+                2 -> {
+                    lifecycleScope.launch {
+                        if (!mapViewModel.loadLastGameMap())
+                            Toast.makeText(
+                                requireContext().applicationContext,
+                                "Сохраненная карта отсутствует",
+                                Toast.LENGTH_LONG
+                            ).show()
                     }
                 }
             }
-            builder.show()
         }
+        builder.show()
     }
 
     @SuppressLint("PotentialBehaviorOverride")

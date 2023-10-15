@@ -1,9 +1,7 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -12,14 +10,10 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 import ru.newlevel.hordemap.domain.usecases.*
 import ru.newlevel.hordemap.presentatin.fragments.MapFragment
 import java.io.InputStream
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 const val REQUEST_CODE_PICK_KMZ_FILE = 100
 
@@ -29,7 +23,7 @@ class MapViewModel(
     private val createMarkersUseCase: CreateMarkersUseCase,
     private val hideMarkersUserCase: HideMarkersUseCase,
     private val showMarkersUseCase: ShowMarkersUseCase,
-    private val loadGameMapUseCase: LoadGameMapFromUriUseCase,
+    private val loadGameMapFromUriUseCase: LoadGameMapFromUriUseCase,
     private val saveGameMapToFileUseCase: SaveGameMapToFileUseCase,
     private val loadLastGameMapUseCase: LoadLastGameMapUseCase,
     private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase
@@ -50,7 +44,7 @@ class MapViewModel(
     }
 
     suspend fun loadGameMapFromUri(uri: Uri, context: Context) {
-        _kmzInputStream.value = loadGameMapUseCase.execute(uri, context)
+        _kmzInputStream.value = loadGameMapFromUriUseCase.execute(uri, context)
     }
 
     suspend fun saveGameMapToFile(uri: Uri) {
@@ -70,7 +64,6 @@ class MapViewModel(
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "application/vnd.google-earth.kmz"
-
         fragment.startActivityForResult(intent, REQUEST_CODE_PICK_KMZ_FILE)
     }
 
@@ -80,11 +73,6 @@ class MapViewModel(
             _kmzInputStream.value = loadLastGameMapUseCase.execute()
             true
         } else false
-    }
-
-    fun sendCoordinates(location: Location, userDomainModel: UserDomainModel) {
-        mapLocationToMarker(location, userDomainModel)
-        geoDataRepository.sendCoordinates(mapLocationToMarker(location, userDomainModel))
     }
 
     fun showOrHideMarkers() {
@@ -102,24 +90,6 @@ class MapViewModel(
     fun createStaticMarkers(it: List<MarkerDataModel>, googleMap: GoogleMap) {
         if (_isShowMarkers.value == true)
             createMarkersUseCase.createStaticMarkers(it, googleMap)
-    }
-
-    @SuppressLint("SimpleDateFormat")
-    private fun mapLocationToMarker(
-        location: Location,
-        userDomainModel: UserDomainModel
-    ): MarkerDataModel {
-        val marker = MarkerDataModel()
-        val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss")
-        val date = dateFormat.format(Date(System.currentTimeMillis()))
-        marker.latitude = location.latitude
-        marker.longitude = location.longitude
-        marker.userName = userDomainModel.name
-        marker.deviceId = userDomainModel.deviceID
-        marker.timestamp = System.currentTimeMillis()
-        marker.item = userDomainModel.selectedMarker
-        marker.title = date
-        return marker
     }
 
     fun stopMarkerUpdates() {

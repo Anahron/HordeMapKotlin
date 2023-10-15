@@ -49,14 +49,4 @@ class SharedPrefUserStorage(private val context: Context): UserStorage {
             .remove(KEY_USERS_MARKER_SIZE)
             .apply()
     }
-
-    override fun saveUri(uri: Uri) {
-        Log.e("AAA", uri.toString() + " Сохранено")
-        sharedPreferences.edit().putString(KEY_MAP_URI, uri.toString()).apply()
-    }
-
-    override fun getMapUri(): Uri {
-        Log.e("AAA", Uri.parse(sharedPreferences.getString(KEY_MAP_URI, "") ?: "").toString() +" загружено")
-        return Uri.parse(sharedPreferences.getString(KEY_MAP_URI, "") ?: "")
-    }
 }
