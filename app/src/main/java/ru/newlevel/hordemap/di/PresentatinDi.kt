@@ -11,7 +11,7 @@ val presentationModule = module {
         LoginViewModel(
             getUserUseCase = get(),
             saveUserUseCase = get(),
-            resetUserUseCase = get()
+            resetUserUseCase = get(),
         )
     }
     viewModel<MapViewModel>{
@@ -20,7 +20,11 @@ val presentationModule = module {
             deleteMarkerUseCase = get(),
             createMarkersUseCase = get(),
             hideMarkersUserCase = get(),
-            showMarkersUseCase = get()
+            showMarkersUseCase = get(),
+            loadGameMapUseCase = get(),
+            saveGameMapToFileUseCase = get(),
+            loadLastGameMapUseCase = get(),
+            loadGameMapFromServerUseCase = get()
         )
     }
     viewModel<LocationUpdateViewModel>{

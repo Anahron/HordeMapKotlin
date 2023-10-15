@@ -1,7 +1,10 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.location.Location
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,20 +14,25 @@ import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
-import ru.newlevel.hordemap.domain.usecases.DeleteMarkerUseCase
-import ru.newlevel.hordemap.domain.usecases.CreateMarkersUseCase
-import ru.newlevel.hordemap.domain.usecases.HideMarkersUseCase
-import ru.newlevel.hordemap.domain.usecases.ShowMarkersUseCase
+import ru.newlevel.hordemap.domain.usecases.*
+import ru.newlevel.hordemap.presentatin.fragments.MapFragment
+import java.io.InputStream
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+
+const val REQUEST_CODE_PICK_KMZ_FILE = 100
 
 class MapViewModel(
     private val geoDataRepository: GeoDataRepository,
     private val deleteMarkerUseCase: DeleteMarkerUseCase,
     private val createMarkersUseCase: CreateMarkersUseCase,
     private val hideMarkersUserCase: HideMarkersUseCase,
-    private val showMarkersUseCase: ShowMarkersUseCase
+    private val showMarkersUseCase: ShowMarkersUseCase,
+    private val loadGameMapUseCase: LoadGameMapFromUriUseCase,
+    private val saveGameMapToFileUseCase: SaveGameMapToFileUseCase,
+    private val loadLastGameMapUseCase: LoadLastGameMapUseCase,
+    private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase
 ) : ViewModel() {
 
     lateinit var userMarkersLiveData: LiveData<List<MarkerDataModel>>
@@ -34,9 +42,44 @@ class MapViewModel(
     private var isShowMarkers = MutableLiveData<Boolean>()
     val _isShowMarkers: LiveData<Boolean> = isShowMarkers
 
+    var _kmzInputStream = MutableLiveData<InputStream>()
+
+
     init {
-        Log.e("AAA", "MV marker started")
         isShowMarkers.value = true
+    }
+
+    suspend fun loadGameMapFromUri(uri: Uri, context: Context) {
+        _kmzInputStream.value = loadGameMapUseCase.execute(uri, context)
+    }
+
+    suspend fun saveGameMapToFile(uri: Uri) {
+        saveGameMapToFileUseCase.execute(uri)
+    }
+
+
+    suspend fun loadMapFromServer(context: Context): Boolean {
+        val uri = loadGameMapFromServerUseCase.execute(context)
+        return if (uri != null) {
+            loadGameMapFromUri(uri, context)
+            true
+        } else false
+    }
+
+    fun loadGameMapFromFiles(fragment: MapFragment) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "application/vnd.google-earth.kmz"
+
+        fragment.startActivityForResult(intent, REQUEST_CODE_PICK_KMZ_FILE)
+    }
+
+    suspend fun loadLastGameMap(): Boolean {
+        val uri = loadLastGameMapUseCase.execute()
+        return if (uri != null) {
+            _kmzInputStream.value = loadLastGameMapUseCase.execute()
+            true
+        } else false
     }
 
     fun sendCoordinates(location: Location, userDomainModel: UserDomainModel) {

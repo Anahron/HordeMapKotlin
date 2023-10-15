@@ -13,7 +13,7 @@ import com.google.android.gms.location.LocationServices
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.hasPermission
+import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.presentatin.MainActivity
 import java.util.concurrent.TimeUnit
 

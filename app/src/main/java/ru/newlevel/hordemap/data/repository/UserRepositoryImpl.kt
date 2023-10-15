@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.data.repository
 
+import android.net.Uri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.data.storage.UserStorage
@@ -22,6 +23,14 @@ class UserRepositoryImpl(private val userStorage: UserStorage): UserRepository {
         userStorage.reset()
     }
 
+    override fun saveUri(uri: Uri) {
+        userStorage.saveUri(uri)
+    }
+
+    override fun getMapUri(): Uri {
+        return userStorage.getMapUri()
+    }
+
     private fun mapToDomain(user: UserDataModel) : UserDomainModel{
         return UserDomainModel(user.name,user.timeToSendData,user.usersMarkerSize,user.staticMarkerSize,user.selectedMarker,user.deviceID)
     }
@@ -29,4 +38,6 @@ class UserRepositoryImpl(private val userStorage: UserStorage): UserRepository {
     private fun mapToData(userDomainModel: UserDomainModel) : UserDataModel{
         return UserDataModel(userDomainModel.name,userDomainModel.timeToSendData,userDomainModel.usersMarkerSize,userDomainModel.staticMarkerSize,userDomainModel.selectedMarker,userDomainModel.deviceID)
     }
+
+
 }

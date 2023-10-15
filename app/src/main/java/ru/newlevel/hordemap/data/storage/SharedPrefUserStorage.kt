@@ -2,12 +2,15 @@ package ru.newlevel.hordemap.data.storage
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
+import android.util.Log
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
-import ru.newlevel.hordemap.getDeviceId
+import ru.newlevel.hordemap.app.getDeviceId
 
 
 const val SHARE_PREFS_NAME = "sharedHordeMap"
 const val KEY_NAME = "userName"
+const val KEY_MAP_URI = "mapUri"
 const val KEY_MARKER = "userMarker"
 const val KEY_TIME_TO_SEND_DATA = "timeToSend"
 const val KEY_STATIC_MARKER_SIZE = "staticMarkerSize"
@@ -45,5 +48,15 @@ class SharedPrefUserStorage(private val context: Context): UserStorage {
             .remove(KEY_STATIC_MARKER_SIZE)
             .remove(KEY_USERS_MARKER_SIZE)
             .apply()
+    }
+
+    override fun saveUri(uri: Uri) {
+        Log.e("AAA", uri.toString() + " Сохранено")
+        sharedPreferences.edit().putString(KEY_MAP_URI, uri.toString()).apply()
+    }
+
+    override fun getMapUri(): Uri {
+        Log.e("AAA", Uri.parse(sharedPreferences.getString(KEY_MAP_URI, "") ?: "").toString() +" загружено")
+        return Uri.parse(sharedPreferences.getString(KEY_MAP_URI, "") ?: "")
     }
 }

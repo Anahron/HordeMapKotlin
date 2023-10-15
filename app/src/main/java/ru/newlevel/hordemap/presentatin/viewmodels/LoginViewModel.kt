@@ -13,7 +13,7 @@ import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
 class LoginViewModel(
     private val getUserUseCase: GetUserUseCase,
     private val saveUserUseCase: SaveUserUseCase,
-    private val resetUserUseCase: ResetUserUseCase
+    private val resetUserUseCase: ResetUserUseCase,
 ) : ViewModel() {
 
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()

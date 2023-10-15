@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 
-interface GeoDataStorage {
+interface MarkersDataStorage {
     fun deleteStaticMarker(marker: Marker)
 
-  fun sendCoordinates(markerModel: MarkerDataModel)
+    fun sendCoordinates(markerModel: MarkerDataModel)
 
     fun startUserMarkerUpdates(): LiveData<List<MarkerDataModel>>
 

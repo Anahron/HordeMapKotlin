@@ -49,17 +49,23 @@ dependencies {
     implementation "io.insert-koin:koin-android:$koin_version"
     implementation "io.insert-koin:koin-test:$koin_version"
 
+    implementation 'com.google.maps.android:android-maps-utils:3.4.0'
+    implementation 'com.google.maps.android:maps-utils-ktx:3.4.0'
+
     implementation 'com.firebaseui:firebase-ui-storage:8.0.0'
+
     implementation 'com.google.gms:google-services:4.3.15'
     implementation 'com.google.firebase:firebase-analytics'
     implementation platform('com.google.firebase:firebase-bom:32.0.0')
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.google.firebase:firebase-database'
     implementation 'com.google.firebase:firebase-firestore:24.6.0'
+    implementation 'com.google.firebase:firebase-storage:20.0.0'
     implementation 'com.google.maps:google-maps-services:0.15.0'
 
     implementation 'com.google.android.gms:play-services-location:21.0.1'
 
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.5.0'
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
@@ -72,6 +78,8 @@ dependencies {
     def lifecycle_version = "2.4.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+
 
     apply plugin: 'com.google.gms.google-services'
 }

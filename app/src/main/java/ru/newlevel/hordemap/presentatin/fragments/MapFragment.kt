@@ -3,40 +3,38 @@ package ru.newlevel.hordemap.presentatin.fragments
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.*
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import com.google.maps.android.data.kml.KmlLayer
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.BgLocationWorker
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.app.MyAlarmReceiver
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
-import ru.newlevel.hordemap.hasPermission
+import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.presentatin.MainActivity
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
-import java.util.*
-import java.util.concurrent.TimeUnit
-
+import ru.newlevel.hordemap.presentatin.viewmodels.REQUEST_CODE_PICK_KMZ_FILE
 
 class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMapReadyCallback {
 
@@ -69,10 +67,15 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             mapViewModel.createStaticMarkers(it, googleMap)
         }
         mapViewModel._isShowMarkers.observe(this) {
-            if (it)
-                binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
-            else
-                binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_off)
+            if (it) binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
+            else binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_off)
+        }
+
+        mapViewModel._kmzInputStream.observe(this) { inputStream ->
+            inputStream?.use {
+                val kmlLayer = KmlLayer(googleMap, it, requireContext().applicationContext)
+                kmlLayer.addLayerToMap()
+            }
         }
 
         // настройки карты
@@ -92,7 +95,6 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         //запуск обновления местоположений
         locationUpdateViewModel.startLocationUpdates()
         startAlarmManager()
-
 //        val workManager = WorkManager.getInstance(requireContext().applicationContext)
 //        workManager.enqueueUniquePeriodicWork(
 //            BgLocationWorker.workName,
@@ -103,13 +105,23 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 //            ).build(),)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_PICK_KMZ_FILE && data != null) {
+            val uri = data.data
+            if (uri != null) {
+                lifecycleScope.launch {
+                    mapViewModel.saveGameMapToFile(uri)
+                    mapViewModel.loadGameMapFromUri(uri, requireContext())
+                }
+            }
+        }
+    }
+
     private fun startAlarmManager() {
         val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
-            requireContext().applicationContext,
-            0,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE
+            requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
         (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
@@ -138,8 +150,53 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             this.fragmentManager?.beginTransaction()?.replace(R.id.container, loginFragment)
                 ?.commit()
         }
+        binding.ibLoadMap.setOnClickListener {
+            val options = arrayOf("С сервера", "Из файла", "Последняя сохраненная")
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("Выберите источник для загрузки:")
+            builder.setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            Toast.makeText(
+                                requireContext().applicationContext,
+                                "Загрузка началась, подождите...",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            if (!mapViewModel.loadMapFromServer(requireContext().applicationContext))
+                                Toast.makeText(
+                                    requireContext().applicationContext,
+                                    "Неудачно",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            else
+                                Toast.makeText(
+                                    requireContext().applicationContext,
+                                    "Карта загружена",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                        }
+                    }
+                    1 -> {
+                        mapViewModel.loadGameMapFromFiles(this)
+                    }
+                    2 -> {
+                        lifecycleScope.launch {
+                            if (!mapViewModel.loadLastGameMap())
+                                Toast.makeText(
+                                    requireContext().applicationContext,
+                                    "Сохраненная карта отсутствует",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                        }
+                    }
+                }
+            }
+            builder.show()
+        }
     }
 
+    @SuppressLint("PotentialBehaviorOverride")
     private fun mapListenersSetup() {
         // Скрываем диалог при коротком клике по нему
         googleMap.setOnInfoWindowClickListener { obj: Marker -> obj.hideInfoWindow() }
@@ -203,10 +260,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         locationUpdateViewModel.stopLocationUpdates()
         val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
-            requireContext().applicationContext,
-            0,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE
+            requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
         (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.cancel(
             pendingIntent

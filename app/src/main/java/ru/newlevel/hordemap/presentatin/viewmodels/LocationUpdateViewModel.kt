@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
-
 import androidx.lifecycle.ViewModel
 import ru.newlevel.hordemap.domain.repository.LocationRepository
 

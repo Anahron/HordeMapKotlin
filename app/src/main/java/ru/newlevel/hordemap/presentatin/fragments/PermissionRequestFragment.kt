@@ -20,8 +20,8 @@ import com.google.android.material.snackbar.Snackbar
 import ru.newlevel.hordemap.BuildConfig
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.FragmentPermissionRequestBinding
-import ru.newlevel.hordemap.hasPermission
-import ru.newlevel.hordemap.requestPermissionWithRationale
+import ru.newlevel.hordemap.app.hasPermission
+import ru.newlevel.hordemap.app.requestPermissionWithRationale
 
 private const val TAG = "AAA"
 
