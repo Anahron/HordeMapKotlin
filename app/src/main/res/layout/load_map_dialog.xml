@@ -14,31 +14,34 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="23dp"
+            android:textSize="23sp"
             android:layout_margin="5dp"
             android:textColor="@color/black"
-            android:text=" Выберите источник для загрузки:" />
+            android:text="@string/select_src" />
 
         <Button
             android:id="@+id/btn_from_server"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="С сервера" />
+            android:background="@color/accept"
+            android:text="@string/from_server" />
 
         <Button
             android:id="@+id/btn_from_files"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Из файловой системы" />
+            android:background="@color/accept"
+            android:text="@string/from_files" />
 
         <Button
             android:id="@+id/btn_last_saved"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Последняя загруженная карта" />
+            android:background="@color/accept"
+            android:text="@string/last_saved_map" />
 
         <CheckBox
             android:id="@+id/checkBox"
@@ -46,7 +49,10 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:checked="false"
-            android:text="Авто загрузка последней карты" />
+            android:minHeight="48dp"
+            android:text="@string/auto_load_map"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColorHighlight="#00259F" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

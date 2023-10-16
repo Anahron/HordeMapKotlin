@@ -56,6 +56,7 @@
         android:ems="10"
         android:hint="@string/put_name_here"
         android:inputType="textPersonName"
+        android:textColorHint="#78909C"
         android:textSize="22sp"
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/textView"
@@ -204,18 +205,19 @@
 
         <RadioButton
             android:id="@+id/radioButton0"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_margin="4dp"
             android:alpha="0.3"
             android:background="@drawable/img_marker_red"
             android:button="@null"
-            android:tag="0" />
+            android:tag="0"
+            tools:ignore="DuplicateSpeakableTextCheck" />
 
         <RadioButton
             android:id="@+id/radioButton1"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_margin="4dp"
             android:alpha="0.3"
             android:background="@drawable/img_marker_yellow"
@@ -224,8 +226,8 @@
 
         <RadioButton
             android:id="@+id/radioButton2"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_margin="4dp"
             android:alpha="0.3"
             android:background="@drawable/img_marker_green"
@@ -234,8 +236,8 @@
 
         <RadioButton
             android:id="@+id/radioButton3"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_margin="4dp"
             android:alpha="0.3"
             android:background="@drawable/img_marker_blue"
@@ -244,8 +246,8 @@
 
         <RadioButton
             android:id="@+id/radioButton4"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_margin="4dp"
             android:alpha="0.3"
             android:background="@drawable/img_marker_purple"
@@ -261,6 +263,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:text="@string/save"
+        android:background="@color/accept"
         app:iconTint="#008F1818"
         app:layout_constraintStart_toEndOf="@+id/btn_reset"
         app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
@@ -271,6 +274,7 @@
         android:layout_height="65dp"
         android:layout_marginTop="24dp"
         android:text="@string/reset"
+        android:background="@color/cancel"
         app:iconTint="#008F1818"
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
@@ -279,7 +283,6 @@
         android:id="@+id/tv_device_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="test text"
         android:textSize="11sp"
         app:layout_constraintStart_toEndOf="@+id/tv_device_id_text"
         app:layout_constraintTop_toBottomOf="@+id/edit_name" />

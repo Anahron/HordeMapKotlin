@@ -10,8 +10,8 @@
 
     <ImageView
         android:id="@+id/iconImageView"
-        android:layout_width="@dimen/permission_icon_vector_dimension"
-        android:layout_height="@dimen/permission_icon_vector_dimension"
+        android:layout_width="119dp"
+        android:layout_height="99dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginStart="@dimen/margin_normal"
@@ -21,7 +21,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/todo" />
 
     <TextView
         android:id="@+id/titleTextView"
@@ -57,14 +58,15 @@
         android:id="@+id/permissionBackgroundRequestButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@color/accept"
         android:layout_marginStart="@dimen/margin_normal"
         android:layout_marginEnd="@dimen/margin_normal"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="80dp"
         android:text="@string/enable_background_location_button_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.491"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/detailsTextView" />
 
     <Button
         android:id="@+id/permissionRequestButton"
@@ -72,11 +74,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_normal"
         android:layout_marginEnd="@dimen/margin_normal"
-        android:layout_marginBottom="48dp"
+        android:layout_marginBottom="80dp"
+        android:background="@color/accept"
         android:text="@string/enable_fine_location_button_text"
+        android:textColor="#263238"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/detailsTextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

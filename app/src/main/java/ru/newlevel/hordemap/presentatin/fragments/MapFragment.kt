@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
 import android.os.SystemClock
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +19,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.data.kml.KmlLayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,6 +48,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
     private val mapViewModel by viewModel<MapViewModel>()
     private val receiver = LocationUpdatesBroadcastReceiver()
     private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
+    private lateinit var markerCollection: MarkerManager.Collection
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -58,15 +59,16 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         return binding.root
     }
 
-    @SuppressLint("MissingPermission")
-    override fun onMapReady(googleMap: GoogleMap) {
-        this.googleMap = googleMap
+    override fun onMapReady(gMap: GoogleMap) {
+        googleMap = gMap
+        val markerManager = MarkerManager(gMap)
+        markerCollection = MarkerManager(gMap).newCollection()
 
         userMarkersObserver = Observer {
-            mapViewModel.createUsersMarkers(it, googleMap)
+            mapViewModel.createUsersMarkers(it, markerCollection)
         }
         staticMarkersObserver = Observer {
-            mapViewModel.createStaticMarkers(it, googleMap)
+            mapViewModel.createStaticMarkers(it, markerCollection)
         }
         mapViewModel.isShowMarkers.observe(this) {
             if (it) binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
@@ -82,8 +84,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             lifecycleScope.launch {
                 val inputStream = it?.let { mapViewModel.getInputSteam(it, requireContext()) }
                 if (inputStream != null) {
-                    val kmlLayer =
-                        KmlLayer(googleMap, inputStream, requireContext().applicationContext)
+                    val kmlLayer = KmlLayer(googleMap, inputStream, requireContext(), markerManager, null, null, null, null)
                     kmlLayer.addLayerToMap()
                     if (kmlLayer.isLayerOnMap && kmlLayer.groundOverlays != null) {
                         kmlLayer.groundOverlays.any { _it ->
@@ -102,7 +103,6 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
                         inputStream.close()
                     }
                 }
-
             }
         }
 
@@ -110,10 +110,9 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         mapListenersSetup()
         menuListenersSetup()
         startObservers()
-
         //Камера на Красноярск
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
-        this.googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
 
         val filter = IntentFilter(LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES)
         requireContext().applicationContext.registerReceiver(receiver, filter)
@@ -193,11 +192,9 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
                 it.setBackgroundResource(R.drawable.map_type_hybrid)
             }
         }
-
         binding.ibMarkers.setOnClickListener {
             mapViewModel.showOrHideMarkers()
         }
-
         binding.ibSettings.setOnClickListener {
             val loginFragment = LoginFragment(loginViewModel)
             this.fragmentManager?.beginTransaction()?.replace(R.id.container, loginFragment)
@@ -218,20 +215,36 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
     }
 
     private fun createMapLoadDialog() {
-        val dialogFragment =
-            LoadMapDialogFragment(
-                mapViewModel = mapViewModel,
-                loginViewModel = loginViewModel,
-                this
-            )
+        val dialogFragment = LoadMapDialogFragment(
+            mapViewModel = mapViewModel,
+            loginViewModel = loginViewModel,
+            this
+        )
         dialogFragment.show(this.childFragmentManager, "customDialog")
     }
 
     @SuppressLint("PotentialBehaviorOverride")
     private fun mapListenersSetup() {
+        googleMap.setOnMyLocationChangeListener { location ->
+            val currentLatLng = LatLng(location.latitude, location.longitude)
+            val destination = mapViewModel.getDestination()
+            if (mapViewModel.getRoutePolyline() != null && destination != null) {
+                mapViewModel.updateRoute(currentLatLng, destination)
+                mapViewModel.getRoutePolyline()?.points = listOf(currentLatLng, destination)
+            }
+        }
+        markerCollection.setOnInfoWindowClickListener {
+            it.hideInfoWindow()
+        }
+        markerCollection.setOnMarkerClickListener { marker: Marker ->
+            marker.showInfoWindow()
+            true
+        }
+        markerCollection.setOnInfoWindowLongClickListener {
+            mapViewModel.deleteStaticMarker(it)
+        }
         googleMap.setOnMapLongClickListener { latLng: LatLng ->
-            val builder =
-                AlertDialog.Builder(requireContext())
+            val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Выберите действие").setItems(
                 arrayOf<CharSequence>(
                     "Построить маршрут",
@@ -255,32 +268,6 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             }
             builder.show()
         }
-
-        googleMap.setOnMyLocationChangeListener { location ->
-            val currentLatLng = LatLng(location.latitude, location.longitude)
-            val destination = mapViewModel.getDestination()
-            if (mapViewModel.getRoutePolyline() != null && destination != null) {
-                mapViewModel.updateRoute(currentLatLng, destination)
-                mapViewModel.getRoutePolyline()?.points = listOf(currentLatLng, destination)
-            }
-        }
-        // Скрываем диалог при коротком клике по нему
-        googleMap.setOnInfoWindowClickListener {
-            Log.e("AAA", "googleMap.setOnInfoWindowClickListener вызван ")
-            it.hideInfoWindow()
-        }
-
-        //Показываем только текст маркера, без перемещения к нему камеры
-        googleMap.setOnMarkerClickListener { marker: Marker ->
-            Log.e("AAA", "setOnMarkerClickListener вызван ")
-            marker.showInfoWindow()
-            true
-        }
-
-        googleMap.setOnInfoWindowLongClickListener {
-            Log.e("AAA", "googleMap.setOnInfoWindowLongClickListener вызван ")
-            mapViewModel.deleteStaticMarker(it)
-        }
     }
 
     @SuppressLint("MissingPermission")
@@ -290,8 +277,8 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             context?.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ?: return
         if (permissionApproved) {
             googleMap.isMyLocationEnabled = true
-            googleMap.uiSettings.isMyLocationButtonEnabled = true
             googleMap.uiSettings.isCompassEnabled = true
+            googleMap.uiSettings.isMapToolbarEnabled = false
         } else {
             (activity as MainActivity).requestFineLocationPermission()
         }

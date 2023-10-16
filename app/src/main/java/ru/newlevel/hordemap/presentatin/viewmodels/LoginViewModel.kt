@@ -21,12 +21,16 @@ class LoginViewModel(
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
     val resultData: LiveData<UserDomainModel> = resultLiveDataMutable
 
+    private val loginResultLiveDataMutable = MutableLiveData<UserDomainModel>()
+    val loginResultData: LiveData<UserDomainModel> = loginResultLiveDataMutable
+
     init {
         Log.e("AAA", "LoginVM created")
     }
 
     fun saveUser(userDomainModel: UserDomainModel) {
         saveUserUseCase.execute(userDomainModel)
+        loginResultLiveDataMutable.value = userDomainModel
     }
 
     fun saveAutoLoad(boolean: Boolean){
@@ -35,7 +39,7 @@ class LoginViewModel(
 
     fun checkLogin(): UserDomainModel {
         val user = getUserUseCase.execute()
-        resultLiveDataMutable.value = user
+        loginResultLiveDataMutable.value = user
         return user
     }
 

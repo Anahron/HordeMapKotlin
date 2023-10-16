@@ -34,8 +34,7 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
         //TODO удалить ресет (тест первого запуска)
         //    loginViewModel.reset()
         loginViewModel.checkLogin()
-
-        loginViewModel.resultData.observe(this) {
+        loginViewModel.loginResultData.observe(this) {
             if (it.name.isNotEmpty()) {
                 Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()
                 val mapFragment = MapFragment(loginViewModel)

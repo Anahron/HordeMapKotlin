@@ -8,4 +8,6 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="cancel">#5BD54E4E</color>
+    <color name="accept">#7203A9F4</color>
 </resources>

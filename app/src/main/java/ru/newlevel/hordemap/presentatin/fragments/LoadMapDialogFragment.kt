@@ -74,8 +74,8 @@ class LoadMapDialogFragment(
         dialog?.setOnDismissListener {
             boolean?.let { it1 -> mapViewModel.setIsAutoLoadMap(it1) }
             boolean?.let { it1 -> loginViewModel.saveAutoLoad(it1) }
+            this@LoadMapDialogFragment.dismiss()
         }
-
         return binding.root
     }
 }

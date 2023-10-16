@@ -11,14 +11,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.SphericalUtil
+import com.google.maps.android.collections.MarkerManager
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 import ru.newlevel.hordemap.domain.usecases.*
 import java.io.InputStream
 import kotlin.math.roundToInt
@@ -159,14 +158,14 @@ class MapViewModel(
             _isShowMarkers.value = showMarkersUseCase.execute()
     }
 
-    fun createUsersMarkers(it: List<MarkerDataModel>, googleMap: GoogleMap) {
+    fun createUsersMarkers(it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
         if (_isShowMarkers.value == true)
-            createMarkersUseCase.createUsersMarkers(it, googleMap)
+            createMarkersUseCase.createUsersMarkers(it, markerCollection)
     }
 
-    fun createStaticMarkers(it: List<MarkerDataModel>, googleMap: GoogleMap) {
+    fun createStaticMarkers(it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
         if (_isShowMarkers.value == true)
-            createMarkersUseCase.createStaticMarkers(it, googleMap)
+            createMarkersUseCase.createStaticMarkers(it, markerCollection)
     }
 
     fun stopMarkerUpdates() {
