@@ -43,5 +43,10 @@ val domainModule = module {
     factory<CreateStaticMarkerUseCase> {
         CreateStaticMarkerUseCase(geoDataRepository = get())
     }
-
+    factory<StartMarkerUpdateUseCase> {
+        StartMarkerUpdateUseCase(geoDataRepository = get())
+    }
+    factory<StopMarkerUpdateUseCase> {
+        StopMarkerUpdateUseCase(geoDataRepository = get())
+    }
 }

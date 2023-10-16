@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,8 +7,6 @@ import android.view.ViewGroup
 import android.widget.RadioButton
 import androidx.fragment.app.DialogFragment
 import com.google.android.gms.maps.model.LatLng
-import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.databinding.OnMapClickDialogBinding
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 

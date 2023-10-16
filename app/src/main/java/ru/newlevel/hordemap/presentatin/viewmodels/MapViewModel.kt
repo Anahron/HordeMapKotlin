@@ -2,6 +2,9 @@ package ru.newlevel.hordemap.presentatin.viewmodels
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -9,19 +12,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.*
+import com.google.maps.android.SphericalUtil
+import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 import ru.newlevel.hordemap.domain.usecases.*
 import java.io.InputStream
+import kotlin.math.roundToInt
 
 const val REQUEST_CODE_PICK_KMZ_FILE = 100
 
 class MapViewModel(
-    private val geoDataRepository: GeoDataRepository,
     private val deleteMarkerUseCase: DeleteMarkerUseCase,
     private val createMarkersUseCase: CreateMarkersUseCase,
     private val hideMarkersUserCase: HideMarkersUseCase,
@@ -29,8 +33,13 @@ class MapViewModel(
     private val saveGameMapToFileUseCase: SaveGameMapToFileUseCase,
     private val loadLastGameMapUseCase: LoadLastGameMapUseCase,
     private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase,
-    private val createStaticMarkerUseCase: CreateStaticMarkerUseCase
+    private val createStaticMarkerUseCase: CreateStaticMarkerUseCase,
+    private val stopMarkerUpdateUseCase: StopMarkerUpdateUseCase,
+    private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase
 ) : ViewModel() {
+
+    private var routePolyline: Polyline? = null
+    private var destination: LatLng? = null
 
     lateinit var userMarkersLiveData: LiveData<List<MarkerDataModel>>
 
@@ -39,7 +48,10 @@ class MapViewModel(
     private var _isShowMarkers = MutableLiveData<Boolean>()
     val isShowMarkers: LiveData<Boolean> = _isShowMarkers
 
-    private var _kmzUri = MutableLiveData<Uri?>()
+    private val _distanceText = MutableLiveData<String>()
+    val distanceText: LiveData<String> = _distanceText
+
+    private val _kmzUri = MutableLiveData<Uri?>()
     val kmzUri: LiveData<Uri?> = _kmzUri
 
     private var _isAutoLoadMap = MutableLiveData<Boolean>()
@@ -50,15 +62,62 @@ class MapViewModel(
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
     }
 
+    fun getDestination(): LatLng? {
+        return destination
+    }
+
+    fun setDestination(destination: LatLng) {
+        this.destination = destination
+    }
+
+    fun getRoutePolyline(): Polyline? {
+        return routePolyline
+    }
+
+    fun setRoutePolyline(polyline: Polyline) {
+        routePolyline = polyline
+    }
+
+
+    fun createRoute(currentLatLng: LatLng, destination: LatLng, context: Context): PolylineOptions {
+        val bitmapcustomcap =
+            BitmapFactory.decodeResource(context.resources, R.drawable.star)
+        val bitmapcustomcapicon = BitmapDescriptorFactory.fromBitmap(
+            Bitmap.createScaledBitmap(
+                bitmapcustomcap,
+                60,
+                60,
+                false
+            )
+        )
+        val customCap = CustomCap(bitmapcustomcapicon)
+        return PolylineOptions().addAll(listOf(currentLatLng, destination)).endCap(customCap)
+            .geodesic(true).color(Color.BLUE).width(6f)
+    }
+
+    fun removeRoute() {
+        routePolyline = null
+    }
+
+    fun updateRoute(currentLatLng: LatLng, destination: LatLng) {
+        val distance = SphericalUtil.computeDistanceBetween(currentLatLng, destination)
+        routePolyline?.points ?: listOf(currentLatLng, destination)
+        _distanceText.postValue(
+            if (distance.toInt() > 1000) ((distance / 10).roundToInt() / 100.0).toString() + " км." else distance.toInt()
+                .toString() + " м."
+        )
+    }
+
+
     fun sendMarker(latLng: LatLng, description: String, checkedItem: Int) {
-        createStaticMarkerUseCase.execute(latLng,description, checkedItem)
+        createStaticMarkerUseCase.execute(latLng, description, checkedItem)
     }
 
     fun setUriForMap(uri: Uri) {
         _kmzUri.value = uri
     }
 
-    fun setIsAutoLoadMap(boolean: Boolean){
+    fun setIsAutoLoadMap(boolean: Boolean) {
         _isAutoLoadMap.value = boolean
     }
 
@@ -67,7 +126,7 @@ class MapViewModel(
     }
 
     suspend fun getInputSteam(uri: Uri, context: Context): InputStream? {
-       return getInputSteamFromUri(uri, context)
+        return getInputSteamFromUri(uri, context)
     }
 
     suspend fun loadMapFromServer(context: Context): Boolean {
@@ -111,12 +170,12 @@ class MapViewModel(
     }
 
     fun stopMarkerUpdates() {
-        geoDataRepository.stopMarkerUpdates()
+        stopMarkerUpdateUseCase.execute()
     }
 
     fun startMarkerUpdates() {
-        userMarkersLiveData = geoDataRepository.startUserMarkerUpdates()
-        staticMarkersLiveData = geoDataRepository.startStaticMarkerUpdates()
+        staticMarkersLiveData = startMarkerUpdateUseCase.startStaticUpdates()
+        userMarkersLiveData = startMarkerUpdateUseCase.startUserUpdates()
     }
 
     fun deleteStaticMarker(marker: Marker) {
@@ -126,6 +185,6 @@ class MapViewModel(
     override fun onCleared() {
         super.onCleared()
         Log.e("AAA", "MV marker stopped")
-        geoDataRepository.stopMarkerUpdates()
+        stopMarkerUpdates()
     }
 }

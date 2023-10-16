@@ -19,8 +19,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.*
 import com.google.maps.android.data.kml.KmlLayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +36,8 @@ import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.REQUEST_CODE_PICK_KMZ_FILE
+import java.util.*
+
 
 class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMapReadyCallback {
 
@@ -64,7 +65,6 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         userMarkersObserver = Observer {
             mapViewModel.createUsersMarkers(it, googleMap)
         }
-
         staticMarkersObserver = Observer {
             mapViewModel.createStaticMarkers(it, googleMap)
         }
@@ -106,13 +106,11 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
             }
         }
 
-        // настройки карты
         setupMap()
-        // слушатели кликов
         mapListenersSetup()
         menuListenersSetup()
-        // Запускаем обсерверы
         startObservers()
+
         //Камера на Красноярск
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
@@ -130,35 +128,33 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 //                1,
 //                TimeUnit.MINUTES,
 //            ).build(),)
+    }
 
-        googleMap.setOnMapLongClickListener { latLng: LatLng ->
-            val builder =
-                AlertDialog.Builder(requireContext())
-            builder.setTitle("Выберите действие").setItems(
-                arrayOf<CharSequence>(
-                    "Построить маршрут",
-                    "Очистить маршрут",
-                    "Поставить маркер"
-                )
-            ) { _: DialogInterface?, which: Int ->
-                when (which) {
-                    0 -> {}                         // Построить маршрут
-//                        buildRoute(latLng)
-                    1 -> {
-//                        // Очистить маршрут
-//                        if (routePolyline != null) {
-//                            routePolyline.remove()
-//                        }
-//                        distanceTextView.setVisibility(View.INVISIBLE)
-                    }
-                    2 -> {
-                        createStaticMarkerDialog(latLng)
-                    }
-                }
-            }
-            builder.show()
+    @SuppressLint("SetTextI18n")
+    private fun buildRoute(destination: LatLng) {
+        mapViewModel.getRoutePolyline()?.remove()
+        mapViewModel.removeRoute()
+        mapViewModel.setDestination(destination)
+        mapViewModel.getDestination()?.let {
+            mapViewModel.createRoute(
+                LatLng(
+                    googleMap.myLocation.latitude,
+                    googleMap.myLocation.longitude
+                ), it, requireContext().applicationContext
+            )
+        }?.let {
+            googleMap.addPolyline(
+                it
+            )
+        }?.let {
+            mapViewModel.setRoutePolyline(
+                it
+            )
         }
-
+        mapViewModel.distanceText.observe(viewLifecycleOwner) {
+            binding.distanceTextView.visibility = View.VISIBLE
+            binding.distanceTextView.text = it
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -233,6 +229,41 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 
     @SuppressLint("PotentialBehaviorOverride")
     private fun mapListenersSetup() {
+        googleMap.setOnMapLongClickListener { latLng: LatLng ->
+            val builder =
+                AlertDialog.Builder(requireContext())
+            builder.setTitle("Выберите действие").setItems(
+                arrayOf<CharSequence>(
+                    "Построить маршрут",
+                    "Очистить маршрут",
+                    "Поставить маркер"
+                )
+            ) { _: DialogInterface?, which: Int ->
+                when (which) {
+                    0 -> {
+                        buildRoute(latLng)
+                    }
+                    1 -> {
+                        mapViewModel.getRoutePolyline()?.remove()
+                        mapViewModel.removeRoute()
+                        binding.distanceTextView.visibility = View.GONE
+                    }
+                    2 -> {
+                        createStaticMarkerDialog(latLng)
+                    }
+                }
+            }
+            builder.show()
+        }
+
+        googleMap.setOnMyLocationChangeListener { location ->
+            val currentLatLng = LatLng(location.latitude, location.longitude)
+            val destination = mapViewModel.getDestination()
+            if (mapViewModel.getRoutePolyline() != null && destination != null) {
+                mapViewModel.updateRoute(currentLatLng, destination)
+                mapViewModel.getRoutePolyline()?.points = listOf(currentLatLng, destination)
+            }
+        }
         // Скрываем диалог при коротком клике по нему
         googleMap.setOnInfoWindowClickListener {
             Log.e("AAA", "googleMap.setOnInfoWindowClickListener вызван ")

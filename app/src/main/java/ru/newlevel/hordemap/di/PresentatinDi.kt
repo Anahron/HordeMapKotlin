@@ -17,7 +17,6 @@ val presentationModule = module {
     }
     viewModel<MapViewModel>{
         MapViewModel(
-            geoDataRepository = get(),
             deleteMarkerUseCase = get(),
             createMarkersUseCase = get(),
             hideMarkersUserCase = get(),
@@ -25,7 +24,9 @@ val presentationModule = module {
             saveGameMapToFileUseCase = get(),
             loadLastGameMapUseCase = get(),
             loadGameMapFromServerUseCase = get(),
-            createStaticMarkerUseCase = get()
+            createStaticMarkerUseCase = get(),
+            startMarkerUpdateUseCase = get(),
+            stopMarkerUpdateUseCase = get()
         )
     }
     viewModel<LocationUpdateViewModel>{

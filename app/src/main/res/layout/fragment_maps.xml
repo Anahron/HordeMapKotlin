@@ -8,6 +8,24 @@
     android:layout_height="match_parent"
     tools:context=".presentatin.MainActivity">
 
+    <TextView
+        android:id="@+id/distance_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="7dp"
+        android:textColor="#d4bd61"
+        android:shadowColor="#a89c6a"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="60dp"
+        android:textSize="25sp"
+        android:visibility="gone"
+        android:background="@drawable/text_view_bg"
+        android:layout_gravity="start|top"
+        tools:ignore="RtlSymmetry" />
+
     <ImageButton
         android:id="@+id/ib_markers"
         android:layout_width="40dp"
