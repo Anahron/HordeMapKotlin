@@ -23,14 +23,13 @@ class LoadMapDialogFragment(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = LoadMapDialogBinding.inflate(inflater, container, false)
-        val boolean = mapViewModel.isAutoLoadMap.value
+        var boolean = mapViewModel.isAutoLoadMap.value
         if (boolean != null) {
             binding.checkBox.isChecked = boolean
         }
 
         binding.checkBox.setOnClickListener {
-            mapViewModel.setIsAutoLoadMap(binding.checkBox.isChecked)
-            loginViewModel.saveAutoLoad(binding.checkBox.isChecked)
+            boolean = binding.checkBox.isChecked
         }
 
         binding.btnFromServer.setOnClickListener {
@@ -71,6 +70,10 @@ class LoadMapDialogFragment(
                 ).show()
                 dialog?.dismiss()
             }
+        }
+        dialog?.setOnDismissListener {
+            boolean?.let { it1 -> mapViewModel.setIsAutoLoadMap(it1) }
+            boolean?.let { it1 -> loginViewModel.saveAutoLoad(it1) }
         }
 
         return binding.root
