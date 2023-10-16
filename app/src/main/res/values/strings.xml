@@ -66,4 +66,7 @@
     <string name="enhance_with_background_location_button_text">Enhance with Background Location</string>
 
     <string name="emptyLocationDatabaseMessage">To start receiving location updates, please click the button below!</string>
+    <string name="cancel">Отмена</string>
+    <string name="number09">Введите номер точки 0–9</string>
+    <string name="entry_text">Введите название</string>
 </resources>

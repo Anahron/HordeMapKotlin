@@ -7,9 +7,11 @@ import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -73,7 +75,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
         mapViewModel.isAutoLoadMap.observe(this) {
             if (it)
                 lifecycleScope.launch {
-                     mapViewModel.loadLastGameMap()
+                    mapViewModel.loadLastGameMap()
                 }
         }
         mapViewModel.kmzUri.observe(this) {
@@ -103,6 +105,7 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 
             }
         }
+
         // настройки карты
         setupMap()
         // слушатели кликов
@@ -127,6 +130,35 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 //                1,
 //                TimeUnit.MINUTES,
 //            ).build(),)
+
+        googleMap.setOnMapLongClickListener { latLng: LatLng ->
+            val builder =
+                AlertDialog.Builder(requireContext())
+            builder.setTitle("Выберите действие").setItems(
+                arrayOf<CharSequence>(
+                    "Построить маршрут",
+                    "Очистить маршрут",
+                    "Поставить маркер"
+                )
+            ) { _: DialogInterface?, which: Int ->
+                when (which) {
+                    0 -> {}                         // Построить маршрут
+//                        buildRoute(latLng)
+                    1 -> {
+//                        // Очистить маршрут
+//                        if (routePolyline != null) {
+//                            routePolyline.remove()
+//                        }
+//                        distanceTextView.setVisibility(View.INVISIBLE)
+                    }
+                    2 -> {
+                        createStaticMarkerDialog(latLng)
+                    }
+                }
+            }
+            builder.show()
+        }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -143,7 +175,8 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
     }
 
     private fun startAlarmManager() {
-        val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
+        val intent =
+            Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
@@ -175,28 +208,46 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
                 ?.commit()
         }
         binding.ibLoadMap.setOnClickListener {
-            createAlertDialog()
+            createMapLoadDialog()
         }
     }
 
-    private fun createAlertDialog() {
+    private fun createStaticMarkerDialog(latLng: LatLng) {
         val dialogFragment =
-            LoadMapDialogFragment(mapViewModel = mapViewModel, loginViewModel = loginViewModel, this)
+            OnMapClickInfoDialog(
+                mapViewModel = mapViewModel,
+                latLng
+            )
+        dialogFragment.show(this.childFragmentManager, "customDialog")
+    }
+
+    private fun createMapLoadDialog() {
+        val dialogFragment =
+            LoadMapDialogFragment(
+                mapViewModel = mapViewModel,
+                loginViewModel = loginViewModel,
+                this
+            )
         dialogFragment.show(this.childFragmentManager, "customDialog")
     }
 
     @SuppressLint("PotentialBehaviorOverride")
     private fun mapListenersSetup() {
         // Скрываем диалог при коротком клике по нему
-        googleMap.setOnInfoWindowClickListener { obj: Marker -> obj.hideInfoWindow() }
+        googleMap.setOnInfoWindowClickListener {
+            Log.e("AAA", "googleMap.setOnInfoWindowClickListener вызван ")
+            it.hideInfoWindow()
+        }
 
         //Показываем только текст маркера, без перемещения к нему камеры
         googleMap.setOnMarkerClickListener { marker: Marker ->
+            Log.e("AAA", "setOnMarkerClickListener вызван ")
             marker.showInfoWindow()
             true
         }
 
         googleMap.setOnInfoWindowLongClickListener {
+            Log.e("AAA", "googleMap.setOnInfoWindowLongClickListener вызван ")
             mapViewModel.deleteStaticMarker(it)
         }
     }
@@ -247,7 +298,8 @@ class MapFragment(private val loginViewModel: LoginViewModel) : Fragment(), OnMa
 
     override fun onDetach() {
         locationUpdateViewModel.stopLocationUpdates()
-        val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
+        val intent =
+            Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )

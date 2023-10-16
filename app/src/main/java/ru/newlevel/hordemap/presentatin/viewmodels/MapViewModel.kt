@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -27,7 +28,8 @@ class MapViewModel(
     private val showMarkersUseCase: ShowMarkersUseCase,
     private val saveGameMapToFileUseCase: SaveGameMapToFileUseCase,
     private val loadLastGameMapUseCase: LoadLastGameMapUseCase,
-    private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase
+    private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase,
+    private val createStaticMarkerUseCase: CreateStaticMarkerUseCase
 ) : ViewModel() {
 
     lateinit var userMarkersLiveData: LiveData<List<MarkerDataModel>>
@@ -46,6 +48,10 @@ class MapViewModel(
     init {
         _isShowMarkers.value = true
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
+    }
+
+    fun sendMarker(latLng: LatLng, description: String, checkedItem: Int) {
+        createStaticMarkerUseCase.execute(latLng,description, checkedItem)
     }
 
     fun setUriForMap(uri: Uri) {

@@ -34,10 +34,10 @@ class CreateMarkersUseCase(
         markerRepository.clearSavedStaticMarker()
         markerRepository.clearTextMarker()
         for (markerModel in markersModel) {
-            if (markerModel.item > 10)
+            if (markerModel.title != "Маркер" && markerModel.title.isNotEmpty())
                 createTextMarker(markerModel,googleMap)
             val icon = StaticMarkersItem.values()
-                .find { it.ordinal == if (markerModel.item > 10) markerModel.item - 6 else markerModel.item }
+                .find { it.ordinal == if (markerModel.item > 10) markerModel.item - 5 else if (markerModel.item == 10) 0 else markerModel.item }
                 ?.let { createScaledBitmap(context, it.resourceId, MARKER_SIZE_STATIC) }
                 ?: createScaledBitmap(context, R.drawable.marker_point0, MARKER_SIZE_STATIC)
 

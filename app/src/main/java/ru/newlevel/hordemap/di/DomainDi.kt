@@ -40,4 +40,8 @@ val domainModule = module {
     factory<SaveAutoLoadUseCase> {
         SaveAutoLoadUseCase(userRepository = get())
     }
+    factory<CreateStaticMarkerUseCase> {
+        CreateStaticMarkerUseCase(geoDataRepository = get())
+    }
+
 }

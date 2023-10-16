@@ -6,10 +6,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.Marker
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.suspendCancellableCoroutine
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
@@ -39,6 +36,8 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
     private var valueStaticEventListener: ValueEventListener? = null
 
     override fun deleteStaticMarker(marker: Marker) {
+        Log.e(TAG, "deleteStaticMarker вызван")
+        Log.e(TAG, "deleteStaticMarker вызван" + marker.tag.toString() + " child ")
         staticDatabaseReference.child(marker.tag.toString()).removeValue()
     }
 
@@ -126,6 +125,10 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
             userDatabaseReference.removeEventListener(valueUserEventListener!!)
             staticDatabaseReference.removeEventListener(valueStaticEventListener!!)
         }
+    }
+
+    override fun createStaticMarker(markerModel: MarkerDataModel) {
+        staticDatabaseReference.child(markerModel.timestamp.toString()).setValue(markerModel)
     }
 
     override suspend fun loadGameMapFromServer(context: Context): Uri? {

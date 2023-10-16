@@ -16,6 +16,10 @@ class GeoDataRepositoryImpl(private val markersDataStorage: MarkersDataStorage) 
        markersDataStorage.sendCoordinates(markerModel)
     }
 
+    override fun createStaticMarker(markerModel: MarkerDataModel) {
+        markersDataStorage.createStaticMarker(markerModel)
+    }
+
     override fun startUserMarkerUpdates(): LiveData<List<MarkerDataModel>> {
         return  markersDataStorage.startUserMarkerUpdates()
     }

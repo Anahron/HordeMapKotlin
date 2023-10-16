@@ -14,4 +14,6 @@ interface MarkersDataStorage {
     fun startStaticMarkerUpdates(): LiveData<List<MarkerDataModel>>
 
     fun stopMarkerUpdates()
+
+    fun createStaticMarker(markerModel: MarkerDataModel)
 }

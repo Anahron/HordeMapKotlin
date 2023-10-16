@@ -15,6 +15,8 @@ interface GeoDataRepository {
     fun deleteStaticMarker(marker: Marker)
 
     fun sendCoordinates(markerModel: MarkerDataModel)
+
+    fun createStaticMarker(markerModel: MarkerDataModel)
 }
 
 
