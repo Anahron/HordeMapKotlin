@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="15dp">
+    android:padding="8dp"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,10 +13,10 @@
         tools:ignore="MissingConstraints">
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="23sp"
-            android:layout_margin="5dp"
+            android:layout_margin="10dp"
             android:textColor="@color/black"
             android:text="@string/select_src" />
 
@@ -49,6 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:checked="false"
+            android:padding="5dp"
             android:minHeight="48dp"
             android:text="@string/auto_load_map"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"

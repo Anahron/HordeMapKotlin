@@ -70,9 +70,10 @@
     <string name="number09">Введите номер точки 0–9</string>
     <string name="entry_text">Введите название</string>
     <string name="put">Установить</string>
-    <string name="select_src">Выберите источник для загрузки:</string>
+    <string name="select_src">Выберите источник загрузки:</string>
     <string name="from_server">С сервера</string>
     <string name="from_files">Из файловой системы</string>
     <string name="last_saved_map">Последняя загруженная карта</string>
     <string name="auto_load_map">Авто загрузка последней карты</string>
+    <string name="choose_icon">Выберите иконку:</string>
 </resources>
