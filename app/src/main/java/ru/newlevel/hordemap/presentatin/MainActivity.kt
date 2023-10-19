@@ -2,21 +2,19 @@ package ru.newlevel.hordemap.presentatin
 
 import android.Manifest
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.databinding.ActivityMainBinding
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.presentatin.fragments.LoginFragment
+import ru.newlevel.hordemap.databinding.ActivityMainBinding
 import ru.newlevel.hordemap.presentatin.fragments.MapFragment
 import ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment
-import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 
 class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
 
     private lateinit var binding: ActivityMainBinding
-    val loginViewModel by viewModel<LoginViewModel>()
+    val loginViewModel by viewModel<SettingsViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,18 +32,18 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
         //TODO удалить ресет (тест первого запуска)
         //    loginViewModel.reset()
         loginViewModel.checkLogin()
-        loginViewModel.loginResultData.observe(this) {
-            if (it.name.isNotEmpty()) {
-                Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()
+//        loginViewModel.loginResultData.observe(this) {
+//            if (it.name.isNotEmpty()) {
+//                Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()
                 val mapFragment = MapFragment(loginViewModel)
                 supportFragmentManager.beginTransaction().replace(R.id.container, mapFragment)
                     .commit()
-            } else {
-                val loginFragment = LoginFragment(loginViewModel)
-                supportFragmentManager.beginTransaction().replace(R.id.container, loginFragment)
-                    .commit()
-            }
-        }
+//            } else {
+//                val loginFragment = LoginFragment(loginViewModel)
+//                supportFragmentManager.beginTransaction().replace(R.id.container, loginFragment)
+//                    .commit()
+//            }
+//        }
     }
 
     private fun windowSettings() {

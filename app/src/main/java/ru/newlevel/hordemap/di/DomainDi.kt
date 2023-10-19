@@ -19,13 +19,7 @@ val domainModule = module {
         DeleteMarkerUseCase(geoDataRepository = get())
     }
     factory<CreateMarkersUseCase> {
-        CreateMarkersUseCase(context = get(), markerRepository = get())
-    }
-    factory<ShowMarkersUseCase> {
-        ShowMarkersUseCase(markerRepository = get())
-    }
-    factory<HideMarkersUseCase> {
-        HideMarkersUseCase(markerRepository = get())
+        CreateMarkersUseCase(context = get())
     }
 
     factory<LoadLastGameMapUseCase> {

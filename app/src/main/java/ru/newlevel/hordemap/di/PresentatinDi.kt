@@ -3,12 +3,12 @@ package ru.newlevel.hordemap.di
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 
 val presentationModule = module {
-    viewModel<LoginViewModel> {
-        LoginViewModel(
+    viewModel<SettingsViewModel> {
+        SettingsViewModel(
             getUserUseCase = get(),
             saveUserUseCase = get(),
             resetUserUseCase = get(),
@@ -19,8 +19,6 @@ val presentationModule = module {
         MapViewModel(
             deleteMarkerUseCase = get(),
             createMarkersUseCase = get(),
-            hideMarkersUserCase = get(),
-            showMarkersUseCase = get(),
             saveGameMapToFileUseCase = get(),
             loadLastGameMapUseCase = get(),
             loadGameMapFromServerUseCase = get(),

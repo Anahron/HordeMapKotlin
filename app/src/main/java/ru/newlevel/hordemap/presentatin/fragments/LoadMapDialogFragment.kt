@@ -1,64 +1,67 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import ru.newlevel.hordemap.app.makeLongToast
+import ru.newlevel.hordemap.app.SelectFilesContract
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.LoadMapDialogBinding
-import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 
-class LoadMapDialogFragment(
-    private val mapViewModel: MapViewModel,
-    private val loginViewModel: LoginViewModel,
-    private val mapFragment: MapFragment
-) : DialogFragment() {
+class LoadMapDialogFragment(private val mapViewModel: MapViewModel, private val settingsViewModel: SettingsViewModel,
+) : Fragment() {
     private lateinit var binding: LoadMapDialogBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = LoadMapDialogBinding.inflate(inflater, container, false)
-        var boolean = mapViewModel.isAutoLoadMap.value
+        var boolean = UserEntityProvider.userEntity?.autoLoad
         if (boolean != null) {
             binding.checkBox.isChecked = boolean
         }
 
         binding.checkBox.setOnClickListener {
             boolean = binding.checkBox.isChecked
+            mapViewModel.setIsAutoLoadMap(boolean!!)
+            settingsViewModel.saveAutoLoad(boolean!!)
         }
 
         binding.btnFromServer.setOnClickListener {
             lifecycleScope.launch {
-                Toast.makeText(
-                    requireContext().applicationContext,
-                    "Загрузка началась, подождите...",
-                    Toast.LENGTH_LONG
-                ).show()
-                if (!mapViewModel.loadMapFromServer(requireContext().applicationContext)) {
-                    Toast.makeText(
-                        requireContext().applicationContext,
-                        "Неудачно",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    dialog?.dismiss()
-                } else {
-                    Toast.makeText(
-                        requireContext().applicationContext, "Карта загружена", Toast.LENGTH_LONG
-                    ).show()
-                    dialog?.dismiss()
+                makeLongToast("Загрузка началась, подождите...", requireContext())
+                var uri: Uri?
+                withContext(Dispatchers.IO) {
+                    uri = mapViewModel.loadMapFromServer(requireContext().applicationContext)
+                }
+                if (uri != null)
+                    mapViewModel.setUriForMap(uri!!)
+                else {
+                    makeLongToast("Скачивание завершилось неудачно", requireContext())
                 }
             }
-            dialog?.hide()
         }
 
+        val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
+            lifecycleScope.launch {
+                if (result != null) {
+                    mapViewModel.saveGameMapToFile(result)
+                    mapViewModel.setUriForMap(result)
+                }
+            }
+        }
         binding.btnFromFiles.setOnClickListener {
-            mapViewModel.loadGameMapFromFiles(mapFragment)
-            dialog?.dismiss()
+            activityLauncher.launch("application/vnd.google-earth.kmz")
         }
 
         binding.btnLastSaved.setOnClickListener {
@@ -68,14 +71,12 @@ class LoadMapDialogFragment(
                     "Сохраненная карта отсутствует",
                     Toast.LENGTH_LONG
                 ).show()
-                dialog?.dismiss()
             }
         }
-        dialog?.setOnDismissListener {
-            boolean?.let { it1 -> mapViewModel.setIsAutoLoadMap(it1) }
-            boolean?.let { it1 -> loginViewModel.saveAutoLoad(it1) }
-            this@LoadMapDialogFragment.dismiss()
+        binding.btnCleanMap.setOnClickListener{
+            mapViewModel.cleanUriForMap()
         }
         return binding.root
     }
+
 }

@@ -1,13 +1,11 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.util.Log
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,6 +13,7 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.collections.MarkerManager
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.extensions.default
 import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
@@ -22,13 +21,19 @@ import ru.newlevel.hordemap.domain.usecases.*
 import java.io.InputStream
 import kotlin.math.roundToInt
 
-const val REQUEST_CODE_PICK_KMZ_FILE = 100
+sealed class MapState {
+    class DefaultState : MapState()
+    class SettingsState : MapState()
+    class MarkersOffState : MapState()
+    class LoadingState : MapState()
+    class ErrorState : MapState()
+    class LoadMapState : MapState()
+}
+
 
 class MapViewModel(
     private val deleteMarkerUseCase: DeleteMarkerUseCase,
     private val createMarkersUseCase: CreateMarkersUseCase,
-    private val hideMarkersUserCase: HideMarkersUseCase,
-    private val showMarkersUseCase: ShowMarkersUseCase,
     private val saveGameMapToFileUseCase: SaveGameMapToFileUseCase,
     private val loadLastGameMapUseCase: LoadLastGameMapUseCase,
     private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase,
@@ -36,16 +41,17 @@ class MapViewModel(
     private val stopMarkerUpdateUseCase: StopMarkerUpdateUseCase,
     private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase
 ) : ViewModel() {
+    val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState() }
+
 
     private var routePolyline: Polyline? = null
     private var destination: LatLng? = null
 
-    lateinit var userMarkersLiveData: LiveData<List<MarkerDataModel>>
+    lateinit var userMarkersLiveData: MutableLiveData<List<MarkerDataModel>>
 
-    lateinit var staticMarkersLiveData: LiveData<List<MarkerDataModel>>
 
-    private var _isShowMarkers = MutableLiveData<Boolean>()
-    val isShowMarkers: LiveData<Boolean> = _isShowMarkers
+    lateinit var staticMarkersLiveData: MutableLiveData<List<MarkerDataModel>>
+
 
     private val _distanceText = MutableLiveData<String>()
     val distanceText: LiveData<String> = _distanceText
@@ -57,7 +63,6 @@ class MapViewModel(
     val isAutoLoadMap: LiveData<Boolean> = _isAutoLoadMap
 
     init {
-        _isShowMarkers.value = true
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
     }
 
@@ -76,7 +81,6 @@ class MapViewModel(
     fun setRoutePolyline(polyline: Polyline) {
         routePolyline = polyline
     }
-
 
     fun createRoute(currentLatLng: LatLng, destination: LatLng, context: Context): PolylineOptions {
         val bitmapcustomcap =
@@ -113,7 +117,14 @@ class MapViewModel(
     }
 
     fun setUriForMap(uri: Uri) {
-        _kmzUri.value = uri
+        _kmzUri.postValue(uri)
+    }
+    fun cleanUriForMap() {
+        _kmzUri.postValue(Uri.parse(""))
+    }
+    fun reCreateMarkers(){
+        userMarkersLiveData.value = userMarkersLiveData.value
+        staticMarkersLiveData.value = staticMarkersLiveData.value
     }
 
     fun setIsAutoLoadMap(boolean: Boolean) {
@@ -128,19 +139,9 @@ class MapViewModel(
         return getInputSteamFromUri(uri, context)
     }
 
-    suspend fun loadMapFromServer(context: Context): Boolean {
-        val uri = loadGameMapFromServerUseCase.execute(context)
-        return if (uri != null) {
-            setUriForMap(uri)
-            true
-        } else false
-    }
+    suspend fun loadMapFromServer(context: Context): Uri? {
+        return loadGameMapFromServerUseCase.execute(context)
 
-    fun loadGameMapFromFiles(fragment: Fragment) {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "application/vnd.google-earth.kmz"
-        fragment.startActivityForResult(intent, REQUEST_CODE_PICK_KMZ_FILE)
     }
 
     suspend fun loadLastGameMap(): Boolean {
@@ -151,21 +152,23 @@ class MapViewModel(
         } else false
     }
 
+    fun turnToDefaultState() {
+        state.value = MapState.DefaultState()
+    }
+
     fun showOrHideMarkers() {
-        if (_isShowMarkers.value == true)
-            _isShowMarkers.value = hideMarkersUserCase.execute()
-        else
-            _isShowMarkers.value = showMarkersUseCase.execute()
+        if (state.value is MapState.MarkersOffState)
+            state.value = MapState.DefaultState()
+        else if (state.value is MapState.DefaultState)
+            state.value = MapState.MarkersOffState()
     }
 
     fun createUsersMarkers(it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
-        if (_isShowMarkers.value == true)
             createMarkersUseCase.createUsersMarkers(it, markerCollection)
     }
 
     fun createStaticMarkers(it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
-        if (_isShowMarkers.value == true)
-            createMarkersUseCase.createStaticMarkers(it, markerCollection)
+            createMarkersUseCase.createStaticMarkers(it, markerCollection = markerCollection)
     }
 
     fun stopMarkerUpdates() {

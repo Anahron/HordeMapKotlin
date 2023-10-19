@@ -9,7 +9,6 @@ import com.google.maps.android.collections.MarkerManager
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.domain.repository.MarkerRepository
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -22,17 +21,9 @@ private var MARKER_SIZE_STATIC = 40
 
 class CreateMarkersUseCase(
     private var context: Context,
-    private val markerRepository: MarkerRepository
 ) {
-
     fun createStaticMarkers(markersModel: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
         MARKER_SIZE_STATIC = UserEntityProvider.userEntity?.staticMarkerSize!!
-        for (marker in markerRepository.getSavedStaticMarkers())
-            marker.remove()
-        for (marker in markerRepository.getTextMarkers())
-            marker.remove()
-        markerRepository.clearSavedStaticMarker()
-        markerRepository.clearTextMarker()
         for (markerModel in markersModel) {
             if (markerModel.title != "Маркер" && markerModel.title.isNotEmpty())
                 createTextMarker(markerModel,markerCollection)
@@ -40,14 +31,8 @@ class CreateMarkersUseCase(
                 .find { it.ordinal == if (markerModel.item > 10) markerModel.item - 5 else if (markerModel.item == 10) 0 else markerModel.item }
                 ?.let { createScaledBitmap(context, it.resourceId, MARKER_SIZE_STATIC) }
                 ?: createScaledBitmap(context, R.drawable.marker_point0, MARKER_SIZE_STATIC)
-
-            val marker: Marker? =
-                markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 1))
-
+            val marker: Marker? = markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 1))
             marker?.tag = markerModel.timestamp
-            if (marker != null) {
-                markerRepository.addSavedStaticMarker(marker)
-            }
         }
     }
 
@@ -68,31 +53,18 @@ class CreateMarkersUseCase(
                 .position(LatLng(marker.latitude, marker.longitude))
                 .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
         )
-
         markerText?.setAnchor(0.5f, 0f)
-
-        if (markerText != null) {
-            markerRepository.addTextMarker(markerText)
-        }
     }
 
     fun createUsersMarkers(markersModels: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
         MARKER_SIZE_USERS = UserEntityProvider.userEntity?.usersMarkerSize!!
-        for (marker in markerRepository.getSavedUsersMarkers())
-            marker.remove()
-        markerRepository.clearSavedUserMarker()
-
         for (markerModel in markersModels) {
             if (UserEntityProvider.userEntity?.deviceID == markerModel.deviceId)
                 continue
             val icon = UsersMarkersItem.values().find { it.ordinal == markerModel.item }
                 ?.let { createScaledBitmap(context, it.resourceId, MARKER_SIZE_USERS) }
                 ?: createScaledBitmap(context, R.drawable.img_marker_red, MARKER_SIZE_USERS)
-
-            val marker = markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 0))
-            if (marker != null) {
-              markerRepository.addSavedUserMarker(marker)
-            }
+            markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 0))
         }
     }
 

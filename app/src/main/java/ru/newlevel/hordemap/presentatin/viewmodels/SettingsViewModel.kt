@@ -11,7 +11,7 @@ import ru.newlevel.hordemap.domain.usecases.ResetUserUseCase
 import ru.newlevel.hordemap.domain.usecases.SaveAutoLoadUseCase
 import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
 
-class LoginViewModel(
+class SettingsViewModel(
     private val getUserUseCase: GetUserUseCase,
     private val saveUserUseCase: SaveUserUseCase,
     private val resetUserUseCase: ResetUserUseCase,
@@ -30,6 +30,7 @@ class LoginViewModel(
 
     fun saveUser(userDomainModel: UserDomainModel) {
         saveUserUseCase.execute(userDomainModel)
+        resultLiveDataMutable.value = userDomainModel
         loginResultLiveDataMutable.value = userDomainModel
     }
 

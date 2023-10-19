@@ -17,10 +17,10 @@ import androidx.fragment.app.Fragment
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.FragmentLoginBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.presentatin.viewmodels.LoginViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 import kotlin.properties.Delegates
 
-class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
+class LoginFragment(private val settingsViewModel: SettingsViewModel) : Fragment() {
     private lateinit var binding: FragmentLoginBinding
     private lateinit var layoutParamsUser: LayoutParams
     private lateinit var layoutParamsStatic: LayoutParams
@@ -54,7 +54,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
         layoutParamsUser: LayoutParams,
         layoutParamsStatic: LayoutParams
     ) {
-        loginVM.resultData.observe(viewLifecycleOwner) { user ->
+        settingsViewModel.resultData.observe(viewLifecycleOwner) { user ->
             val userName = binding.editName
             val timeToSendData = binding.sbTimeToSendData
             val staticMarkerSize = binding.sbStaticMarkerSize
@@ -86,7 +86,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
                     if (radioButton?.tag == checkedRadioButton.toString()) 1.0f else 0.3f
             }
         }
-        loginVM.getUser()
+        settingsViewModel.getUser()
     }
 
     private fun setupRadioButtonListeners() {
@@ -116,7 +116,7 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
                     Toast.LENGTH_LONG
                 ).show()
             else {
-                loginVM.saveUser(
+                settingsViewModel.saveUser(
                     UserDomainModel(
                         userName.text.toString(),
                         timeToSendData.progress,
@@ -133,8 +133,8 @@ class LoginFragment(private val loginVM: LoginViewModel) : Fragment() {
 
     private fun setupResetButton() {
         binding.btnReset.setOnClickListener {
-            loginVM.reset()
-            loginVM.getUser()
+            settingsViewModel.reset()
+            settingsViewModel.getUser()
         }
     }
 

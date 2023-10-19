@@ -36,10 +36,6 @@ val dataModule = module {
         GeoDataRepositoryImpl(markersDataStorage = get())
     }
 
-    single<MarkerRepository> {
-        MarkerRepositoryImpl()
-    }
-
     single<LocationRepository> {
         LocationRepositoryImpl(context = get())
     }

@@ -1,60 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:padding="8dp"
-    >
 
-    <LinearLayout
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="250dp"
+    android:layout_height="450dp"
+    android:layout_gravity="end"
+    android:layout_marginTop="60dp"
+    android:animateLayoutChanges="true"
+    android:background="@drawable/rounded_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="@string/select_src"
+
+        android:textSize="18sp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:background="@drawable/border_dark"
+        android:textColor="@color/main_green"
+        android:id="@+id/btn_from_server"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        tools:ignore="MissingConstraints">
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_margin="10dp"
+        android:text="@string/from_server"
+        />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="23sp"
-            android:layout_margin="10dp"
-            android:textColor="@color/black"
-            android:text="@string/select_src" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:background="@drawable/border_dark"
+        android:textColor="@color/main_green"
+        android:id="@+id/btn_from_files"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_margin="10dp"
+        android:text="@string/from_files" />
 
-        <Button
-            android:id="@+id/btn_from_server"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="@color/accept"
-            android:text="@string/from_server" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_last_saved"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:textSize="14sp"
+        android:background="@drawable/border_dark"
+        android:textColor="@color/main_green"
+        android:text="@string/last_saved_map" />
 
-        <Button
-            android:id="@+id/btn_from_files"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="@color/accept"
-            android:text="@string/from_files" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_clean_map"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:textSize="14sp"
+        android:background="@drawable/border_dark"
+        android:textColor="@color/main_green"
+        android:text="@string/clean_map" />
 
-        <Button
-            android:id="@+id/btn_last_saved"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="@color/accept"
-            android:text="@string/last_saved_map" />
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:checked="false"
+        android:minHeight="48dp"
+        android:padding="5dp"
+        android:textColor="@color/main_green_dark"
+        android:text="@string/auto_load_map"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
-        <CheckBox
-            android:id="@+id/checkBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:checked="false"
-            android:padding="5dp"
-            android:minHeight="48dp"
-            android:text="@string/auto_load_map"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColorHighlight="#00259F" />
-
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.appcompat.widget.LinearLayoutCompat>

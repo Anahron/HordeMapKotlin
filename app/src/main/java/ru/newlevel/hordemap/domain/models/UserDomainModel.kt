@@ -1,11 +1,11 @@
 package ru.newlevel.hordemap.domain.models
 
 class UserDomainModel(
-    val name: String,
-    val timeToSendData: Int,
-    val usersMarkerSize: Int,
-    val staticMarkerSize: Int,
-    val selectedMarker: Int,
+    var name: String,
+    var timeToSendData: Int,
+    var usersMarkerSize: Int,
+    var staticMarkerSize: Int,
+    var selectedMarker: Int,
     val deviceID: String,
     var autoLoad: Boolean
 ) {

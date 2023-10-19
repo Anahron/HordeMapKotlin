@@ -46,7 +46,7 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
-    override fun startUserMarkerUpdates(): LiveData<List<MarkerDataModel>> {
+    override fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
         val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
 
         if (valueUserEventListener != null) {
@@ -90,7 +90,7 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
         return liveDataUserMarkers
     }
 
-    override fun startStaticMarkerUpdates(): LiveData<List<MarkerDataModel>> {
+    override fun startStaticMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
         val liveDataStaticMarkers = MutableLiveData<List<MarkerDataModel>>()
         if (valueStaticEventListener != null) {
             staticDatabaseReference.removeEventListener(valueStaticEventListener!!)
