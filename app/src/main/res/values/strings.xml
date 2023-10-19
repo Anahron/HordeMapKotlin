@@ -18,18 +18,19 @@
     <string name="self_marker_change">Выбор своего маркера</string>
     <string name="time_to_send_data">Частота отправки данных</string>
     <string name="marker_size">Размер меток</string>
-    <string name="user_marker_size">Размер маркеров игроков</string>
-    <string name="timeToSenData">Частота отправки данных</string>
-    <string name="myMarker">Выберете свой маркер</string>
+    <string name="user_marker_size">Размер игроков</string>
+    <string name="timeToSenData">Период запросов: </string>
+    <string name="myMarker">Мой маркер</string>
     <string name="settings">Настройки</string>
-    <string name="statikMarkerSize">Размер статичных маркеров</string>
+    <string name="statikMarkerSize">Размер меток</string>
     <string name="name_must_be">Имя должно содержать минимум 3 буквы</string>
-    <string name="myName">Мой позывной</string>
+    <string name="myName">Мой позывной:</string>
     <string name="sec">сек</string>
     <string name="hintAnonim">Аноним</string>
     <string name="todo">TODO</string>
     <string name="save">Сохранить</string>
     <string name="reset">Сброс</string>
+    <string name="clean_map">Очистить карту</string>
     <string name="put_name_here">Введите позывной</string>
     <string name="deviceID">DeviceID: </string>
 
@@ -71,8 +72,8 @@
     <string name="entry_text">Введите название</string>
     <string name="put">Установить</string>
     <string name="select_src">Выберите источник загрузки:</string>
-    <string name="from_server">С сервера</string>
-    <string name="from_files">Из файловой системы</string>
+    <string name="from_server">Загрузить с сервера</string>
+    <string name="from_files">Выбрать из файловой системы</string>
     <string name="last_saved_map">Последняя загруженная карта</string>
     <string name="auto_load_map">Авто загрузка последней карты</string>
     <string name="choose_icon">Выберите иконку:</string>

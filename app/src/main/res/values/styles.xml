@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="MySliderTheme" parent="Widget.MaterialComponents.Slider">
+        <item name="thumbColor">@color/main_green_dark</item>
+        <item name="tickColor">@color/black</item>
+        <item name="trackColorActive">@color/main_green</item>
+        <item name="trackColorInactive">@color/middle_transparent</item>
+        <item name="haloRadius">14dp</item>
+        <item name="haloColor">@color/gray_blue</item>
+        <item name="thumbRadius">8dp</item>
+    </style>
+</resources>

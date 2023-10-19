@@ -1,74 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
+    android:id="@+id/drawable"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".presentatin.MainActivity">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/distance_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingStart="7dp"
-        android:textColor="#d4bd61"
-        android:shadowColor="#a89c6a"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="3"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="60dp"
-        android:textSize="25sp"
-        android:visibility="gone"
-        android:background="@drawable/text_view_bg"
-        android:layout_gravity="start|top"
-        tools:ignore="RtlSymmetry" />
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawable_settings"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <ImageButton
-        android:id="@+id/ib_markers"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="65dp"
-        android:padding="15dp"
-        android:alpha="0.6"
-        android:layout_gravity="end|top"
-        />
-    <ImageButton
-        android:id="@+id/ib_map_type"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/map_type_hybrid"
-        android:layout_marginTop="120dp"
-        android:padding="15dp"
-        android:alpha="0.6"
-        android:layout_gravity="end|top"
-        />
-    <ImageButton
-        android:id="@+id/ib_settings"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="175dp"
-        android:background="@drawable/img_settings"
-        android:padding="15dp"
-        android:alpha="0.6"
-        android:layout_gravity="end|top"
-        />
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".presentatin.MainActivity">
 
-    <ImageButton
-        android:id="@+id/ib_load_map"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="240dp"
-        android:background="@drawable/img_map_download"
-        android:padding="15dp"
-        android:alpha="0.6"
-        android:layout_gravity="end|top"
-        />
+            <TextView
+                android:id="@+id/distance_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|top"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/text_view_bg"
+                android:paddingStart="7dp"
+                android:shadowColor="#a89c6a"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3"
+                android:textColor="#d4bd61"
+                android:textSize="25sp"
+                android:visibility="gone"
+                tools:ignore="RtlSymmetry" />
 
-    </fragment>
+            <ImageButton
+                android:id="@+id/ib_markers"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="65dp"
+                android:layout_marginEnd="8dp"
+                android:alpha="0.6"
+                android:padding="15dp" />
+
+            <ImageButton
+                android:id="@+id/ib_map_type"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="120dp"
+                android:layout_marginEnd="8dp"
+                android:alpha="0.6"
+                android:background="@drawable/map_type_hybrid"
+                android:padding="15dp" />
+
+            <ImageButton
+                android:id="@+id/ib_settings"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="175dp"
+                android:layout_marginEnd="8dp"
+                android:alpha="0.6"
+                android:background="@drawable/img_settings"
+                android:padding="15dp" />
+
+            <ImageButton
+                android:id="@+id/ib_load_map"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="240dp"
+                android:layout_marginEnd="8dp"
+                android:alpha="0.6"
+                android:background="@drawable/img_map_download"
+                android:padding="15dp" />
+        </fragment>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fragment_container"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"/>
+
+    </androidx.drawerlayout.widget.DrawerLayout>
+
+</FrameLayout>
