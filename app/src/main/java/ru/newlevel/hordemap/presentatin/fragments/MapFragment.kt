@@ -43,7 +43,8 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 
-class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(), OnMapReadyCallback {
+class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(),
+    OnMapReadyCallback {
 
     private lateinit var binding: FragmentMapsBinding
     private lateinit var googleMap: GoogleMap
@@ -119,42 +120,40 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
                 }
         }
         mapViewModel.kmzUri.observe(this) {
-            Log.e("AAA", it.toString())
-            if (it.toString().isEmpty() && kmlLayer != null)
+            if (kmlLayer != null)
                 kmlLayer!!.removeLayerFromMap()
-            else
-                lifecycleScope.launch {
-                    val inputStream = it.let { mapViewModel.getInputSteam(it!!, requireContext()) }
-                    if (inputStream != null) {
-                            kmlLayer = KmlLayer(
-                            googleMap,
-                            inputStream,
-                            requireContext(),
-                            markerManager,
-                            null,
-                            null,
-                            null,
-                            null
-                        )
-                        kmlLayer!!.addLayerToMap()
-                        if (kmlLayer!!.isLayerOnMap && kmlLayer!!.groundOverlays != null) {
-                            kmlLayer!!.groundOverlays.any { _it ->
-                                googleMap.animateCamera(
-                                    CameraUpdateFactory.newLatLngZoom(
-                                        LatLng(
-                                            _it.latLngBox.center.latitude,
-                                            _it.latLngBox.center.longitude
-                                        ), 12F
-                                    )
+            lifecycleScope.launch {
+                val inputStream = it.let { mapViewModel.getInputSteam(it!!, requireContext()) }
+                if (inputStream != null) {
+                    kmlLayer = KmlLayer(
+                        googleMap,
+                        inputStream,
+                        requireContext(),
+                        markerManager,
+                        null,
+                        null,
+                        null,
+                        null
+                    )
+                    kmlLayer!!.addLayerToMap()
+                    if (kmlLayer!!.isLayerOnMap && kmlLayer!!.groundOverlays != null) {
+                        kmlLayer!!.groundOverlays.any { _it ->
+                            googleMap.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    LatLng(
+                                        _it.latLngBox.center.latitude,
+                                        _it.latLngBox.center.longitude
+                                    ), 12F
                                 )
-                                true
-                            }
-                        }
-                        withContext(Dispatchers.IO) {
-                            inputStream.close()
+                            )
+                            true
                         }
                     }
+                    withContext(Dispatchers.IO) {
+                        inputStream.close()
+                    }
                 }
+            }
         }
 
         setupMap()
@@ -214,8 +213,12 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
 
     private fun menuListenersSetup() {
         val fragmentTrans = childFragmentManager.beginTransaction()
-        val loadMapFragment = LoadMapDialogFragment(mapViewModel = mapViewModel, settingsViewModel = settingsViewModel)
-        val settingsFragment = SettingsFragment(mapViewModel = mapViewModel, settingsViewModel = settingsViewModel)
+        val loadMapFragment = LoadMapDialogFragment(
+            mapViewModel = mapViewModel,
+            settingsViewModel = settingsViewModel
+        )
+        val settingsFragment =
+            SettingsFragment(mapViewModel = mapViewModel, settingsViewModel = settingsViewModel)
         fragmentTrans.add(R.id.fragment_container, settingsFragment)
         fragmentTrans.add(R.id.fragment_container, loadMapFragment)
         fragmentTrans.commit()
