@@ -8,7 +8,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.databinding.ActivityMainBinding
-import ru.newlevel.hordemap.presentatin.fragments.LoginFragment
 import ru.newlevel.hordemap.presentatin.fragments.MapFragment
 import ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel

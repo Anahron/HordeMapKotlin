@@ -119,26 +119,25 @@
         android:layout_height="match_parent"
         android:orientation="horizontal">
 
-
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_cancel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:layout_margin="6dp"
-            android:background="@color/cancel"
-            android:text="@string/cancel"
-            android:padding="15dp"
-            style="?android:attr/backgroundDimEnabled" />
-
-        <Button
-
-            android:id="@+id/btn_save"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="6dp"
-            android:background="@color/accept"
+            android:background="@drawable/border"
+            android:textColor="@color/main_green_dark"
+            android:text="@string/cancel"
+            android:padding="15dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/border_dark"
+            android:textColor="@color/main_green"
             android:text="@string/put"
             android:padding="15dp"
             style="?android:attr/backgroundDimEnabled" />
