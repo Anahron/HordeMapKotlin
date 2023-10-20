@@ -14,14 +14,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.BuildConfig
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.databinding.FragmentPermissionRequestBinding
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.app.requestPermissionWithRationale
+import ru.newlevel.hordemap.app.makeLongToast
+import ru.newlevel.hordemap.databinding.FragmentPermissionRequestBinding
+import ru.newlevel.hordemap.presentatin.viewmodels.PermissionState
+import ru.newlevel.hordemap.presentatin.viewmodels.PermissionViewModel
 
 private const val TAG = "AAA"
 
@@ -29,23 +35,34 @@ class PermissionRequestFragment : Fragment() {
 
     private lateinit var binding: FragmentPermissionRequestBinding
 
+    private val permissionViewModel by viewModel<PermissionViewModel>()
     private var activityListener: Callbacks? = null
-    private var fineLocationPermissionApproved: Boolean = false
-    private var backgroundLocationPermissionApproved: Boolean = false
 
-    private val backgroundRationalSnackbar by lazy {
-        Snackbar.make(
-            binding.frameLayout,
-            R.string.background_location_permission_rationale,
-            Snackbar.LENGTH_INDEFINITE
-        )
-            .setAction(R.string.ok) {
-                requestPermissions(
-                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                    REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE
-                )
+    private val requestBatteryOptimizationLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            Log.e("AAA", result.toString())
+            permissionViewModel.turnToAddLocationState()
+        }
+
+    private val permissionBackgroundLocation =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            when {
+                granted -> {
+                    permissionViewModel.turnToAddUserNameState()
+                }
+                else -> {
+                    permissionDenied(REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE)
+                }
             }
-    }
+        }
+
+    private val permissionsLocation =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { map ->
+            if (map.values.contains(true))
+                permissionViewModel.turnToAddBackLocationState()
+            else
+                permissionDenied(REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE)
+        }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -62,82 +79,131 @@ class PermissionRequestFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentPermissionRequestBinding.inflate(inflater, container, false)
-        binding.apply {
-            // iconImageView.setImageResource(R.drawable.ic_location_on_24px)
-
-            titleTextView.text =
-                getString(R.string.fine_location_access_rationale_title_text)
-
-            detailsTextView.text =
-                getString(R.string.fine_location_access_rationale_details_text)
-
-            permissionRequestButton.text =
-                getString(R.string.enable_fine_location_button_text)
-
-            permissionBackgroundRequestButton.text =
-                getString(R.string.enable_background_location_button_text)
-            permissionBackgroundRequestButton.isGone = true
-        }
-
-        binding.permissionRequestButton.setOnClickListener {
-            requestFineLocationPermission()
-        }
-
-        binding.permissionBackgroundRequestButton.setOnClickListener {
-            requestBackgroundLocationPermission()
-        }
-
-        val intent = Intent()
-        val pm : PowerManager = requireContext().getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (!pm.isIgnoringBatteryOptimizations(requireContext().packageName)) {
-            intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-            intent.data = Uri.parse("package:${context?.packageName}")
-            requireContext().startActivity(intent)
-        }
-
         return binding.root
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        permissionViewModel.state.observe(this@PermissionRequestFragment) { state ->
+            when (state) {
+                is PermissionState.InfoState -> {
+                    binding.apply {
+                        titleTextView.text = context?.getString(R.string.info_title)
+                        detailsTextView.text = context?.getString(R.string.info)
+                        editName.isGone = true
+                        btnUserNameRequest.isGone = true
+                        btnBackWorking.isGone = true
+                        btnAccept.isGone = false
+                        permissionRequestButton.isGone = true
+                        permissionBackgroundRequestButton.isGone = true
+                        btnAccept.setOnClickListener {
+                            permissionViewModel.turnToAddBackWorkingState()
+                        }
+                    }
+                }
+                is PermissionState.AddBackWorking -> {
+                    if (!isBatteryOptimizationIgnored()) {
+                        binding.btnBackWorking.setOnClickListener {
+                            requestBatteryOptimizationPermission()
+                        }
+                    } else {
+                        permissionViewModel.turnToAddLocationState()
+                    }
+                    binding.apply {
+                        titleTextView.text = context?.getString(R.string.back_working_title)
+                        detailsTextView.text =
+                            context?.getString(R.string.back_working_details_text)
+                        btnAccept.isGone = true
+                        editName.isGone = true
+                        btnUserNameRequest.isGone = true
+                        btnBackWorking.isGone = false
+                        permissionRequestButton.isGone = true
+                        permissionBackgroundRequestButton.isGone = true
+                    }
+                }
+                is PermissionState.AddLocationPermState -> {
+                    if (context?.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) == false) {
+                        binding.permissionRequestButton.setOnClickListener {
+                            requestFineLocationPermission()
+                        }
+                    } else {
+                        permissionViewModel.turnToAddBackLocationState()
+                    }
+                    binding.apply {
+                        titleTextView.text =
+                            context?.getString(R.string.fine_location_access_rationale_title_text)
+                        detailsTextView.text =
+                            context?.getString(R.string.fine_location_access_rationale_details_text)
+                        btnAccept.isGone = true
+                        editName.isGone = true
+                        btnBackWorking.isGone = true
+                        btnUserNameRequest.isGone = true
+                        permissionRequestButton.isGone = false
+                        permissionBackgroundRequestButton.isGone = true
+                    }
+                }
+                is PermissionState.AddBackLocationState -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && context?.hasPermission(
+                            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                        ) == false
+                    ) {
+                        binding.permissionBackgroundRequestButton.setOnClickListener {
+                            requestBackgroundLocationPermission()
+                        }
+                    } else {
+                        permissionViewModel.turnToAddUserNameState()
+                    }
+                    binding.apply {
+                        titleTextView.text =
+                            context?.getString(R.string.back_location_access_rationale_title_text)
+                        detailsTextView.text =
+                            context?.getString(R.string.back_location_permission_rationale_details_text)
+                        editName.isGone = true
+                        btnBackWorking.isGone = true
+                        btnAccept.isGone = true
+                        btnUserNameRequest.isGone = true
+                        permissionRequestButton.isGone = true
+                        permissionBackgroundRequestButton.isGone = false
+                    }
+                }
+                is PermissionState.AddUserNameState -> {
+                    binding.apply {
+                        titleTextView.text =
+                            context?.getString(R.string.fine_location_access_rationale_title_text)
+                        detailsTextView.text =
+                            context?.getString(R.string.name__rationale_details_text)
+                        editName.isGone = false
+                        btnAccept.isGone = true
+                        btnUserNameRequest.isGone = false
+                        permissionRequestButton.isGone = true
+                        permissionBackgroundRequestButton.isGone = true
+                    }
+                    if (permissionViewModel.checkUserName())
+                        activityListener?.displayLocationUI()
+                    binding.btnUserNameRequest.setOnClickListener {
+                        if (binding.editName.text.toString().length > 2) {
+                            binding.editName.isActivated = false
+                            permissionViewModel.saveUserName(binding.editName.text.toString())
+                            activityListener?.displayLocationUI()
+                        } else {
+                            makeLongToast("Имя должно быть длиннее 3х символов", requireContext())
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private fun isBatteryOptimizationIgnored(): Boolean {
+        val pm: PowerManager =
+            requireContext().getSystemService(Context.POWER_SERVICE) as PowerManager
+        return pm.isIgnoringBatteryOptimizations(requireContext().packageName)
     }
 
     override fun onDetach() {
         super.onDetach()
-
         activityListener = null
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        Log.d(TAG, "onRequestPermissionResult")
-
-        when (requestCode) {
-            REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE -> when {
-                grantResults.isEmpty() ->
-                    Log.d(TAG, "User interaction was cancelled.")
-                grantResults[0] == PackageManager.PERMISSION_GRANTED -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        fineLocationPermissionApproved = true
-                     changeButton()
-                    } else activityListener?.displayLocationUI()
-                }
-                else -> {
-                    permissionDenied(requestCode)
-                }
-            }
-            REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE -> when {
-                grantResults.isEmpty() ->
-                    Log.d(TAG, "User interaction was cancelled.")
-                grantResults[0] == PackageManager.PERMISSION_GRANTED -> {
-                    backgroundLocationPermissionApproved = true
-                    if (fineLocationPermissionApproved)
-                        activityListener?.displayLocationUI()
-                }
-                else -> {
-                    permissionDenied(requestCode)
-                }
-            }
-        }
     }
 
     private fun permissionDenied(requestCode: Int) {
@@ -158,7 +224,6 @@ class PermissionRequestFragment : Fragment() {
         textView.maxLines = 5
         snackbar
             .setAction(R.string.settings) {
-                // Build intent that displays the App settings screen.
                 val intent = Intent()
                 intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                 val uri = Uri.fromParts(
@@ -172,42 +237,27 @@ class PermissionRequestFragment : Fragment() {
             }
             .show()
     }
-    private fun changeButton(){
-        binding.permissionRequestButton.isGone = true
-        binding.permissionBackgroundRequestButton.isGone = false
+
+    private fun requestBatteryOptimizationPermission() {
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+        intent.data = Uri.parse("package:${requireContext().packageName}")
+        requestBatteryOptimizationLauncher.launch(intent)
     }
 
     private fun requestFineLocationPermission() {
-        val permissionApproved = context?.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ?: return
-        if (permissionApproved) {
-            fineLocationPermissionApproved = true
-            if (backgroundLocationPermissionApproved)
-                activityListener?.displayLocationUI()
-            else {
-                changeButton()
-            }
-        } else {
-            requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-                REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE
+        permissionsLocation.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
             )
-        }
+        )
     }
 
     private fun requestBackgroundLocationPermission() {
-        val permissionApproved =
-            context?.hasPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) ?: return
-        if (permissionApproved) {
-            backgroundLocationPermissionApproved = true
-            if (fineLocationPermissionApproved)
-                activityListener?.displayLocationUI()
-        } else {
-            requestPermissionWithRationale(
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE,
-                backgroundRationalSnackbar
-            )
-        }
+        permissionBackgroundLocation.launch(
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+            ActivityOptionsCompat.makeBasic()
+        )
     }
 
     interface Callbacks {

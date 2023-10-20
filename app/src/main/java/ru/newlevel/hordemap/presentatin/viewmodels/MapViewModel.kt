@@ -13,7 +13,6 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.collections.MarkerManager
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.extensions.default
 import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel

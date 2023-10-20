@@ -99,15 +99,12 @@ class SettingsFragment(private val mapViewModel: MapViewModel, private val setti
     private fun setupEditNameListener() {
         binding.editName.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-                // Этот метод вызывается до изменения текста
             }
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                // Этот метод вызывается во время изменения текста
             }
 
             override fun afterTextChanged(s: Editable) {
-
                 val inputText = s.toString()
                 if (inputText.length>2) {
                     user.name = inputText

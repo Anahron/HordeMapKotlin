@@ -37,17 +37,26 @@
     <string name="fine_location_permission_rationale">Сбор данных необходим для корректной работы приложения, пожалуйста предоставьте разрешение.</string>
     <string name="fine_permission_denied_explanation">Вы запретили сбор данных, но он необходим для корректной работы приложения, пожалуйста предоставьте разрешение.</string>
 
+    <string name="back_location_access_rationale_title_text">\t Доступ к геоданным в фоновом режиме.</string>
+    <string name="back_location_permission_rationale_details_text">\tФоновый сбор гео данных необходим для корректной работы приложения, пожалуйста предоставьте разрешение. \n  \n \tВыберите \"Allow all the time\" (Разрешить в любое время)</string>
+
+    <string name="name__rationale_details_text">\tОсталось совсем немного. \n  \n \tВведите свой позывной, который будет отображаться у маркера для других игроков.</string>
     <string name="ok">OK</string>
 
-    <string name="background_location_permission_rationale">Выберите "Разрешить в любое время".</string>
     <string name="background_permission_denied_explanation">Вы запретили фоновый сбор данных, но он необходим для корректной работы приложения, пожалуйста предоставьте разрешение вручную.</string>
 
-    <string name="fine_location_access_rationale_title_text">Пожалуйста разрешите приложению доступ к геоданным</string>
+    <string name="fine_location_access_rationale_title_text">\t Доступ к геоданным.</string>
+    <string name="fine_location_access_rationale_details_text">\t Пожалуйста разрешите приложению доступ к геоданным. \n \n\ \t Оно необходим для корректной работы приложения</string>
 
-    <string name="fine_location_access_rationale_details_text">\tДля корректной работы приложения требуется собирать Ваши данные о местоположении для работы функции обмена геоданными и построения маршрута пройденого пути, в том числе в фоновом режиме, даже если приложение закрыто и не используется.
-        \n \n\tМы не передаем данные о вашем местоположении третьим лицам и используем их только внутри нашего приложения, в том числе для передачи другим пользователям.
-    </string>
+    <string name="info">\tДля корректной работы приложения требуется собирать Ваши данные о местоположении для работы функции обмена геоданными и построения маршрута пройденого пути, в том числе в фоновом режиме, даже если приложение закрыто и не используется.
+        \n \n\tМы не передаем данные о вашем местоположении третьим лицам и используем их только внутри нашего приложения, в том числе для передачи другим пользователям.</string>
 
+    <string name="info_title">\t Раскрытие информации.</string>
+    <string name="back_working">РАЗРЕШИТЬ РАБОТУ В ФОНЕ</string>
+
+
+    <string name="back_working_title">\t Разрешение на фоновую работу.</string>
+    <string name="back_working_details_text">\t Пожалуйста разрешите приложению работать в фоновом режиме.  \n \n\t Это необходимо для фонового сбора данных.</string>
     <string name="background_location_access_rationale_title_text">Improve location accuracy!</string>
 
     <string name="background_location_access_rationale_details_text">
@@ -57,7 +66,7 @@
         \n\n
     </string>
 
-
+    <string name="i_accept">Я ПОНИМАЮ</string>
     <string name="enable_fine_location_button_text">РАЗРЕШИТЬ ПЕРЕДАЧУ</string>
     <string name="enable_background_location_button_text">РАЗРЕШИТЬ ФОНОВУЮ ПЕРЕДАЧУ</string>
 

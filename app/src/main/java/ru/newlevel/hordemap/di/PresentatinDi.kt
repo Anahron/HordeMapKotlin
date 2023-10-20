@@ -5,6 +5,7 @@ import org.koin.dsl.module
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.PermissionViewModel
 
 val presentationModule = module {
     viewModel<SettingsViewModel> {
@@ -31,5 +32,8 @@ val presentationModule = module {
         LocationUpdateViewModel(
             locationRepository = get()
         )
+    }
+    viewModel<PermissionViewModel>{
+        PermissionViewModel( getUserUseCase = get(), saveUserUseCase = get(),)
     }
 }

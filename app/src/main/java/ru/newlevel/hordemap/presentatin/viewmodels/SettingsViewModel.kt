@@ -17,7 +17,6 @@ class SettingsViewModel(
     private val resetUserUseCase: ResetUserUseCase,
     private val saveAutoLoadUseCase : SaveAutoLoadUseCase,
 ) : ViewModel() {
-
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
     val resultData: LiveData<UserDomainModel> = resultLiveDataMutable
 

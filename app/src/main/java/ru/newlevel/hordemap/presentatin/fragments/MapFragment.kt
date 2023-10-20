@@ -100,7 +100,6 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
                 }
                 else -> {}
             }
-
         }
     }
 
@@ -363,8 +362,8 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
         stopObservers()
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         startObservers()
     }
 
