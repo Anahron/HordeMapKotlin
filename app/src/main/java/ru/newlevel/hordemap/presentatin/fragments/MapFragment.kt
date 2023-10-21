@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -108,8 +109,9 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
         val markerManager = MarkerManager(gMap)
         userMarkerCollection = MarkerManager(googleMap).newCollection()
         staticMarkerCollection = MarkerManager(googleMap).newCollection()
-        mapViewModel.compassActivate()
         mapViewModel.compassAngle.observe(this) { angle ->
+            binding.imgCompass.visibility = View.VISIBLE
+            Log.e("AAA", "" + angle)
             binding.imgCompass.rotation = -angle
         }
         mapViewModel.isAutoLoadMap.observe(this) {
@@ -157,7 +159,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
 
         setupMap()
         mapListenersSetup()
-        //Камера на Красноярск
+
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
 
@@ -309,6 +311,13 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
             }
             builder.show()
         }
+        binding.imgCompass.setOnClickListener {
+            binding.imgCompass.layoutParams.height =
+                if (binding.imgCompass.layoutParams.width > 120) 120 else 400
+            binding.imgCompass.layoutParams.width =
+                if (binding.imgCompass.layoutParams.width > 120) 120 else 400
+            binding.imgCompass.requestLayout()
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -359,11 +368,13 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
 
     override fun onPause() {
         super.onPause()
+        mapViewModel.compassDeActivate()
         stopObservers()
     }
 
     override fun onResume() {
         super.onResume()
+        mapViewModel.compassActivate()
         startObservers()
     }
 

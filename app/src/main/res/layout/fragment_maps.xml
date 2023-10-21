@@ -45,7 +45,8 @@
                 android:layout_marginTop="65dp"
                 android:layout_marginEnd="8dp"
                 android:alpha="0.6"
-                android:padding="15dp" />
+                android:padding="15dp"
+                android:contentDescription="@string/todo" />
 
             <ImageButton
                 android:id="@+id/ib_map_type"
@@ -56,6 +57,7 @@
                 android:layout_marginEnd="8dp"
                 android:alpha="0.6"
                 android:background="@drawable/map_type_hybrid"
+                android:contentDescription="@string/todo"
                 android:padding="15dp" />
 
             <ImageButton
@@ -67,13 +69,17 @@
                 android:layout_marginEnd="8dp"
                 android:alpha="0.6"
                 android:background="@drawable/img_settings"
-                android:padding="15dp" />
+                android:padding="15dp"
+                android:contentDescription="@string/todo" />
 
             <ImageView
+                android:visibility="gone"
                 android:id="@+id/imgCompass"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/compas" />
+                android:layout_width="120px"
+                android:layout_height="120px"
+                android:layout_marginTop="55dp"
+                app:srcCompat="@drawable/compas"
+                android:contentDescription="@string/todo" />
 
 
             <ImageButton
@@ -85,7 +91,8 @@
                 android:layout_marginEnd="8dp"
                 android:alpha="0.6"
                 android:background="@drawable/img_map_download"
-                android:padding="15dp" />
+                android:padding="15dp"
+                android:contentDescription="@string/todo" />
         </fragment>
 
         <androidx.fragment.app.FragmentContainerView

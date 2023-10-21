@@ -2,7 +2,6 @@ package ru.newlevel.hordemap.di
 
 import android.content.Context
 import android.hardware.SensorManager
-import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import ru.newlevel.hordemap.data.repository.*

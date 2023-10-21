@@ -48,12 +48,11 @@ class CreateMarkersUseCase(
         val canvas = Canvas(bitmap)
         canvas.drawText(text, (bitmap.width - textWidth) / 2f, 25f, paint)
 
-        val markerText = markerCollection.addMarker(
+        markerCollection.addMarker(
             MarkerOptions()
                 .position(LatLng(marker.latitude, marker.longitude))
                 .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-        )
-        markerText?.setAnchor(0.5f, 0f)
+        ).setAnchor(0.5f, 0f)
     }
 
     fun createUsersMarkers(markersModels: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {

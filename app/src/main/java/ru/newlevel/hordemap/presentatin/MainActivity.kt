@@ -1,9 +1,12 @@
 package ru.newlevel.hordemap.presentatin
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
@@ -17,6 +20,7 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
     private lateinit var binding: ActivityMainBinding
     val loginViewModel by viewModel<SettingsViewModel>()
     var isFirstStart: Boolean = true
+    val MY_PERMISSIONS_REQUEST_SENSOR = 506
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +28,17 @@ class MainActivity : AppCompatActivity(), PermissionRequestFragment.Callbacks {
         setContentView(binding.root)
 
         windowSettings()
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission_group.SENSORS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission_group.SENSORS), MY_PERMISSIONS_REQUEST_SENSOR
+            )
+        }
 
         if (!applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) requestFineLocationPermission()
         else loginCheck()

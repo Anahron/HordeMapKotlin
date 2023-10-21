@@ -22,13 +22,9 @@ import kotlin.math.roundToInt
 
 sealed class MapState {
     class DefaultState : MapState()
-    class SettingsState : MapState()
     class MarkersOffState : MapState()
     class LoadingState : MapState()
-    class ErrorState : MapState()
-    class LoadMapState : MapState()
 }
-
 
 class MapViewModel(
     private val deleteMarkerUseCase: DeleteMarkerUseCase,
@@ -146,7 +142,6 @@ class MapViewModel(
 
     suspend fun loadMapFromServer(context: Context): Uri? {
         return loadGameMapFromServerUseCase.execute(context)
-
     }
 
     suspend fun loadLastGameMap(): Boolean {
