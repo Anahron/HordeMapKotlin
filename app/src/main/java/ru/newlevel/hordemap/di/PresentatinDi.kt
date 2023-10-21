@@ -25,7 +25,8 @@ val presentationModule = module {
             loadGameMapFromServerUseCase = get(),
             createStaticMarkerUseCase = get(),
             startMarkerUpdateUseCase = get(),
-            stopMarkerUpdateUseCase = get()
+            stopMarkerUpdateUseCase = get(),
+            compassUseCase = get()
         )
     }
     viewModel<LocationUpdateViewModel>{

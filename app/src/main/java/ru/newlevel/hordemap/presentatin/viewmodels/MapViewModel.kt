@@ -38,19 +38,18 @@ class MapViewModel(
     private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase,
     private val createStaticMarkerUseCase: CreateStaticMarkerUseCase,
     private val stopMarkerUpdateUseCase: StopMarkerUpdateUseCase,
-    private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase
+    private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase,
+    private val compassUseCase: CompassUseCase
 ) : ViewModel() {
-    val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState() }
 
+    val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState() }
 
     private var routePolyline: Polyline? = null
     private var destination: LatLng? = null
 
     lateinit var userMarkersLiveData: MutableLiveData<List<MarkerDataModel>>
-
-
     lateinit var staticMarkersLiveData: MutableLiveData<List<MarkerDataModel>>
-
+    lateinit var compassAngle: LiveData<Float>
 
     private val _distanceText = MutableLiveData<String>()
     val distanceText: LiveData<String> = _distanceText
@@ -63,6 +62,14 @@ class MapViewModel(
 
     init {
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
+    }
+
+    fun compassActivate(){
+       compassAngle = compassUseCase.startSensorEventListener()
+    }
+
+    fun compassDeActivate(){
+        compassUseCase.stopSensorEventListener()
     }
 
     fun getDestination(): LatLng? {
@@ -109,7 +116,6 @@ class MapViewModel(
                 .toString() + " м."
         )
     }
-
 
     fun sendMarker(latLng: LatLng, description: String, checkedItem: Int) {
         createStaticMarkerUseCase.execute(latLng, description, checkedItem)

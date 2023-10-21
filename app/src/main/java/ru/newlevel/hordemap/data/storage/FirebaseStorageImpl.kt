@@ -29,9 +29,6 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
     private val staticDatabaseReference = databaseReference.child(GEO_STATIC_MARKERS_PATH)
     private val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
 
-    private val savedUserMarkers: ArrayList<MarkerDataModel> = ArrayList()
-    private val savedStaticMarkers: ArrayList<MarkerDataModel> = ArrayList()
-
     private var valueUserEventListener: ValueEventListener? = null
     private var valueStaticEventListener: ValueEventListener? = null
 
@@ -56,7 +53,7 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
             userDatabaseReference.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     Log.e(TAG, "данные в startUserMarkerUpdates обновлены")
-                    savedUserMarkers.clear()
+                    val savedUserMarkers: ArrayList<MarkerDataModel> = ArrayList()
                     val timeNow = System.currentTimeMillis()
                     for (snapshot in dataSnapshot.children) {
                         try {
@@ -100,7 +97,7 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
             staticDatabaseReference.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     Log.e(TAG, "данные в startStaticMarkerUpdates обновлены")
-                    savedStaticMarkers.clear()
+                    val savedStaticMarkers: ArrayList<MarkerDataModel> = ArrayList()
                     for (snapshot in dataSnapshot.children) {
                         try {
                             val myMarker: MarkerDataModel =

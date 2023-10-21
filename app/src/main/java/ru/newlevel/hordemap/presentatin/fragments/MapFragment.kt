@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
 import android.os.SystemClock
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,7 +37,6 @@ import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentatin.MainActivity
 import ru.newlevel.hordemap.presentatin.viewmodels.*
-
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -55,11 +53,11 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
     private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentMapsBinding.inflate(inflater, container, false)
-
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         return binding.root
@@ -75,7 +73,6 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
                 is MapState.DefaultState -> {
                     binding.drawableSettings.closeDrawer(GravityCompat.END)
                     binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
-
                     userMarkersObserver = Observer {
                         userMarkerCollection.markers.forEach { marker -> marker.remove() }
                         mapViewModel.createUsersMarkers(
@@ -109,9 +106,12 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
         menuListenersSetup()
         var kmlLayer: KmlLayer? = null
         val markerManager = MarkerManager(gMap)
-        userMarkerCollection = MarkerManager(gMap).newCollection()
-        staticMarkerCollection = MarkerManager(gMap).newCollection()
-
+        userMarkerCollection = MarkerManager(googleMap).newCollection()
+        staticMarkerCollection = MarkerManager(googleMap).newCollection()
+        mapViewModel.compassActivate()
+        mapViewModel.compassAngle.observe(this) { angle ->
+            binding.imgCompass.rotation = -angle
+        }
         mapViewModel.isAutoLoadMap.observe(this) {
             if (it)
                 lifecycleScope.launch {

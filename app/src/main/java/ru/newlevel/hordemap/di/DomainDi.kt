@@ -6,6 +6,10 @@ import ru.newlevel.hordemap.domain.usecases.*
 
 val domainModule = module {
 
+    factory<CompassUseCase> {
+        CompassUseCase(sensorRepository = get())
+    }
+
     factory<GetUserUseCase> {
         GetUserUseCase(userRepository = get())
     }

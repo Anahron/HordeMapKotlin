@@ -69,6 +69,13 @@
                 android:background="@drawable/img_settings"
                 android:padding="15dp" />
 
+            <ImageView
+                android:id="@+id/imgCompass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/compas" />
+
+
             <ImageButton
                 android:id="@+id/ib_load_map"
                 android:layout_width="40dp"

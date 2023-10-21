@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.data
+package ru.newlevel.hordemap.device
 
 import android.Manifest
 import android.app.*
