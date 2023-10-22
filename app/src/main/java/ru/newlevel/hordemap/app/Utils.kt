@@ -34,6 +34,7 @@ fun mapUserDomainToData(userDomainModel: UserDomainModel) : UserDataModel {
 }
 
 
+
 fun getDeviceId(context: Context): String {
     @SuppressLint("HardwareIds") val androidId =
         Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)

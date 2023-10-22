@@ -40,6 +40,7 @@ import ru.newlevel.hordemap.presentatin.MainActivity
 import ru.newlevel.hordemap.presentatin.viewmodels.*
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 
 class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(),
@@ -111,8 +112,10 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
         staticMarkerCollection = MarkerManager(googleMap).newCollection()
         mapViewModel.compassAngle.observe(this) { angle ->
             binding.imgCompass.visibility = View.VISIBLE
+            binding.tvCompass.visibility = View.VISIBLE
             Log.e("AAA", "" + angle)
             binding.imgCompass.rotation = -angle
+            binding.tvCompass.text = Math.round(if (angle > 0) angle else angle + 360).toString() + "\u00B0 "
         }
         mapViewModel.isAutoLoadMap.observe(this) {
             if (it)
@@ -192,6 +195,10 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
             mapViewModel.setRoutePolyline(
                 it
             )
+            mapViewModel.updateRoute( LatLng(
+                googleMap.myLocation.latitude,
+                googleMap.myLocation.longitude
+            ), destination)
         }
         mapViewModel.distanceText.observe(viewLifecycleOwner) {
             binding.distanceTextView.visibility = View.VISIBLE
@@ -313,9 +320,9 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
         }
         binding.imgCompass.setOnClickListener {
             binding.imgCompass.layoutParams.height =
-                if (binding.imgCompass.layoutParams.width > 120) 120 else 400
+                if (binding.imgCompass.layoutParams.width != convertDpToPx(50)) convertDpToPx(50) else convertDpToPx(250)
             binding.imgCompass.layoutParams.width =
-                if (binding.imgCompass.layoutParams.width > 120) 120 else 400
+                if (binding.imgCompass.layoutParams.width != convertDpToPx(50)) convertDpToPx(50) else convertDpToPx(250)
             binding.imgCompass.requestLayout()
         }
     }
@@ -390,5 +397,11 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
         )
         super.onDetach()
     }
+
+    private fun convertDpToPx(dp: Int): Int {
+        val density: Float = getResources().getDisplayMetrics().density
+        return Math.round(dp.toFloat() * density)
+    }
+
 }
 
