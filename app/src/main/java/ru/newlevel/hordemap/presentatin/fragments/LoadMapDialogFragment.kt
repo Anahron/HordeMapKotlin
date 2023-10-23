@@ -2,30 +2,29 @@ package ru.newlevel.hordemap.presentatin.fragments
 
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ru.newlevel.hordemap.app.makeLongToast
+import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
+import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.LoadMapDialogBinding
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 
-class LoadMapDialogFragment(private val mapViewModel: MapViewModel, private val settingsViewModel: SettingsViewModel,
-) : Fragment() {
-    private lateinit var binding: LoadMapDialogBinding
+class LoadMapDialogFragment(
+    private val mapViewModel: MapViewModel, private val settingsViewModel: SettingsViewModel,
+) : Fragment(R.layout.load_map_dialog) {
+    private val binding: LoadMapDialogBinding by viewBinding()
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = LoadMapDialogBinding.inflate(inflater, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         var boolean = UserEntityProvider.userEntity?.autoLoad
         if (boolean != null) {
             binding.checkBox.isChecked = boolean
@@ -73,10 +72,8 @@ class LoadMapDialogFragment(private val mapViewModel: MapViewModel, private val 
                 ).show()
             }
         }
-        binding.btnCleanMap.setOnClickListener{
+        binding.btnCleanMap.setOnClickListener {
             mapViewModel.cleanUriForMap()
         }
-        return binding.root
     }
-
 }

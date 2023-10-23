@@ -3,22 +3,18 @@ package ru.newlevel.hordemap.presentatin.fragments
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
+import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.BuildConfig
@@ -29,11 +25,10 @@ import ru.newlevel.hordemap.databinding.FragmentPermissionRequestBinding
 import ru.newlevel.hordemap.presentatin.viewmodels.PermissionState
 import ru.newlevel.hordemap.presentatin.viewmodels.PermissionViewModel
 
-private const val TAG = "AAA"
 
-class PermissionRequestFragment : Fragment() {
+class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request) {
 
-    private lateinit var binding: FragmentPermissionRequestBinding
+    private val binding: FragmentPermissionRequestBinding by viewBinding()
 
     private val permissionViewModel by viewModel<PermissionViewModel>()
     private var activityListener: Callbacks? = null
@@ -71,15 +66,6 @@ class PermissionRequestFragment : Fragment() {
         } else {
             throw RuntimeException("$context must implement PermissionRequestFragment.Callbacks")
         }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentPermissionRequestBinding.inflate(inflater, container, false)
-        return binding.root
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,9 +155,9 @@ class PermissionRequestFragment : Fragment() {
                 is PermissionState.AddUserNameState -> {
                     binding.apply {
                         titleTextView.text =
-                            context?.getString(R.string.fine_location_access_rationale_title_text)
+                            context?.getString(R.string.name_rationale_title_text)
                         detailsTextView.text =
-                            context?.getString(R.string.name__rationale_details_text)
+                            context?.getString(R.string.name_rationale_details_text)
                         editName.isGone = false
                         btnAccept.isGone = true
                         btnUserNameRequest.isGone = false

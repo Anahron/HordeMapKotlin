@@ -1,25 +1,22 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.RadioButton
 import androidx.fragment.app.DialogFragment
+import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.gms.maps.model.LatLng
+import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.OnMapClickDialogBinding
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 
 class OnMapClickInfoDialog(private val mapViewModel: MapViewModel, private val latLng: LatLng) :
-    DialogFragment() {
+    DialogFragment(R.layout.on_map_click_dialog) {
 
-    private lateinit var binding: OnMapClickDialogBinding
+    private val binding: OnMapClickDialogBinding by viewBinding()
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = OnMapClickDialogBinding.inflate(inflater, container, false)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         var checkedRadioButton = 0
 
         val descriptionEditText =
@@ -56,9 +53,8 @@ class OnMapClickInfoDialog(private val mapViewModel: MapViewModel, private val l
             if (descriptionEditText.text.toString().isNotEmpty()) {
                 description = descriptionEditText.text.toString()
             }
-            mapViewModel.sendMarker(latLng,description,checkedRadioButton)
+            mapViewModel.sendMarker(latLng, description, checkedRadioButton)
             dialog?.dismiss()
         }
-        return binding.root
     }
 }

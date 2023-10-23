@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.KeyEvent
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -13,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.slider.Slider
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.makeLongToast
@@ -25,18 +25,16 @@ import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 import kotlin.properties.Delegates
 
 
-class SettingsFragment(private val mapViewModel: MapViewModel, private val settingsViewModel: SettingsViewModel): Fragment() {
-    private lateinit var binding: SettingsFragmentBinding
+class SettingsFragment(private val mapViewModel: MapViewModel, private val settingsViewModel: SettingsViewModel): Fragment(R.layout.settings_fragment) {
 
+    private val binding: SettingsFragmentBinding by viewBinding()
     private lateinit var layoutParamsUser: ViewGroup.LayoutParams
     private lateinit var layoutParamsStatic: ViewGroup.LayoutParams
     private var checkedRadioButton by Delegates.notNull<Int>()
     private var user: UserDomainModel = UserEntityProvider.userEntity?.let { mapUserDataToDomain(it) }!!
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = SettingsFragmentBinding.inflate(inflater, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         layoutParamsUser = binding.imageUserMarker.layoutParams
         layoutParamsStatic = binding.imageCustomMarker.layoutParams
 
@@ -45,9 +43,8 @@ class SettingsFragment(private val mapViewModel: MapViewModel, private val setti
         setupEditNameListener()
         setupSeekBarListeners()
         setupEditTextListener()
-
-        return binding.root
     }
+
 
     private fun setupUIComponents(
         layoutParamsUser: ViewGroup.LayoutParams,

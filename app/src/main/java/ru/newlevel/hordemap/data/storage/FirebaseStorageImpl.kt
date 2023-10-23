@@ -140,7 +140,7 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
                     continuation.resume(null)
                 }
             continuation.invokeOnCancellation {
-                // При отмене можно предпринять соответствующие действия, если необходимо
+                continuation.resume(null)
             }
         }
     }

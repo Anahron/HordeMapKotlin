@@ -2,6 +2,7 @@ package ru.newlevel.hordemap.di
 
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel

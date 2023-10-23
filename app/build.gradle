@@ -43,6 +43,9 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
     annotationProcessor "androidx.room:room-compiler:2.4.2"
 
+    
+    implementation 'com.github.kirich1409:viewbindingpropertydelegate-full:1.5.9'
+
     //DI
     def koin_version= "3.1.2"
     implementation "io.insert-koin:koin-core:$koin_version"
@@ -51,6 +54,7 @@ dependencies {
 
     implementation 'com.google.maps.android:android-maps-utils:3.4.0'
     implementation 'com.google.maps.android:maps-utils-ktx:3.4.0'
+
 
     implementation 'com.firebaseui:firebase-ui-storage:8.0.0'
 
@@ -69,7 +73,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
-    implementation 'com.google.android.gms:play-services-maps:18.1.0'
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
 import android.os.SystemClock
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,10 +19,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import by.kirich1409.viewbindingdelegate.viewBinding
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.data.kml.KmlLayer
@@ -42,29 +39,24 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
-
-class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(),
+class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(R.layout.fragment_maps),
     OnMapReadyCallback {
 
-    private lateinit var binding: FragmentMapsBinding
+    private val binding: FragmentMapsBinding by viewBinding()
+    private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
+    private val mapViewModel by viewModel<MapViewModel>()
     private lateinit var googleMap: GoogleMap
     private var userMarkersObserver: Observer<List<MarkerDataModel>>? = null
     private var staticMarkersObserver: Observer<List<MarkerDataModel>>? = null
-    private val mapViewModel by viewModel<MapViewModel>()
     private val receiver = LocationUpdatesBroadcastReceiver()
-    private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentMapsBinding.inflate(inflater, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        return binding.root
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mapViewModel.state.observe(this@MapFragment) { state ->
@@ -113,7 +105,6 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
         mapViewModel.compassAngle.observe(this) { angle ->
             binding.imgCompass.visibility = View.VISIBLE
             binding.tvCompass.visibility = View.VISIBLE
-            Log.e("AAA", "" + angle)
             binding.imgCompass.rotation = -angle
             binding.tvCompass.text = Math.round(if (angle > 0) angle else angle + 360).toString() + "\u00B0 "
         }
@@ -172,7 +163,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
         //запуск обновления местоположений
         locationUpdateViewModel.startLocationUpdates()
         startAlarmManager()
-//        buildWorkManager()
+//      buildWorkManager()
     }
 
     @SuppressLint("SetTextI18n")
@@ -399,9 +390,8 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment()
     }
 
     private fun convertDpToPx(dp: Int): Int {
-        val density: Float = getResources().getDisplayMetrics().density
-        return Math.round(dp.toFloat() * density)
+        val density: Float = resources.displayMetrics.density
+        return (dp.toFloat() * density).roundToInt()
     }
-
 }
 
