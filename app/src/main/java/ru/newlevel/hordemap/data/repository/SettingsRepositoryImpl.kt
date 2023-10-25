@@ -6,9 +6,9 @@ import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.data.storage.UserStorage
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.domain.repository.UserRepository
+import ru.newlevel.hordemap.domain.repository.SettingsRepository
 
-class UserRepositoryImpl(private val userStorage: UserStorage): UserRepository {
+class SettingsRepositoryImpl(private val userStorage: UserStorage): SettingsRepository {
 
     override fun saveUser(userDomainModel: UserDomainModel) {
         val user = mapUserDomainToData(userDomainModel)

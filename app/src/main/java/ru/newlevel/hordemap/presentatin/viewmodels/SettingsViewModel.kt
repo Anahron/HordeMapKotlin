@@ -6,15 +6,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.domain.usecases.GetUserUseCase
-import ru.newlevel.hordemap.domain.usecases.ResetUserUseCase
+import ru.newlevel.hordemap.domain.usecases.GetSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.ResetSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.SaveAutoLoadUseCase
-import ru.newlevel.hordemap.domain.usecases.SaveUserUseCase
+import ru.newlevel.hordemap.domain.usecases.SaveSettingsUseCase
 
 class SettingsViewModel(
-    private val getUserUseCase: GetUserUseCase,
-    private val saveUserUseCase: SaveUserUseCase,
-    private val resetUserUseCase: ResetUserUseCase,
+    private val getSettingsUseCase: GetSettingsUseCase,
+    private val saveSettingsUseCase: SaveSettingsUseCase,
+    private val resetSettingsUseCase: ResetSettingsUseCase,
     private val saveAutoLoadUseCase : SaveAutoLoadUseCase,
 ) : ViewModel() {
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
@@ -28,7 +28,7 @@ class SettingsViewModel(
     }
 
     fun saveUser(userDomainModel: UserDomainModel) {
-        saveUserUseCase.execute(userDomainModel)
+        saveSettingsUseCase.execute(userDomainModel)
         resultLiveDataMutable.value = userDomainModel
         loginResultLiveDataMutable.value = userDomainModel
     }
@@ -38,17 +38,17 @@ class SettingsViewModel(
     }
 
     fun checkLogin(): UserDomainModel {
-        val user = getUserUseCase.execute()
+        val user = getSettingsUseCase.execute()
         loginResultLiveDataMutable.value = user
         return user
     }
 
     fun getUser() {
-        resultLiveDataMutable.value = getUserUseCase.execute()
+        resultLiveDataMutable.value = getSettingsUseCase.execute()
     }
 
     fun reset() {
-        resetUserUseCase.execute()
+        resetSettingsUseCase.execute()
     }
 
 }

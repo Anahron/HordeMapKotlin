@@ -32,7 +32,7 @@ class MapViewModel(
     private val saveGameMapToFileUseCase: SaveGameMapToFileUseCase,
     private val loadLastGameMapUseCase: LoadLastGameMapUseCase,
     private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase,
-    private val createStaticMarkerUseCase: CreateStaticMarkerUseCase,
+    private val sendStaticMarkerUseCase: SendStaticMarkerUseCase,
     private val stopMarkerUpdateUseCase: StopMarkerUpdateUseCase,
     private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase,
     private val compassUseCase: CompassUseCase
@@ -114,7 +114,7 @@ class MapViewModel(
     }
 
     fun sendMarker(latLng: LatLng, description: String, checkedItem: Int) {
-        createStaticMarkerUseCase.execute(latLng, description, checkedItem)
+        sendStaticMarkerUseCase.execute(latLng, description, checkedItem)
     }
 
     fun setUriForMap(uri: Uri) {

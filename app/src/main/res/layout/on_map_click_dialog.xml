@@ -10,6 +10,7 @@
 
     <TextView
         android:id="@+id/textView2"
+        android:textColor="@color/main_green_dark"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/choose_icon"
@@ -94,20 +95,25 @@
         </RadioGroup>
 
 
-    <EditText
+    <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/description_edit_text"
-        style="@style/Widget.AppCompat.AutoCompleteTextView"
         android:layout_width="match_parent"
+        android:textColorHighlight="@color/main_green_dark"
         android:layout_height="wrap_content"
         android:autofillHints=""
         android:hint="@string/entry_text"
-        android:padding="12dp"
         android:inputType="textPersonName"
-        android:minHeight="48dp" />
+        android:minHeight="48dp"
+        android:padding="12dp"
+        android:textColor="@color/main_green_dark"
+        android:textColorHint="@color/main_green_dark"
+        android:textColorLink="@color/main_green_dark" />
 
     <EditText
         android:id="@+id/description_edit_text_number"
         style="@style/Widget.AppCompat.AutoCompleteTextView"
+        android:textColor="@color/main_green_dark"
+        android:textColorHint="@color/main_green_dark"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/number09"

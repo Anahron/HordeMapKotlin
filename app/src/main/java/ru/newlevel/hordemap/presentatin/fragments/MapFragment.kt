@@ -163,7 +163,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(R
         //запуск обновления местоположений
         locationUpdateViewModel.startLocationUpdates()
         startAlarmManager()
-//      buildWorkManager()
+        buildWorkManager()
     }
 
     @SuppressLint("SetTextI18n")

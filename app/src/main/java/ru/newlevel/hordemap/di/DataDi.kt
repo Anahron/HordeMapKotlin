@@ -40,8 +40,8 @@ val dataModule = module {
 
 
     // Repos
-    single<UserRepository> {
-        UserRepositoryImpl(userStorage = get())
+    single<SettingsRepository> {
+        SettingsRepositoryImpl(userStorage = get())
     }
     single<GeoDataRepository> {
         GeoDataRepositoryImpl(markersDataStorage = get())

@@ -10,14 +10,14 @@ val domainModule = module {
         CompassUseCase(sensorRepository = get())
     }
 
-    factory<GetUserUseCase> {
-        GetUserUseCase(userRepository = get())
+    factory<GetSettingsUseCase> {
+        GetSettingsUseCase(settingsRepository = get())
     }
-    factory<SaveUserUseCase> {
-        SaveUserUseCase(userRepository = get())
+    factory<SaveSettingsUseCase> {
+        SaveSettingsUseCase(settingsRepository = get())
     }
-    factory<ResetUserUseCase> {
-         ResetUserUseCase(userRepository = get())
+    factory<ResetSettingsUseCase> {
+         ResetSettingsUseCase(settingsRepository = get())
     }
     factory<DeleteMarkerUseCase> {
         DeleteMarkerUseCase(geoDataRepository = get())
@@ -36,10 +36,10 @@ val domainModule = module {
         LoadGameMapFromServerUseCase(gameMapRepository = get())
     }
     factory<SaveAutoLoadUseCase> {
-        SaveAutoLoadUseCase(userRepository = get())
+        SaveAutoLoadUseCase(settingsRepository = get())
     }
-    factory<CreateStaticMarkerUseCase> {
-        CreateStaticMarkerUseCase(geoDataRepository = get())
+    factory<SendStaticMarkerUseCase> {
+        SendStaticMarkerUseCase(geoDataRepository = get())
     }
     factory<StartMarkerUpdateUseCase> {
         StartMarkerUpdateUseCase(geoDataRepository = get())

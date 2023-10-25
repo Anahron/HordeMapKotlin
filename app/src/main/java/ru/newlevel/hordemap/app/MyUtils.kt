@@ -4,11 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,14 +29,29 @@ fun makeLongToast(text: String, context: Context) {
     ).show()
 }
 
-fun mapUserDataToDomain(user: UserDataModel) : UserDomainModel {
-    return UserDomainModel(user.name,user.timeToSendData,user.usersMarkerSize,user.staticMarkerSize,user.selectedMarker,user.deviceID, user.autoLoad)
+fun mapUserDataToDomain(user: UserDataModel): UserDomainModel {
+    return UserDomainModel(
+        user.name,
+        user.timeToSendData,
+        user.usersMarkerSize,
+        user.staticMarkerSize,
+        user.selectedMarker,
+        user.deviceID,
+        user.autoLoad
+    )
 }
 
-fun mapUserDomainToData(userDomainModel: UserDomainModel) : UserDataModel {
-    return UserDataModel(userDomainModel.name,userDomainModel.timeToSendData,userDomainModel.usersMarkerSize,userDomainModel.staticMarkerSize,userDomainModel.selectedMarker,userDomainModel.deviceID, userDomainModel.autoLoad)
+fun mapUserDomainToData(userDomainModel: UserDomainModel): UserDataModel {
+    return UserDataModel(
+        userDomainModel.name,
+        userDomainModel.timeToSendData,
+        userDomainModel.usersMarkerSize,
+        userDomainModel.staticMarkerSize,
+        userDomainModel.selectedMarker,
+        userDomainModel.deviceID,
+        userDomainModel.autoLoad
+    )
 }
-
 
 
 fun getDeviceId(context: Context): String {

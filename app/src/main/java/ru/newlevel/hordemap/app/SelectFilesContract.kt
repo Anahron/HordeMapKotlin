@@ -17,6 +17,8 @@ class SelectFilesContract : ActivityResultContract<String, Uri?>() {
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): Uri? = when {
+
+
         resultCode != Activity.RESULT_OK -> null
         else -> intent?.data
     }

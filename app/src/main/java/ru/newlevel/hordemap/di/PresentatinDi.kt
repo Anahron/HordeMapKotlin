@@ -11,9 +11,9 @@ import ru.newlevel.hordemap.presentatin.viewmodels.PermissionViewModel
 val presentationModule = module {
     viewModel<SettingsViewModel> {
         SettingsViewModel(
-            getUserUseCase = get(),
-            saveUserUseCase = get(),
-            resetUserUseCase = get(),
+            getSettingsUseCase = get(),
+            saveSettingsUseCase = get(),
+            resetSettingsUseCase = get(),
             saveAutoLoadUseCase = get()
         )
     }
@@ -24,7 +24,7 @@ val presentationModule = module {
             saveGameMapToFileUseCase = get(),
             loadLastGameMapUseCase = get(),
             loadGameMapFromServerUseCase = get(),
-            createStaticMarkerUseCase = get(),
+            sendStaticMarkerUseCase = get(),
             startMarkerUpdateUseCase = get(),
             stopMarkerUpdateUseCase = get(),
             compassUseCase = get()
@@ -36,6 +36,6 @@ val presentationModule = module {
         )
     }
     viewModel<PermissionViewModel>{
-        PermissionViewModel( getUserUseCase = get(), saveUserUseCase = get(),)
+        PermissionViewModel( getSettingsUseCase = get(), saveSettingsUseCase = get(),)
     }
 }

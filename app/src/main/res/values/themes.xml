@@ -1,6 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.HordeMap" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.HordeMap" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/main_green</item>
         <item name="colorPrimaryVariant">@color/main_green_dark</item>
