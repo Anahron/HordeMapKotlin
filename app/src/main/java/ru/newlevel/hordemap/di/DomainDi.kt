@@ -6,6 +6,17 @@ import ru.newlevel.hordemap.domain.usecases.*
 
 val domainModule = module {
 
+    factory<StartMessageUpdateUseCase> {
+        StartMessageUpdateUseCase(messengerRepository = get())
+    }
+
+    factory<StopMessageUpdateUseCase> {
+        StopMessageUpdateUseCase(messengerRepository = get())
+    }
+    factory<SendMessageUseCase> {
+        SendMessageUseCase(messengerRepository = get())
+    }
+
     factory<CompassUseCase> {
         CompassUseCase(sensorRepository = get())
     }

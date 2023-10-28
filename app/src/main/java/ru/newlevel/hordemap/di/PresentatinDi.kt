@@ -3,10 +3,7 @@ package ru.newlevel.hordemap.di
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
-import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.PermissionViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.*
 
 val presentationModule = module {
     viewModel<SettingsViewModel> {
@@ -36,6 +33,9 @@ val presentationModule = module {
         )
     }
     viewModel<PermissionViewModel>{
-        PermissionViewModel( getSettingsUseCase = get(), saveSettingsUseCase = get(),)
+        PermissionViewModel( getSettingsUseCase = get(), saveSettingsUseCase = get())
+    }
+    viewModel<MessengerViewModel>{
+        MessengerViewModel(startMessageUpdateUseCase = get(), stopMessageUpdateUseCase = get(), sendMessageUseCase = get())
     }
 }

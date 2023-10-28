@@ -29,8 +29,7 @@ class BgLocationWorker(context: Context, param: WorkerParameters) :
     private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
 
     companion object {
-        // unique name for the work
-        val workName = "BgLocationWorker"
+        const val workName = "BgLocationWorker"
     }
 
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)

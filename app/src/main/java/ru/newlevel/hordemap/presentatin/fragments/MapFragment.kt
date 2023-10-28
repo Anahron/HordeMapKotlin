@@ -7,9 +7,7 @@ import android.app.PendingIntent
 import android.content.*
 import android.os.Bundle
 import android.os.SystemClock
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -40,7 +38,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(R.layout.fragment_maps),
-    OnMapReadyCallback {
+    OnMapReadyCallback{
 
     private val binding: FragmentMapsBinding by viewBinding()
     private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
@@ -253,14 +251,22 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(R
             }
             binding.drawableSettings.openDrawer(GravityCompat.END)
         }
+        binding.ibMessenger.setOnClickListener {
+            val messengerDialog =
+                MessengerDialogFragment()
+            messengerDialog.show(this.childFragmentManager, "messengerDialog")
+        }
     }
 
     private fun createStaticMarkerDialog(latLng: LatLng) {
-        val dialogFragment =
-            OnMapClickInfoDialog(
-                mapViewModel = mapViewModel,
-                latLng
-            )
+        val dialogFragment = OnMapClickInfoDialog(object : OnMapClickInfoDialogResult {
+                override fun onMapClickInfoDialogResult(
+                    description: String,
+                    checkedRadioButton: Int
+                ) {
+                    mapViewModel.sendMarker(latLng,description,checkedRadioButton)
+                }
+            })
         dialogFragment.show(this.childFragmentManager, "customDialog")
     }
 

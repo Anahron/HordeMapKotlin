@@ -3,23 +3,25 @@ package ru.newlevel.hordemap.data.storage
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.Marker
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.suspendCancellableCoroutine
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import java.io.File
 import kotlin.coroutines.resume
 
 private const val GEO_USER_MARKERS_PATH = "geoData0"
 private const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
 private const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах
+private const val MESSAGE_PATH = "messages0"
 private const val TIMESTAMP_PATH = "timestamp"
 private const val TAG = "AAA"
 
-class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
+class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
 
     private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
     var storage: FirebaseStorage = FirebaseStorage.getInstance()
@@ -31,10 +33,13 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
 
     private var valueUserEventListener: ValueEventListener? = null
     private var valueStaticEventListener: ValueEventListener? = null
+    private var valueMessageEventListener: ValueEventListener? = null
+
+    private val liveDataStaticMarkers = MutableLiveData<List<MarkerDataModel>>()
+    private val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
+    private val liveDataMessageDataModel = MutableLiveData<List<MessageDataModel>>()
 
     override fun deleteStaticMarker(marker: Marker) {
-        Log.e(TAG, "deleteStaticMarker вызван")
-        Log.e(TAG, "deleteStaticMarker вызван" + marker.tag.toString() + " child ")
         staticDatabaseReference.child(marker.tag.toString()).removeValue()
     }
 
@@ -44,11 +49,7 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
     }
 
     override fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
-
-        if (valueUserEventListener != null) {
-            userDatabaseReference.removeEventListener(valueUserEventListener!!)
-        }
+        //  userDatabaseReference.removeEventListener(valueUserEventListener)
         valueUserEventListener =
             userDatabaseReference.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -88,11 +89,8 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
     }
 
     override fun startStaticMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        val liveDataStaticMarkers = MutableLiveData<List<MarkerDataModel>>()
-        if (valueStaticEventListener != null) {
+        if (valueStaticEventListener != null)
             staticDatabaseReference.removeEventListener(valueStaticEventListener!!)
-        }
-
         valueStaticEventListener =
             staticDatabaseReference.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -118,10 +116,10 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
 
     override fun stopMarkerUpdates() {
         Log.e(TAG, "stopMarkerUpdates вызван")
-        if (valueUserEventListener != null) {
+        if (valueUserEventListener != null)
             userDatabaseReference.removeEventListener(valueUserEventListener!!)
+        if (valueStaticEventListener != null)
             staticDatabaseReference.removeEventListener(valueStaticEventListener!!)
-        }
     }
 
     override fun createStaticMarker(markerModel: MarkerDataModel) {
@@ -143,6 +141,48 @@ class FirebaseStorageImpl: MarkersDataStorage, FirebaseMapStorage {
                 continuation.resume(null)
             }
         }
+    }
+
+    override fun sendMessage(text: String) {
+        val time = System.currentTimeMillis()
+        val geoDataPath = "$MESSAGE_PATH/$time"
+        val updates: MutableMap<String, Any> = HashMap()
+        updates["$geoDataPath/userName"] = UserEntityProvider.userEntity?.name.toString()
+        updates["$geoDataPath/message"] = text
+        updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity?.deviceID.toString()
+        updates["$geoDataPath/timestamp"] = time
+        databaseReference.updateChildren(updates)
+    }
+
+    override fun startMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
+        //    databaseReference.removeEventListener(valueMessageEventListener)
+        valueMessageEventListener = databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val messages = ArrayList<MessageDataModel>()
+                    for (snapshot in dataSnapshot.children) {
+                        Log.e("AAA", snapshot.toString())
+                        val message: MessageDataModel? =
+                            snapshot.getValue(MessageDataModel::class.java)
+                        if (message != null) {
+                            messages.add(message)
+                        }
+                    }
+                    if (messages.isNotEmpty()) {
+                        liveDataMessageDataModel.postValue(messages)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
+        return liveDataMessageDataModel
+    }
+
+    override fun stopMessageUpdate() {
+        if (valueMessageEventListener != null)
+            databaseReference.removeEventListener(valueMessageEventListener!!)
     }
 
 }

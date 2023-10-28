@@ -22,7 +22,7 @@ val dataModule = module {
     }
 
     single<MarkersDataStorage> {
-        FirebaseStorageImpl()
+        StorageImpl()
     }
     single<FilesLocalStorage> {
         FilesLocalStorage(context = get())
@@ -31,11 +31,17 @@ val dataModule = module {
     single<GameMapLocalStorage> {
         FilesLocalStorage(context = get())
     }
-    single<FirebaseMapStorage> {
-        FirebaseStorageImpl()
+    single<MapStorage> {
+        StorageImpl()
     }
     single<MySensorManager> {
         MySensorManager(sensorManager = get())
+    }
+    single<MessageStorage> {
+        StorageImpl()
+    }
+    single<StorageImpl> {
+       get()
     }
 
 
@@ -52,10 +58,14 @@ val dataModule = module {
     }
 
     single<GameMapRepository> {
-        GameMapRepositoryImpl(gameMapLocalStorage = get(), firebaseMapStorage = get())
+        GameMapRepositoryImpl(gameMapLocalStorage = get(), mapStorage = get())
     }
 
     single<SensorRepository> {
         SensorRepositoryImpl(mySensorManager = get())
+    }
+
+    single<MessengerRepository> {
+        MessengerRepositoryImpl(messageStorage = get())
     }
 }

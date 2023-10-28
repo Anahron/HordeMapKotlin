@@ -21,6 +21,7 @@ import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 class LoadMapDialogFragment(
     private val mapViewModel: MapViewModel, private val settingsViewModel: SettingsViewModel,
 ) : Fragment(R.layout.load_map_dialog) {
+
     private val binding: LoadMapDialogBinding by viewBinding()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

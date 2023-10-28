@@ -21,9 +21,9 @@ import java.io.InputStream
 import kotlin.math.roundToInt
 
 sealed class MapState {
-    class DefaultState : MapState()
-    class MarkersOffState : MapState()
-    class LoadingState : MapState()
+    object DefaultState : MapState()
+    object MarkersOffState : MapState()
+    object LoadingState : MapState()
 }
 
 class MapViewModel(
@@ -38,7 +38,7 @@ class MapViewModel(
     private val compassUseCase: CompassUseCase
 ) : ViewModel() {
 
-    val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState() }
+    val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState }
 
     private var routePolyline: Polyline? = null
     private var destination: LatLng? = null
@@ -153,14 +153,14 @@ class MapViewModel(
     }
 
     fun turnToDefaultState() {
-        state.value = MapState.DefaultState()
+        state.value = MapState.DefaultState
     }
 
     fun showOrHideMarkers() {
         if (state.value is MapState.MarkersOffState)
-            state.value = MapState.DefaultState()
+            state.value = MapState.DefaultState
         else if (state.value is MapState.DefaultState)
-            state.value = MapState.MarkersOffState()
+            state.value = MapState.MarkersOffState
     }
 
     fun createUsersMarkers(it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
