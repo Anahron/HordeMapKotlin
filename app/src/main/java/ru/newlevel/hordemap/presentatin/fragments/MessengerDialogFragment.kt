@@ -18,7 +18,6 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import android.widget.TextView.OnEditorActionListener
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -52,23 +51,18 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MessagesAdapter
     private lateinit var photoUri: Uri
-    private var isFirstAddItems = true
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         dialog!!.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog!!.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
 
         if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED
+                requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
-        } else {
             ActivityCompat.requestPermissions(
                 requireActivity(),
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
@@ -87,15 +81,16 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
         messengerViewModel.startMessageUpdate()
 
-        messengerViewModel.messagesLiveData.observe(this)
-        { messages ->
-            if (recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height)
-                binding.newMessage.visibility = View.VISIBLE
-            if (messages.isNotEmpty())
+        messengerViewModel.messagesLiveData.observe(this) { messages ->
+            if (adapter.itemCount < messages.size) {
+                val onDown =
+                    recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
                 adapter.setMessages(messages as ArrayList<MessageDataModel>)
-            if (isFirstAddItems) {
-                recyclerView.scrollToPosition(adapter.itemCount - 1)
-                isFirstAddItems = false
+                if (onDown) {
+                    binding.newMessage.visibility = View.VISIBLE
+                } else {
+                    recyclerView.scrollToPosition(adapter.itemCount - 1)
+                }
             }
         }
 
@@ -119,7 +114,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             }
         }
 
-        //  слушатель размера экрана для прокрутки элементов при открытии клавиатуры
+//  слушатель размера экрана для прокрутки элементов при открытии клавиатуры
         binding.activityRoot.viewTreeObserver.addOnGlobalLayoutListener {
             val r = Rect()
             binding.activityRoot.getWindowVisibleDisplayFrame(r)
@@ -142,17 +137,11 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         lifecycleScope.launch {
             if (result != null) {
                 messengerViewModel.sendFile(
-                    result,
-                    getFileNameFromUri(result),
-                    getFileSizeFromUri(result)
+                    result, getFileNameFromUri(result), getFileSizeFromUri(result)
                 )
             }
         }
     }
-
-    private val mSaveContent = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {}
 
     private fun getFileNameFromUri(uri: Uri): String? {
         val contentResolver = requireContext().contentResolver
@@ -310,7 +299,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     private fun setupNewMessageAnnounces() {
         binding.newMessage.setOnClickListener {
-            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1)
+            recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
             binding.newMessage.visibility = View.GONE
         }
     }
@@ -328,7 +317,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     companion object {
         private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1010
         private const val REQUEST_CODE_CAMERA_PERMISSION = 1011
-        const val REQUEST_CODE_SELECT_FILE = 101
         const val REQUEST_CODE_CAMERA = 11
 
     }
