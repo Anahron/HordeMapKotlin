@@ -49,6 +49,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(R
     private val receiver = LocationUpdatesBroadcastReceiver()
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
+    private var messengerDialog: MessengerDialogFragment? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -252,9 +253,13 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) : Fragment(R
             binding.drawableSettings.openDrawer(GravityCompat.END)
         }
         binding.ibMessenger.setOnClickListener {
-            val messengerDialog =
-                MessengerDialogFragment()
-            messengerDialog.show(this.childFragmentManager, "messengerDialog")
+            if (messengerDialog == null) {
+                messengerDialog = MessengerDialogFragment()
+            }
+
+            if (!messengerDialog!!.isAdded) {
+                messengerDialog!!.show(this.childFragmentManager, "messengerDialog")
+            }
         }
     }
 

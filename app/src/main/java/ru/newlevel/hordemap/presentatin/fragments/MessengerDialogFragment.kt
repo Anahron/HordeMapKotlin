@@ -114,7 +114,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             }
         }
 
-//  слушатель размера экрана для прокрутки элементов при открытии клавиатуры
+        //  слушатель размера экрана для прокрутки элементов при открытии клавиатуры
         binding.activityRoot.viewTreeObserver.addOnGlobalLayoutListener {
             val r = Rect()
             binding.activityRoot.getWindowVisibleDisplayFrame(r)
