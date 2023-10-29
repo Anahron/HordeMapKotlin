@@ -3,13 +3,17 @@ package ru.newlevel.hordemap.presentatin
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.media.ThumbnailUtils
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.launch
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.ItemMessageBinding
 import java.io.File
@@ -17,11 +21,9 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MessagesAdapter() :
-    RecyclerView.Adapter<MessagesAdapter.MessageViewHolder>() {
+class MessagesAdapter(private val onButtonSaveClickListener: OnButtonSaveClickListener) : RecyclerView.Adapter<MessagesAdapter.MessageViewHolder>() {
 
     private var messageDataModels: ArrayList<MessageDataModel>? = null
-
 
     fun setMessages(newMessageDataModels: ArrayList<MessageDataModel>) {
         println("Пришли в setMessages с количеством сообщений " + newMessageDataModels.size)
@@ -49,7 +51,7 @@ class MessagesAdapter() :
         position: Int
     ) {
         val messageDataModel: MessageDataModel = messageDataModels!![position]
-        holder.bind(messageDataModel)
+        holder.bind(messageDataModel, onButtonSaveClickListener)
     }
 
     override fun getItemCount(): Int {
@@ -64,9 +66,8 @@ class MessagesAdapter() :
         private val dateFormat: DateFormat = SimpleDateFormat("HH:mm")
         private val timeZone = TimeZone.getDefault()
 
-
         @SuppressLint("SetTextI18n")
-        fun bind(messageDataModel: MessageDataModel) {
+        fun bind(messageDataModel: MessageDataModel, onButtonSaveClickListener: OnButtonSaveClickListener) {
             dateFormat.timeZone = timeZone
             binding.textViewUsername.text = messageDataModel.userName
             binding.textViewTime.text = dateFormat.format(Date(messageDataModel.timestamp))
@@ -107,8 +108,8 @@ class MessagesAdapter() :
                         }
                     } else {
                         binding.downloadButton.visibility = View.VISIBLE
-                        binding.downloadButton.setOnClickListener { v: View? ->
-                            //TODO передача во вью модель через колбэк? viewModel().downloadFile(strings[0], fileName)
+                        binding.downloadButton.setOnClickListener {
+                            onButtonSaveClickListener.onButtonSaveClick(strings[0], fileName)
                         }
                     }
                 } catch (e: Exception) {
@@ -199,5 +200,8 @@ class MessagesAdapter() :
     companion object {
         @Volatile
         private var downloadsDir: File? = null
+    }
+    interface OnButtonSaveClickListener {
+        fun onButtonSaveClick(uri: String, fileName: String)
     }
 }

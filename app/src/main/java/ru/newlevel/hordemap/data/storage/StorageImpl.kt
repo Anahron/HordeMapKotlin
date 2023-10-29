@@ -1,12 +1,20 @@
 package ru.newlevel.hordemap.data.storage
 
+import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.Marker
-import com.google.firebase.database.*
+import com.google.android.gms.tasks.Task
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.UploadTask
 import kotlinx.coroutines.suspendCancellableCoroutine
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
@@ -16,6 +24,7 @@ import kotlin.coroutines.resume
 
 private const val GEO_USER_MARKERS_PATH = "geoData0"
 private const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
+private const val MESSAGE_FILE_FOLDER = "MessengerFiles0"
 private const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах
 private const val MESSAGE_PATH = "messages0"
 private const val TIMESTAMP_PATH = "timestamp"
@@ -24,9 +33,12 @@ private const val TAG = "AAA"
 class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
 
     private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
+    private val storageReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseStorage.getInstance().reference }
+
     var storage: FirebaseStorage = FirebaseStorage.getInstance()
 
-    val gsReference = storage.getReferenceFromUrl("gs://horde-4112c.appspot.com/maps/map.kmz")
+    private val gsReference =
+        storage.getReferenceFromUrl("gs://horde-4112c.appspot.com/maps/map.kmz")
 
     private val staticDatabaseReference = databaseReference.child(GEO_STATIC_MARKERS_PATH)
     private val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
@@ -38,18 +50,47 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
     private val liveDataStaticMarkers = MutableLiveData<List<MarkerDataModel>>()
     private val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
     private val liveDataMessageDataModel = MutableLiveData<List<MessageDataModel>>()
+    private val progressLiveData = MutableLiveData<Int>()
 
     override fun deleteStaticMarker(marker: Marker) {
         staticDatabaseReference.child(marker.tag.toString()).removeValue()
     }
 
-    override fun sendCoordinates(markerModel: MarkerDataModel) {
+    override fun sendUserMarker(markerModel: MarkerDataModel) {
         Log.e(TAG, "Координаты отправлены")
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
+    override fun startMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
+        if (valueMessageEventListener != null)
+            databaseReference.removeEventListener(valueMessageEventListener!!)
+        valueMessageEventListener = databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val messages = ArrayList<MessageDataModel>()
+                    for (snapshot in dataSnapshot.children) {
+                        Log.e("AAA", snapshot.toString())
+                        val message: MessageDataModel? =
+                            snapshot.getValue(MessageDataModel::class.java)
+                        if (message != null) {
+                            messages.add(message)
+                        }
+                    }
+                    if (messages.isNotEmpty()) {
+                        liveDataMessageDataModel.postValue(messages)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
+        return liveDataMessageDataModel
+    }
+
     override fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        //  userDatabaseReference.removeEventListener(valueUserEventListener)
+        if (valueUserEventListener != null)
+            userDatabaseReference.removeEventListener(valueUserEventListener!!)
         valueUserEventListener =
             userDatabaseReference.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -114,15 +155,7 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         return liveDataStaticMarkers
     }
 
-    override fun stopMarkerUpdates() {
-        Log.e(TAG, "stopMarkerUpdates вызван")
-        if (valueUserEventListener != null)
-            userDatabaseReference.removeEventListener(valueUserEventListener!!)
-        if (valueStaticEventListener != null)
-            staticDatabaseReference.removeEventListener(valueStaticEventListener!!)
-    }
-
-    override fun createStaticMarker(markerModel: MarkerDataModel) {
+    override fun sendStaticMarker(markerModel: MarkerDataModel) {
         staticDatabaseReference.child(markerModel.timestamp.toString()).setValue(markerModel)
     }
 
@@ -143,6 +176,42 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         }
     }
 
+    override fun sendFile(uri: Uri, fileName: String?, fileSize: Long) {
+        val messageFilesStorage = storageReference.child("$MESSAGE_FILE_FOLDER/$fileName")
+        val uploadTask = messageFilesStorage.putFile(uri)
+
+        uploadTask.addOnProgressListener { taskSnapshot: UploadTask.TaskSnapshot ->
+            val progress =
+                100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                progressLiveData.postValue(progress.toInt())
+            }
+        }
+        uploadTask.addOnCompleteListener { task: Task<UploadTask.TaskSnapshot?> ->
+            if (task.isSuccessful) {
+                progressLiveData.postValue(100)
+                messageFilesStorage.downloadUrl
+                    .addOnSuccessListener { uri: Uri ->
+                        val downloadUrl = uri.toString()
+                        sendMessage("$downloadUrl&&&$fileName&&&$fileSize")
+                    }
+            }
+        }
+    }
+
+    override fun downloadFile(context: Context, uri: Uri, fileName: String?) {
+        val request = DownloadManager.Request(uri)
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        request.allowScanningByMediaScanner()
+        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        downloadManager.enqueue(request)
+        if (downloadManager != null) {
+              val downloadId = downloadManager.enqueue(request)
+            // observeDownloadProgress(downloadManager, downloadId)
+        }
+    }
+
     override fun sendMessage(text: String) {
         val time = System.currentTimeMillis()
         val geoDataPath = "$MESSAGE_PATH/$time"
@@ -154,30 +223,12 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         databaseReference.updateChildren(updates)
     }
 
-    override fun startMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
-        //    databaseReference.removeEventListener(valueMessageEventListener)
-        valueMessageEventListener = databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val messages = ArrayList<MessageDataModel>()
-                    for (snapshot in dataSnapshot.children) {
-                        Log.e("AAA", snapshot.toString())
-                        val message: MessageDataModel? =
-                            snapshot.getValue(MessageDataModel::class.java)
-                        if (message != null) {
-                            messages.add(message)
-                        }
-                    }
-                    if (messages.isNotEmpty()) {
-                        liveDataMessageDataModel.postValue(messages)
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-
-                }
-            })
-        return liveDataMessageDataModel
+    override fun stopMarkerUpdates() {
+        Log.e(TAG, "stopMarkerUpdates вызван")
+        if (valueUserEventListener != null)
+            userDatabaseReference.removeEventListener(valueUserEventListener!!)
+        if (valueStaticEventListener != null)
+            staticDatabaseReference.removeEventListener(valueStaticEventListener!!)
     }
 
     override fun stopMessageUpdate() {

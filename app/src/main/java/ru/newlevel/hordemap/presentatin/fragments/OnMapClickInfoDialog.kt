@@ -25,7 +25,6 @@ class OnMapClickInfoDialog(private val onMapClickInfoDialogResult: OnMapClickInf
             binding.descriptionEditTextNumber
         var description = "Маркер"
 
-        // Установка OnClickListener для каждой ImageView
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             val selectedRadioButton = binding.radioGroup.findViewById<RadioButton>(checkedId)
             val checkedTag = selectedRadioButton.tag.toString()

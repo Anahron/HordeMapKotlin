@@ -13,19 +13,26 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import android.widget.TextView.OnEditorActionListener
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.MessagesDialogBinding
 import ru.newlevel.hordemap.presentatin.MessagesAdapter
@@ -36,7 +43,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
+class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
+    MessagesAdapter.OnButtonSaveClickListener {
 
     private val binding: MessagesDialogBinding by viewBinding()
     private val messengerViewModel by viewModel<MessengerViewModel>()
@@ -55,9 +63,21 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
             ViewGroup.LayoutParams.MATCH_PARENT
         )
 
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+        } else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_CODE_WRITE_EXTERNAL_STORAGE
+            )
+        }
         setupRecyclerView()
         setupNewMessageAnnounces()
-        //createProgressBar(dialog)
+        createProgressBar()
         setupScrollDownButton()
         setupEditTextMessage()
         setupSendMessageButton()
@@ -67,7 +87,8 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
 
         messengerViewModel.startMessageUpdate()
 
-        messengerViewModel.messagesLiveData.observe(this) { messages ->
+        messengerViewModel.messagesLiveData.observe(this)
+        { messages ->
             if (recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height)
                 binding.newMessage.visibility = View.VISIBLE
             if (messages.isNotEmpty())
@@ -92,14 +113,14 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
 //            }
 //        }
 
-        recyclerView.setOnScrollChangeListener{ _, _, _, _, _ ->
+        recyclerView.setOnScrollChangeListener { _, _, _, _, _ ->
             if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
                 binding.newMessage.visibility = View.GONE
             }
         }
 
         //  слушатель размера экрана для прокрутки элементов при открытии клавиатуры
-        binding.activityRoot.viewTreeObserver.addOnGlobalLayoutListener{
+        binding.activityRoot.viewTreeObserver.addOnGlobalLayoutListener {
             val r = Rect()
             binding.activityRoot.getWindowVisibleDisplayFrame(r)
             val screenHeight = binding.activityRoot.rootView.height
@@ -111,27 +132,74 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
                 )
             }
         }
-        dialog?.setOnDismissListener{
+        dialog?.setOnDismissListener {
             messengerViewModel.stopMessageUpdate()
             this@MessengerDialogFragment.dismissAllowingStateLoss()
         }
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE_SELECT_FILE && resultCode == Activity.RESULT_OK) {
-            if (data != null && data.data != null) {
-                val fileUri = data.data
-                fileUri?.let { messengerViewModel.uploadFile(it) }
-            }
-        }
-        if (requestCode == REQUEST_CODE_CAMERA && resultCode == Activity.RESULT_OK) {
-            if (data != null) {
-                photoUri = data.data!!
-                photoUri.let { messengerViewModel.uploadFile(it) }
+    private val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
+        lifecycleScope.launch {
+            if (result != null) {
+                messengerViewModel.sendFile(
+                    result,
+                    getFileNameFromUri(result),
+                    getFileSizeFromUri(result)
+                )
             }
         }
     }
+
+    private val mSaveContent = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {}
+
+    private fun getFileNameFromUri(uri: Uri): String? {
+        val contentResolver = requireContext().contentResolver
+        val cursor = contentResolver.query(uri, null, null, null, null)
+
+        return cursor?.use { c ->
+            val nameIndex = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (nameIndex != -1) {
+                c.moveToFirst()
+                c.getString(nameIndex)
+            } else {
+                ""
+            }
+        }
+    }
+
+    private fun getFileSizeFromUri(uri: Uri): Long {
+        val contentResolver = requireContext().contentResolver
+        val cursor = contentResolver.query(uri, null, null, null, null)
+
+        return cursor?.use { c ->
+            val sizeIndex = c.getColumnIndex(OpenableColumns.SIZE)
+            if (sizeIndex != -1) {
+                c.moveToFirst()
+                c.getLong(sizeIndex)
+            } else {
+                -1 // Если размер файла не найден
+            }
+        } ?: -1 // Если cursor равен null
+    }
+
+
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        if (requestCode == REQUEST_CODE_SELECT_FILE && resultCode == Activity.RESULT_OK) {
+//            if (data != null && data.data != null) {
+//                val fileUri = data.data
+//                Log.e("AAA", fileUri.toString())
+//                fileUri?.let { messengerViewModel.sendFile(it) }
+//            }
+//        }
+//        if (requestCode == REQUEST_CODE_CAMERA && resultCode == Activity.RESULT_OK) {
+//            if (data != null) {
+//                photoUri = data.data!!
+//                photoUri.let { messengerViewModel.sendFile(it) }
+//            }
+//        }
+//    }
 
     @SuppressLint("IntentReset")
     private fun openPhotoButtonClick(context: Context) {
@@ -171,7 +239,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
     private fun setupRecyclerView() {
         recyclerView = binding.recyclerViewMessages
         binding.recyclerViewMessages.layoutManager = LinearLayoutManager(requireContext())
-        adapter = MessagesAdapter()
+        adapter = MessagesAdapter(this)
         binding.recyclerViewMessages.adapter = adapter
     }
 
@@ -207,8 +275,8 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
     }
 
     private fun setupUploadFileButton() { // Отправка файла
-        binding.buttonSendFile.setOnClickListener { v1: View? ->
-            onSendFileButtonClick((context as Activity?)!!)
+        binding.buttonSendFile.setOnClickListener {
+            activityLauncher.launch("*/*")
             binding.editTextMessage.requestFocus()
         }
     }
@@ -234,12 +302,11 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
     private fun setupCloseMessengerButton() {
         binding.closeMassager.setOnClickListener { dialog?.dismiss() }
     }
-//    private fun createProgressBar(dialog: Dialog) {
-//        progressText = dialog.findViewById(R.id.progressText)
-//        progressText.setVisibility(View.INVISIBLE)
-//        progressBar = dialog.findViewById(R.id.progressBar)
-//        progressBar.setVisibility(View.INVISIBLE)
-//    }
+
+    private fun createProgressBar() {
+        binding.progressText.visibility = View.INVISIBLE
+        binding.progressBar.visibility = View.INVISIBLE
+    }
 
     private fun setupNewMessageAnnounces() {
         binding.newMessage.setOnClickListener {
@@ -264,11 +331,13 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog) {
         const val REQUEST_CODE_SELECT_FILE = 101
         const val REQUEST_CODE_CAMERA = 11
 
-        fun onSendFileButtonClick(activity: Activity) {
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.type = "*/*"
-            intent.addCategory(Intent.CATEGORY_OPENABLE)
-            activity.startActivityForResult(intent, REQUEST_CODE_SELECT_FILE)
+    }
+
+    override fun onButtonSaveClick(uri: String, fileName: String) {
+        runBlocking {
+            launch(Dispatchers.IO) {
+                messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName)
+            }
         }
     }
 }

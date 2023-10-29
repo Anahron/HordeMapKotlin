@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.data.repository
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.data.storage.MarkersDataStorage
@@ -14,11 +13,11 @@ class GeoDataRepositoryImpl(private val markersDataStorage: MarkersDataStorage) 
     }
 
     override fun sendCoordinates(markerModel: MarkerDataModel) {
-       markersDataStorage.sendCoordinates(markerModel)
+       markersDataStorage.sendUserMarker(markerModel)
     }
 
     override fun createStaticMarker(markerModel: MarkerDataModel) {
-        markersDataStorage.createStaticMarker(markerModel)
+        markersDataStorage.sendStaticMarker(markerModel)
     }
 
     override fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {

@@ -40,11 +40,18 @@ val domainModule = module {
     factory<LoadLastGameMapUseCase> {
        LoadLastGameMapUseCase(gameMapRepository = get())
     }
+
+    factory<DownloadFileUseCase> {
+        DownloadFileUseCase(messengerRepository = get())
+    }
     factory<SaveGameMapToFileUseCase> {
         SaveGameMapToFileUseCase(gameMapRepository = get())
     }
     factory<LoadGameMapFromServerUseCase> {
         LoadGameMapFromServerUseCase(gameMapRepository = get())
+    }
+    factory<SendFileUseCase> {
+        SendFileUseCase(messengerRepository = get())
     }
     factory<SaveAutoLoadUseCase> {
         SaveAutoLoadUseCase(settingsRepository = get())

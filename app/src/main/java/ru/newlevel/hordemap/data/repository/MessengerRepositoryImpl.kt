@@ -1,5 +1,7 @@
 package ru.newlevel.hordemap.data.repository
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import ru.newlevel.hordemap.data.storage.MessageStorage
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
@@ -17,4 +19,13 @@ class MessengerRepositoryImpl(private val messageStorage: MessageStorage) : Mess
     override fun stopMessageUpdate() {
         messageStorage.stopMessageUpdate()
     }
+
+    override fun sendFile(uri: Uri, fileName: String?, fileSize: Long) {
+       messageStorage.sendFile(uri, fileName, fileSize)
+    }
+
+    override fun downloadFile(context: Context, uri: Uri, fileName: String?) {
+       messageStorage.downloadFile(context, uri, fileName)
+    }
+
 }

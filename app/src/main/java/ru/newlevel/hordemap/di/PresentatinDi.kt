@@ -36,6 +36,6 @@ val presentationModule = module {
         PermissionViewModel( getSettingsUseCase = get(), saveSettingsUseCase = get())
     }
     viewModel<MessengerViewModel>{
-        MessengerViewModel(startMessageUpdateUseCase = get(), stopMessageUpdateUseCase = get(), sendMessageUseCase = get())
+        MessengerViewModel(startMessageUpdateUseCase = get(), stopMessageUpdateUseCase = get(), sendMessageUseCase = get(), sendFileUseCase = get(), downloadFileUseCase = get())
     }
 }
