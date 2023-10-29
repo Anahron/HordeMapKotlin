@@ -88,4 +88,6 @@
     <string name="last_saved_map">Последняя загруженная карта</string>
     <string name="auto_load_map">Авто загрузка последней карты</string>
     <string name="choose_icon">Выберите иконку:</string>
+    <string name="download_file">Скачать файл</string>
+    <string name="wait_download">Подождите, файл загружается</string>
 </resources>

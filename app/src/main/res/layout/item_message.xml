@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/rounded_background"
+    android:background="@drawable/rounded_background_white"
     android:orientation="vertical"
     android:layout_marginVertical="3dp"
     android:layout_marginStart="8dp"
@@ -16,7 +16,7 @@
         android:background="@android:color/transparent"
         android:gravity="start"
         android:orientation="horizontal"
-        android:paddingStart="10dp"
+        android:paddingHorizontal="10dp"
         android:paddingTop="4dp">
 
         <TextView
@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingHorizontal="10dp"
-            android:text="Username"
+            tools:text="Username"
             android:textColor="@color/black"
             android:textSize="17sp"
             android:textStyle="bold" />
@@ -38,7 +38,7 @@
             android:layout_weight="1"
             android:gravity="end"
             android:paddingHorizontal="15dp"
-            android:text="Time"
+           tools:text="Time"
             android:textColor="@color/black"
             android:textSize="13sp"
             android:textStyle="bold" />
@@ -58,19 +58,20 @@
         android:background="@android:color/transparent"
         android:paddingHorizontal="15dp"
         android:paddingVertical="6dp"
-        android:text="Message"
+        tools:text="Message"
         android:textColor="@color/black"
         android:textSize="17sp" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/download_button"
-        android:layout_width="match_parent"
-        android:layout_height="35sp"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
         android:layout_margin="10dp"
-        android:background="#96A9BD"
-        android:text="Скачать файл"
-        android:textSize="13sp"
-        tools:visibility="gone" />
+        android:padding="8dp"
+        android:background="@drawable/border_dark"
+        android:text="@string/download_file"
+        android:textColor="@color/main_green"
+        android:textSize="14sp" />
 
     <ImageView
         android:id="@+id/imageView"
@@ -79,6 +80,7 @@
         android:layout_gravity="start"
         android:layout_marginStart="10dp"
         android:src="@drawable/downloaded_image"
-        tools:visibility="gone" />
+        tools:visibility="gone"
+        android:contentDescription="@string/todo" />
 
 </LinearLayout>

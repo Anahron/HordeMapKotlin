@@ -20,6 +20,7 @@
         tools:layout_editor_absoluteX="0dp" />
 
     <LinearLayout
+        android:background="@color/main_green_dark"
         android:id="@+id/inputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,25 +44,25 @@
 
         <ImageButton
             android:id="@+id/buttonPhoto"
-            android:layout_width="40dp"
+            android:layout_width="35dp"
             android:background="@drawable/img_btn_photo"
-            android:layout_height="40dp"
+            android:layout_height="35dp"
             android:scaleType="fitCenter"
             android:layout_margin="5dp" />
         <ImageButton
             android:id="@+id/buttonSendFile"
             android:background="@drawable/img_btn_send_file"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:scaleType="fitCenter"
             android:layout_margin="5dp" />
 
         <ImageButton
             android:id="@+id/buttonSend"
-            android:background="@drawable/img_btn_send_message"
-            android:layout_width="45dp"
+            android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_margin="5dp" />
+            android:layout_margin="5dp"
+            android:background="@drawable/img_btn_send_message" />
 
     </LinearLayout>
 
@@ -116,7 +117,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Подождите, файл загружается"
+        android:text="@string/wait_download"
         app:layout_constraintBottom_toBottomOf="@+id/progressBar"
         app:layout_constraintEnd_toEndOf="@+id/progressBar"
         app:layout_constraintStart_toStartOf="@+id/progressBar"
