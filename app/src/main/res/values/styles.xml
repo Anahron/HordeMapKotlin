@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="MySliderTheme" parent="Widget.MaterialComponents.Slider">
         <item name="thumbColor">@color/main_green_dark</item>
         <item name="tickColor">@color/black</item>
@@ -9,8 +10,14 @@
         <item name="haloColor">@color/gray_blue</item>
         <item name="thumbRadius">8dp</item>
     </style>
+
     <style name="CustomProgressBar" parent="@android:style/Widget.ProgressBar.Horizontal">
         <item name="android:indeterminateOnly">false</item>
         <item name="android:progressDrawable">@drawable/custom_progress_horizontal</item>
+    </style>
+
+    <style name="Widget.Theme.HordeMap.ButtonBar.Fullscreen" parent="">
+        <item name="android:background">@color/black_overlay</item>
+        <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
     </style>
 </resources>

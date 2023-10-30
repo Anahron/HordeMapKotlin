@@ -8,11 +8,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import by.kirich1409.viewbindingdelegate.viewBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.databinding.ActivityMainBinding
 import ru.newlevel.hordemap.presentatin.fragments.MapFragment
 import ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
@@ -50,7 +48,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), PermissionReques
                 isFirstStart = false
                 Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()
                 val mapFragment = MapFragment(loginViewModel)
-                supportFragmentManager.beginTransaction().replace(R.id.container, mapFragment)
+                supportFragmentManager.beginTransaction().replace(R.id.container, mapFragment).addToBackStack(null)
                     .commit()
                 loginViewModel.loginResultData.removeObservers(this)
             } else {

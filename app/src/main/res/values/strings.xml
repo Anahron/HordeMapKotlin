@@ -90,4 +90,6 @@
     <string name="choose_icon">Выберите иконку:</string>
     <string name="download_file">Скачать файл</string>
     <string name="wait_download">Подождите, файл загружается</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

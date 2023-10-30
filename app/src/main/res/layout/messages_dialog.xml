@@ -14,12 +14,12 @@
         android:layout_height="0dp"
         android:paddingHorizontal="8dp"
         android:paddingTop="0dp"
-        android:scrollbars="vertical"
         android:paddingBottom="15dp"
+        android:scrollbars="vertical"
         app:layout_constraintBottom_toTopOf="@+id/inputLayout"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        tools:layout_editor_absoluteX="0dp" />
+        app:layout_constraintVertical_bias="1.0"
+        tools:layout_editor_absoluteX="-128dp" />
 
     <androidx.core.widget.ContentLoadingProgressBar
         android:id="@+id/progressBar"
@@ -67,7 +67,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:hint="@string/entry_message"
-            android:inputType="textShortMessage"
+            android:inputType="textLongMessage"
             tools:layout_editor_absoluteY="294dp" />
 
         <ImageButton

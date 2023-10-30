@@ -26,7 +26,9 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.SmoothScroller
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -56,6 +58,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MessagesAdapter
+    private lateinit var layoutManager: LinearLayoutManager
     private lateinit var file: File
     private lateinit var uri: Uri
 
@@ -125,7 +128,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         setupCloseMessengerButton()
 
         messengerViewModel.startMessageUpdate()
-
         messengerViewModel.messagesLiveData.observe(this) { messages ->
             if (adapter.itemCount < messages.size) {
                 val onDown =
@@ -155,19 +157,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         recyclerView.setOnScrollChangeListener { _, _, _, _, _ ->
             if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
                 binding.newMessage.visibility = View.GONE
-            }
-        }
-        //  слушатель размера экрана для прокрутки элементов при открытии клавиатуры
-        binding.activityRoot.viewTreeObserver.addOnGlobalLayoutListener {
-            val r = Rect()
-            binding.activityRoot.getWindowVisibleDisplayFrame(r)
-            val screenHeight = binding.activityRoot.rootView.height
-            val keypadHeight = r.bottom - screenHeight
-            // если высота клавиатуры больше 15% от экрана, считаем клавиатуру открытой
-            if (keypadHeight > screenHeight * 0.15) {
-                if (adapter.itemCount > 0) recyclerView.smoothScrollToPosition(
-                    adapter.itemCount - 1
-                )
             }
         }
 
@@ -240,7 +229,9 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     private fun setupRecyclerView() {
         recyclerView = binding.recyclerViewMessages
-        binding.recyclerViewMessages.layoutManager = LinearLayoutManager(requireContext())
+        layoutManager = LinearLayoutManager(requireContext())
+        layoutManager.stackFromEnd = true
+        binding.recyclerViewMessages.layoutManager = layoutManager
         adapter = MessagesAdapter(this, this)
         binding.recyclerViewMessages.adapter = adapter
     }
@@ -267,10 +258,10 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     }
 
     private fun setupSendMessageButton() { // Отправка сообщения
-        binding.buttonSend.scaleType = ImageView.ScaleType.CENTER_INSIDE
         binding.buttonSend.setOnClickListener {
-            val text = binding.editTextMessage.text.toString()
-            if (text.isNotEmpty()) messengerViewModel.sendMessage(text)
+            val text = binding.editTextMessage.text.toString().trim()
+            if (text.isNotEmpty())
+                messengerViewModel.sendMessage(text)
             binding.editTextMessage.setText("")
             binding.editTextMessage.requestFocus()
         }
@@ -346,16 +337,16 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     }
 
     override fun onImageClick(url: String) {
-            val dialog = Dialog(
-                requireContext(),
-                android.R.style.Theme_Black_NoTitleBar_Fullscreen
-            )
-            dialog.setContentView(R.layout.fragment_full_screen_image)
-            val imageView =
-                dialog.findViewById<ZoomageView>(R.id.myZoomageView)
-            Glide.with(requireContext())
-                .load(url)
-                .into(imageView)
-            dialog.show()
+        val dialog = Dialog(
+            requireContext(),
+            android.R.style.Theme_DeviceDefault_NoActionBar
+        )
+        dialog.setContentView(R.layout.fragment_full_screen_image)
+        val imageView =
+            dialog.findViewById<ZoomageView>(R.id.myZoomageView)
+        Glide.with(requireContext())
+            .load(url)
+            .into(imageView)
+        dialog.show()
     }
 }

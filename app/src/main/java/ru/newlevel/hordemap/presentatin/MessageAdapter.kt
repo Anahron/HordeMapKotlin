@@ -59,7 +59,6 @@ class MessagesAdapter(
             dateFormat.timeZone = timeZone
         }
 
-
         fun bind(
             messageDataModel: MessageDataModel?,
             onButtonSaveClickListener: OnButtonSaveClickListener,
@@ -77,8 +76,8 @@ class MessagesAdapter(
                         val fileName = messageDataModel.fileName
                         val fileSizeText = if (messageDataModel.fileSize > 0)
                             " (" + messageDataModel.fileSize / 1000 + "kb)" else ""
-                        binding.textViewMessage.text = getContentText(fileName, fileSizeText)
                         if (fileName.contains(".jpg")) {
+                            binding.textViewMessage.visibility = View.GONE
                             binding.downloadButton.visibility = View.GONE
                             binding.imageView.visibility = View.VISIBLE
                             Glide.with(itemView.context)
@@ -91,6 +90,7 @@ class MessagesAdapter(
                             }
 
                         } else {
+                            binding.textViewMessage.text = getContentText(fileName, fileSizeText)
                             binding.downloadButton.visibility = View.VISIBLE
                             binding.downloadButton.setOnClickListener {
                                 onButtonSaveClickListener.onButtonSaveClick(messageDataModel.message, fileName)
