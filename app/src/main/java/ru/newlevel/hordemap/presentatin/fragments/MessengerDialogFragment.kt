@@ -3,21 +3,20 @@ package ru.newlevel.hordemap.presentatin.fragments
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import android.widget.TextView.OnEditorActionListener
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -26,6 +25,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
+import com.bumptech.glide.Glide
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.jsibbold.zoomage.ZoomageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -43,14 +45,43 @@ import java.util.*
 
 
 class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
-    MessagesAdapter.OnButtonSaveClickListener {
+    MessagesAdapter.OnButtonSaveClickListener, MessagesAdapter.OnImageClickListener {
 
     private val binding: MessagesDialogBinding by viewBinding()
     private val messengerViewModel by viewModel<MessengerViewModel>()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MessagesAdapter
-    private lateinit var photoUri: Uri
+    private lateinit var file: File
+    private lateinit var uri: Uri
+
+    private val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
+        lifecycleScope.launch {
+            if (result != null) {
+                messengerViewModel.sendFile(
+                    result, getFileNameFromUri(result), getFileSizeFromUri(result)
+                )
+            }
+        }
+    }
+
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        lifecycleScope.launch {
+            if (uri != null) {
+                messengerViewModel.sendFile(
+                    uri, getFileNameFromUri(uri), getFileSizeFromUri(uri)
+                )
+            }
+        }
+    }
+
+    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
+        if (isSuccess) {
+            messengerViewModel.sendFile(
+                uri, getFileNameFromUri(uri), getFileSizeFromUri(uri)
+            )
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -133,16 +164,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         }
     }
 
-    private val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
-        lifecycleScope.launch {
-            if (result != null) {
-                messengerViewModel.sendFile(
-                    result, getFileNameFromUri(result), getFileSizeFromUri(result)
-                )
-            }
-        }
-    }
-
     private fun getFileNameFromUri(uri: Uri): String? {
         val contentResolver = requireContext().contentResolver
         val cursor = contentResolver.query(uri, null, null, null, null)
@@ -173,50 +194,30 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         } ?: -1 // Если cursor равен null
     }
 
-
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        if (requestCode == REQUEST_CODE_SELECT_FILE && resultCode == Activity.RESULT_OK) {
-//            if (data != null && data.data != null) {
-//                val fileUri = data.data
-//                Log.e("AAA", fileUri.toString())
-//                fileUri?.let { messengerViewModel.sendFile(it) }
-//            }
-//        }
-//        if (requestCode == REQUEST_CODE_CAMERA && resultCode == Activity.RESULT_OK) {
-//            if (data != null) {
-//                photoUri = data.data!!
-//                photoUri.let { messengerViewModel.sendFile(it) }
-//            }
-//        }
-//    }
-
     @SuppressLint("IntentReset")
     private fun openPhotoButtonClick(context: Context) {
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePictureIntent.resolveActivity(context.packageManager) != null) {
-            val photoFile = createTempImageFile(context)
-            if (photoFile != null) {
-                photoUri = FileProvider.getUriForFile(
-                    context, "ru.newlevel.hordemap.fileprovider", photoFile
-                )
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-                // Создание интента для открытия галереи
-                @SuppressLint("IntentReset") val galleryIntent =
-                    Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                galleryIntent.type = "image/*"
-
-                // Создание интента для выбора из нескольких источников
-                val chooserIntent = Intent.createChooser(takePictureIntent, "Select Source")
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(galleryIntent))
-                (context as Activity).startActivityForResult(chooserIntent, REQUEST_CODE_CAMERA)
+        file = createTempImageFile(context)!!
+        uri = FileProvider.getUriForFile(
+            requireContext(),
+            "ru.newlevel.hordemap.app",
+            file
+        )
+        val items = arrayOf("Выбрать из галереи", "Сделать фото")
+        MaterialAlertDialogBuilder(context)
+            .setTitle("Выберите действие")
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> pickImage.launch("image/*") // Выбор из галереи
+                    1 -> takePicture.launch(uri) // Фотографирование с камеры
+                }
             }
-        }
+            .show()
     }
 
     private fun createTempImageFile(context: Context): File? {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val imageFileName = "JPEG_" + timeStamp + "_"
-        val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val storageDir = context.filesDir
         try {
             return File.createTempFile(imageFileName, ".jpg", storageDir)
         } catch (e: IOException) {
@@ -228,7 +229,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private fun setupRecyclerView() {
         recyclerView = binding.recyclerViewMessages
         binding.recyclerViewMessages.layoutManager = LinearLayoutManager(requireContext())
-        adapter = MessagesAdapter(this)
+        adapter = MessagesAdapter(this, this)
         binding.recyclerViewMessages.adapter = adapter
     }
 
@@ -317,8 +318,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     companion object {
         private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1010
         private const val REQUEST_CODE_CAMERA_PERMISSION = 1011
-        const val REQUEST_CODE_CAMERA = 11
-
     }
 
     override fun onButtonSaveClick(uri: String, fileName: String) {
@@ -327,5 +326,19 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
                 messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName)
             }
         }
+    }
+
+    override fun onImageClick(url: String) {
+        val dialog = Dialog(
+            requireContext(),
+            android.R.style.Theme_Black_NoTitleBar_Fullscreen
+        )
+        dialog.setContentView(R.layout.fragment_full_screen_image)
+        val imageView =
+            dialog.findViewById<ZoomageView>(R.id.myZoomageView)
+        Glide.with(requireContext())
+            .load(url)
+            .into(imageView)
+        dialog.show()
     }
 }
