@@ -15,4 +15,6 @@ interface MessageStorage {
     fun sendFile(uri: Uri, fileName: String?, fileSize: Long)
 
     fun downloadFile(context: Context, uri: Uri, fileName: String?)
+
+    fun getDownloadProgress(): MutableLiveData<Int>
 }

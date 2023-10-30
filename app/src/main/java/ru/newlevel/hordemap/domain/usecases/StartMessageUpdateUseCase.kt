@@ -6,6 +6,9 @@ import ru.newlevel.hordemap.domain.repository.MessengerRepository
 
 class StartMessageUpdateUseCase(private val messengerRepository: MessengerRepository) {
     fun execute(): MutableLiveData<List<MessageDataModel>> {
-        return messengerRepository.startMessageUpdate()
+       return messengerRepository.startMessageUpdate()
+    }
+    fun getDownloadProgress(): MutableLiveData<Int> {
+        return messengerRepository.getDownloadProgress()
     }
 }

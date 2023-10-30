@@ -4,15 +4,11 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -22,6 +18,13 @@ import java.io.InputStream
 import java.util.*
 
 fun makeLongToast(text: String, context: Context) {
+    Toast.makeText(
+        context,
+        text,
+        Toast.LENGTH_LONG
+    ).show()
+}
+fun makeShortToast(text: String, context: Context) {
     Toast.makeText(
         context,
         text,

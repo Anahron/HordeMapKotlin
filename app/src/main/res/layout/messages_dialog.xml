@@ -12,12 +12,41 @@
         android:id="@+id/recyclerViewMessages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="5dp"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="0dp"
         android:scrollbars="vertical"
+        android:paddingBottom="15dp"
         app:layout_constraintBottom_toTopOf="@+id/inputLayout"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
         tools:layout_editor_absoluteX="0dp" />
+
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/progressBar"
+        style="@style/CustomProgressBar"
+        android:layout_width="0dp"
+        android:layout_height="25dp"
+        android:max="100"
+        android:progress="0"
+        tools:progress="50"
+        tools:visibility="visible"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/inputLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/progressText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:text="@string/wait_download"
+        app:layout_constraintBottom_toBottomOf="@+id/progressBar"
+        app:layout_constraintEnd_toEndOf="@+id/progressBar"
+        app:layout_constraintStart_toStartOf="@+id/progressBar"
+        app:layout_constraintTop_toTopOf="@+id/progressBar" />
 
     <LinearLayout
         android:background="@color/main_green_dark"
@@ -39,8 +68,7 @@
             android:ems="10"
             android:hint="@string/entry_message"
             android:inputType="textShortMessage"
-            tools:layout_editor_absoluteY="294dp"
-            />
+            tools:layout_editor_absoluteY="294dp" />
 
         <ImageButton
             android:id="@+id/buttonPhoto"
@@ -48,21 +76,24 @@
             android:background="@drawable/img_btn_photo"
             android:layout_height="35dp"
             android:scaleType="fitCenter"
-            android:layout_margin="5dp" />
+           android:layout_marginVertical="5dp"
+            android:layout_marginHorizontal="2dp"/>
         <ImageButton
             android:id="@+id/buttonSendFile"
             android:background="@drawable/img_btn_send_file"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:scaleType="fitCenter"
-            android:layout_margin="5dp" />
+            android:layout_marginVertical="5dp"
+            android:layout_marginHorizontal="2dp"/>
 
         <ImageButton
             android:id="@+id/buttonSend"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_margin="5dp"
-            android:background="@drawable/img_btn_send_message" />
+            android:layout_marginVertical="5dp"
+            android:background="@drawable/img_btn_send_message"
+            android:layout_marginHorizontal="2dp"/>
 
     </LinearLayout>
 
@@ -98,30 +129,6 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/recyclerViewMessages"
         app:layout_constraintEnd_toEndOf="parent" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_width="253dp"
-        android:layout_height="25dp"
-        android:layout_marginBottom="36dp"
-        android:max="100"
-        android:progress="0"
-        app:layout_constraintBottom_toBottomOf="@+id/recyclerViewMessages"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints" />
-
-    <TextView
-        android:id="@+id/progressText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/wait_download"
-        app:layout_constraintBottom_toBottomOf="@+id/progressBar"
-        app:layout_constraintEnd_toEndOf="@+id/progressBar"
-        app:layout_constraintStart_toStartOf="@+id/progressBar"
-        app:layout_constraintTop_toTopOf="@+id/progressBar" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

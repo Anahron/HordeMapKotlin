@@ -6,6 +6,6 @@ import ru.newlevel.hordemap.domain.repository.MessengerRepository
 
 class DownloadFileUseCase(private val messengerRepository: MessengerRepository) {
     fun execute(context: Context, uri: Uri, fileName: String) {
-        messengerRepository.downloadFile(context, uri, fileName)
+       messengerRepository.downloadFile(context, uri, fileName)
     }
 }

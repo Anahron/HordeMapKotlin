@@ -9,4 +9,8 @@
         <item name="haloColor">@color/gray_blue</item>
         <item name="thumbRadius">8dp</item>
     </style>
+    <style name="CustomProgressBar" parent="@android:style/Widget.ProgressBar.Horizontal">
+        <item name="android:indeterminateOnly">false</item>
+        <item name="android:progressDrawable">@drawable/custom_progress_horizontal</item>
+    </style>
 </resources>

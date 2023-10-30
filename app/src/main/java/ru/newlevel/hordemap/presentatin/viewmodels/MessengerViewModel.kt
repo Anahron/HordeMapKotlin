@@ -19,8 +19,13 @@ class MessengerViewModel(
     private var messagesMutableLiveData = MutableLiveData<List<MessageDataModel>>()
     val messagesLiveData get(): LiveData<List<MessageDataModel>> = messagesMutableLiveData
 
+    private var progressMutableLiveData = MutableLiveData<Int>()
+    val progressLiveData get(): LiveData<Int> = progressMutableLiveData
+
+
     fun startMessageUpdate() {
         messagesMutableLiveData = startMessageUpdateUseCase.execute()
+        progressMutableLiveData = startMessageUpdateUseCase.getDownloadProgress()
     }
 
     fun stopMessageUpdate() {
@@ -32,10 +37,10 @@ class MessengerViewModel(
     }
 
     fun sendFile(uri: Uri, fileName: String?, fileSize: Long) {
-        sendFileUseCase.execute(uri, fileName, fileSize)
+     sendFileUseCase.execute(uri, fileName, fileSize)
     }
 
    fun downloadFile(context: Context, uri: Uri, fileName: String?) {
-        fileName?.let { downloadFileUseCase.execute(context, uri, it) }
+       fileName?.let { downloadFileUseCase.execute(context, uri, it) }
     }
 }

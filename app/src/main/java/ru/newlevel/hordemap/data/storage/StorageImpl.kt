@@ -3,7 +3,6 @@ package ru.newlevel.hordemap.data.storage
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -15,7 +14,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.*
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
@@ -181,34 +180,39 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         val uploadTask = messageFilesStorage.putFile(uri)
 
         uploadTask.addOnProgressListener { taskSnapshot: UploadTask.TaskSnapshot ->
-            val progress =
-                100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                progressLiveData.postValue(progress.toInt())
-            }
+            val progress = 100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount
+            progressLiveData.postValue(progress.toInt())
         }
         uploadTask.addOnCompleteListener { task: Task<UploadTask.TaskSnapshot?> ->
             if (task.isSuccessful) {
-                progressLiveData.postValue(100)
+                progressLiveData.postValue(1000)
                 messageFilesStorage.downloadUrl
                     .addOnSuccessListener { uri: Uri ->
                         val downloadUrl = uri.toString()
-                        sendMessage("$downloadUrl&&&$fileName&&&$fileSize")
+                        val fileNameToSend = fileName ?: ""
+                        sendMessage(downloadUrl, fileSize, fileNameToSend)
                     }
             }
         }
     }
 
+    override fun getDownloadProgress(): MutableLiveData<Int> {
+        return progressLiveData
+    }
+
     override fun downloadFile(context: Context, uri: Uri, fileName: String?) {
-        val request = DownloadManager.Request(uri)
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-        request.allowScanningByMediaScanner()
-        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        downloadManager.enqueue(request)
-        if (downloadManager != null) {
-              val downloadId = downloadManager.enqueue(request)
-            // observeDownloadProgress(downloadManager, downloadId)
+        try {
+            val request = DownloadManager.Request(uri)
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            request.allowScanningByMediaScanner()
+            val downloadManager =
+                context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            downloadManager.enqueue(request)
+            val downloadId = downloadManager.enqueue(request)
+            observeDownloadProgress(downloadManager, downloadId)
+        } catch (e: Exception){
+            e.printStackTrace()
         }
     }
 
@@ -223,6 +227,20 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         databaseReference.updateChildren(updates)
     }
 
+    private fun sendMessage(text: String, fileSize: Long, fileName: String) {
+        val time = System.currentTimeMillis()
+        val geoDataPath = "$MESSAGE_PATH/$time"
+        val updates: MutableMap<String, Any> = HashMap()
+        updates["$geoDataPath/userName"] = UserEntityProvider.userEntity?.name.toString()
+        updates["$geoDataPath/message"] = text
+        updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity?.deviceID.toString()
+        updates["$geoDataPath/timestamp"] = time
+        updates["$geoDataPath/fileSize"] = fileSize
+        updates["$geoDataPath/fileName"] = fileName
+        databaseReference.updateChildren(updates)
+    }
+
+
     override fun stopMarkerUpdates() {
         Log.e(TAG, "stopMarkerUpdates вызван")
         if (valueUserEventListener != null)
@@ -236,6 +254,33 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
             databaseReference.removeEventListener(valueMessageEventListener!!)
     }
 
+    private fun observeDownloadProgress(downloadManager: DownloadManager, downloadId: Long) {
+        CoroutineScope(Dispatchers.IO).launch {
+            var downloading = true
+            while (downloading) {
+                val cursor =
+                    downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
+                if (cursor.moveToFirst()) {
+                    when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
+                        DownloadManager.STATUS_SUCCESSFUL, DownloadManager.STATUS_FAILED -> {
+                            downloading = false
+                            progressLiveData.postValue(1000)
+                        }
+                        else -> {
+                            val bytesDownloaded =
+                                cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                            val bytesTotal =
+                                cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                            val percent = bytesDownloaded * 100.0f / bytesTotal
+                            progressLiveData.postValue(percent.toInt())
+                        }
+                    }
+                }
+                cursor.close()
+                delay(500) // Ожидание 0.5 секунды перед следующей проверкой
+            }
+        }
+    }
 }
 
 

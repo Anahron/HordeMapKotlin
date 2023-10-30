@@ -21,11 +21,15 @@ class MessengerRepositoryImpl(private val messageStorage: MessageStorage) : Mess
     }
 
     override fun sendFile(uri: Uri, fileName: String?, fileSize: Long) {
-       messageStorage.sendFile(uri, fileName, fileSize)
+        messageStorage.sendFile(uri, fileName, fileSize)
     }
 
     override fun downloadFile(context: Context, uri: Uri, fileName: String?) {
-       messageStorage.downloadFile(context, uri, fileName)
+         messageStorage.downloadFile(context, uri, fileName)
+    }
+
+    override fun getDownloadProgress(): MutableLiveData<Int> {
+       return messageStorage.getDownloadProgress()
     }
 
 }

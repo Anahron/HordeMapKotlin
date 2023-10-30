@@ -9,7 +9,7 @@
         app:zoomage_animateOnReset="true"
         app:zoomage_autoCenter="true"
         app:zoomage_autoResetMode="UNDER"
-        app:zoomage_maxScale="8"
+        app:zoomage_maxScale="10"
         app:zoomage_minScale="0.6"
         app:zoomage_restrictBounds="false"
         app:zoomage_translatable="true"

@@ -1,7 +1,6 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -12,10 +11,14 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
-import android.view.*
+import android.view.KeyEvent
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.*
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -34,6 +37,7 @@ import kotlinx.coroutines.runBlocking
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
+import ru.newlevel.hordemap.app.makeShortToast
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.MessagesDialogBinding
 import ru.newlevel.hordemap.presentatin.MessagesAdapter
@@ -55,38 +59,47 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private lateinit var file: File
     private lateinit var uri: Uri
 
-    private val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
-        lifecycleScope.launch {
-            if (result != null) {
-                messengerViewModel.sendFile(
-                    result, getFileNameFromUri(result), getFileSizeFromUri(result)
-                )
+    private lateinit var activityLauncher: ActivityResultLauncher<String>
+    private lateinit var pickImage: ActivityResultLauncher<String>
+    private lateinit var takePicture: ActivityResultLauncher<Uri>
+
+    private var isDownloadingState = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
+            lifecycleScope.launch {
+                if (result != null) {
+                    messengerViewModel.sendFile(
+                        result, getFileNameFromUri(result), getFileSizeFromUri(result)
+                    )
+                }
             }
         }
-    }
-
-    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        lifecycleScope.launch {
-            if (uri != null) {
-                messengerViewModel.sendFile(
-                    uri, getFileNameFromUri(uri), getFileSizeFromUri(uri)
-                )
+        pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            lifecycleScope.launch {
+                if (uri != null) {
+                    messengerViewModel.sendFile(
+                        uri, getFileNameFromUri(uri), getFileSizeFromUri(uri)
+                    )
+                }
             }
         }
-    }
+        takePicture =
+            registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
+                if (isSuccess) {
+                    messengerViewModel.sendFile(
+                        uri, getFileNameFromUri(uri), getFileSizeFromUri(uri)
+                    )
+                }
+            }
 
-    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
-        if (isSuccess) {
-            messengerViewModel.sendFile(
-                uri, getFileNameFromUri(uri), getFileSizeFromUri(uri)
-            )
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dialog!!.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        dialog!!.window!!.setLayout(
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog?.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
 
@@ -100,6 +113,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
                 REQUEST_CODE_WRITE_EXTERNAL_STORAGE
             )
         }
+
         setupRecyclerView()
         setupNewMessageAnnounces()
         createProgressBar()
@@ -125,26 +139,24 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             }
         }
 
-//         Слушатель прогресса загрузки/отправки файла
-//            messengerViewModel.getProgressLiveData().observe(context as LifecycleOwner?) { progress ->
-//            println("Прогресс загрузки $progress")
-//            progressBar!!.visibility = View.VISIBLE
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//                progressBar!!.setProgress(progress, true)
-//            } else progressBar!!.progress = progress
-//            progressText!!.visibility = View.VISIBLE
-//            if (progress == 100) {
-//                progressBar!!.visibility = View.GONE
-//                progressText!!.visibility = View.GONE
-//            }
-//        }
+        messengerViewModel.progressLiveData.observe(this) { progress ->
+            if (progress < 1000) {
+                isDownloadingState = true
+                binding.progressBar.visibility = View.VISIBLE
+                binding.progressBar.setProgress(progress, true)
+                binding.progressText.visibility = View.VISIBLE
+            } else {
+                isDownloadingState = false
+                binding.progressBar.visibility = View.GONE
+                binding.progressText.visibility = View.GONE
+            }
+        }
 
         recyclerView.setOnScrollChangeListener { _, _, _, _, _ ->
             if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
                 binding.newMessage.visibility = View.GONE
             }
         }
-
         //  слушатель размера экрана для прокрутки элементов при открытии клавиатуры
         binding.activityRoot.viewTreeObserver.addOnGlobalLayoutListener {
             val r = Rect()
@@ -158,6 +170,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
                 )
             }
         }
+
         dialog?.setOnDismissListener {
             messengerViewModel.stopMessageUpdate()
             this@MessengerDialogFragment.dismissAllowingStateLoss()
@@ -189,12 +202,11 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
                 c.moveToFirst()
                 c.getLong(sizeIndex)
             } else {
-                -1 // Если размер файла не найден
+                0
             }
-        } ?: -1 // Если cursor равен null
+        } ?: 0
     }
 
-    @SuppressLint("IntentReset")
     private fun openPhotoButtonClick(context: Context) {
         file = createTempImageFile(context)!!
         uri = FileProvider.getUriForFile(
@@ -256,7 +268,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     private fun setupSendMessageButton() { // Отправка сообщения
         binding.buttonSend.scaleType = ImageView.ScaleType.CENTER_INSIDE
-        binding.buttonSend.setOnClickListener { v1: View? ->
+        binding.buttonSend.setOnClickListener {
             val text = binding.editTextMessage.text.toString()
             if (text.isNotEmpty()) messengerViewModel.sendMessage(text)
             binding.editTextMessage.setText("")
@@ -287,7 +299,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             }
         }
     }
-
 
     private fun setupCloseMessengerButton() {
         binding.closeMassager.setOnClickListener { dialog?.dismiss() }
@@ -321,24 +332,30 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     }
 
     override fun onButtonSaveClick(uri: String, fileName: String) {
-        runBlocking {
-            launch(Dispatchers.IO) {
-                messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName)
+        if (!isDownloadingState) {
+            isDownloadingState = true
+            runBlocking {
+                launch(Dispatchers.IO) {
+                    messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName)
+                }
             }
+        } else {
+            makeShortToast("Дождитесь окончания загрузки", requireContext())
+            return
         }
     }
 
     override fun onImageClick(url: String) {
-        val dialog = Dialog(
-            requireContext(),
-            android.R.style.Theme_Black_NoTitleBar_Fullscreen
-        )
-        dialog.setContentView(R.layout.fragment_full_screen_image)
-        val imageView =
-            dialog.findViewById<ZoomageView>(R.id.myZoomageView)
-        Glide.with(requireContext())
-            .load(url)
-            .into(imageView)
-        dialog.show()
+            val dialog = Dialog(
+                requireContext(),
+                android.R.style.Theme_Black_NoTitleBar_Fullscreen
+            )
+            dialog.setContentView(R.layout.fragment_full_screen_image)
+            val imageView =
+                dialog.findViewById<ZoomageView>(R.id.myZoomageView)
+            Glide.with(requireContext())
+                .load(url)
+                .into(imageView)
+            dialog.show()
     }
 }

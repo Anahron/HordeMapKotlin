@@ -68,6 +68,7 @@
         android:layout_height="38dp"
         android:layout_margin="10dp"
         android:padding="8dp"
+        android:visibility="gone"
         android:background="@drawable/border_dark"
         android:text="@string/download_file"
         android:textColor="@color/main_green"
@@ -80,7 +81,7 @@
         android:layout_gravity="start"
         android:layout_marginStart="10dp"
         android:src="@drawable/downloaded_image"
-        tools:visibility="gone"
+        android:visibility="gone"
         android:contentDescription="@string/todo" />
 
 </LinearLayout>
