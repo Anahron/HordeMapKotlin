@@ -46,7 +46,8 @@ import java.util.*
 
 
 class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
-    MessagesAdapter.OnButtonSaveClickListener, MessagesAdapter.OnImageClickListener,
+    MessagesAdapter.OnButtonSaveClickListener,
+    MessagesAdapter.OnImageClickListener,
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
 
     private val binding: MessagesDialogBinding by viewBinding()
@@ -62,7 +63,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private lateinit var activityLauncher: ActivityResultLauncher<String>
     private lateinit var pickImage: ActivityResultLauncher<String>
     private lateinit var takePicture: ActivityResultLauncher<Uri>
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,7 +102,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
                     dialogFragment.show(childFragmentManager, "photo_description_dialog")
                 }
             }
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -172,11 +171,10 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         }
     }
 
-    private fun getFileNameFromUri(uri: Uri): String? {
+    private fun getFileNameFromUri(uri: Uri): String {
         val contentResolver = requireContext().contentResolver
-        val cursor = contentResolver.query(uri, null, null, null, null)
-
-        return cursor?.use { c ->
+        val cursor = contentResolver.query(uri, null, null, null, null) ?: return ""
+        return cursor.use { c ->
             val nameIndex = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             if (nameIndex != -1) {
                 c.moveToFirst()
@@ -190,7 +188,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private fun getFileSizeFromUri(uri: Uri): Long {
         val contentResolver = requireContext().contentResolver
         val cursor = contentResolver.query(uri, null, null, null, null)
-
         return cursor?.use { c ->
             val sizeIndex = c.getColumnIndex(OpenableColumns.SIZE)
             if (sizeIndex != -1) {
@@ -324,11 +321,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         messengerViewModel.startMessageUpdate()
     }
 
-    companion object {
-        private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1010
-        private const val REQUEST_CODE_CAMERA_PERMISSION = 1011
-    }
-
     override fun onButtonSaveClick(uri: String, fileName: String) {
         if (!isDownloadingState) {
             isDownloadingState = true
@@ -364,5 +356,10 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         fileSize: Long
     ) {
         messengerViewModel.sendFile(description, photoUri, fileName, fileSize)
+    }
+
+    companion object {
+        private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1010
+        private const val REQUEST_CODE_CAMERA_PERMISSION = 1011
     }
 }

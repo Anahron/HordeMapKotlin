@@ -66,57 +66,50 @@ class MessagesAdapter(
             onButtonSaveClickListener: OnButtonSaveClickListener,
             onImageClickListener: OnImageClickListener
         ) = with(binding) {
-            downloadButton.visibility = View.GONE
+            val message = messageDataModel.message
+            val fileName = messageDataModel.fileName
+            val fileSize = messageDataModel.fileSize
+            val url = messageDataModel.url
+
             downloadButton.visibility = View.GONE
             imageView.visibility = View.GONE
+            textViewMessage.visibility = View.GONE
+
             textViewUsername.text = messageDataModel.userName
             textViewTime.text = dateFormat.format(Date(messageDataModel.timestamp))
-            val messageText = messageDataModel.message
-            if (messageText.isEmpty())
-                textViewMessage.visibility = View.GONE
-            else
-                textViewMessage.text = messageText
-            if (messageDataModel.url.isNotEmpty()) {
-                try {
-                    val fileName = messageDataModel.fileName
 
-                    val fileSizeText = if ((messageDataModel.fileSize / 1000) < 1000)
-                        " (" + (messageDataModel.fileSize / 1000) + "kb)"
-                    else
-                        " (" + String.format("%.1f", (messageDataModel.fileSize.toDouble() / 1000000)) + "Mb)"
-                    if (fileName.contains(".jpg")) {
-                        downloadButton.visibility = View.GONE
-                        imageView.visibility = View.VISIBLE
-                        Glide.with(itemView.context)
-                            .load(messageDataModel.url)
-                            .thumbnail(0.1f)
-                            .timeout(30_000)
-                            .into(imageView)
-                        imageView.setOnClickListener {
-                            onImageClickListener.onImageClick(messageDataModel.url)
-                        }
-                    } else {
-                        downloadButton.visibility = View.VISIBLE
-                        textViewMessage.text = messageText
-                        downloadButton.text = getContentText(fileName, fileSizeText)
-                        downloadButton.setOnClickListener {
-                            onButtonSaveClickListener.onButtonSaveClick(
-                                messageDataModel.url,
-                                fileName
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+            if (message.isNotEmpty()) {
+                textViewMessage.visibility = View.VISIBLE
+                textViewMessage.text = message
             }
-        }
 
-        private fun getContentText(fileName: String, fileSizeText: String): String {
-            return if (fileName.endsWith(".jpg")) {
-                "Image:$fileSizeText"
-            } else {
-                fileName + fileSizeText
+            if (url.isNotEmpty()) {
+                val fileSizeText = if ((fileSize / 1000) < 1000)
+                    " (" + (fileSize / 1000) + "kb)"
+                else
+                    " (" + String.format(
+                        "%.1f",
+                        (fileSize.toDouble() / 1000000)
+                    ) + "Mb)"
+                if (fileName.contains(".jpg")) {
+                    imageView.visibility = View.VISIBLE
+                    Glide.with(itemView.context)
+                        .load(messageDataModel.url)
+                        .thumbnail(0.1f)
+                        .timeout(30_000)
+                        .into(imageView)
+                    imageView.setOnClickListener {
+                        onImageClickListener.onImageClick(messageDataModel.url)
+                    }
+                } else {
+                    downloadButton.visibility = View.VISIBLE
+                    downloadButton.text = fileName + fileSizeText
+                    downloadButton.setOnClickListener {
+                        onButtonSaveClickListener.onButtonSaveClick(
+                            messageDataModel.url, fileName
+                        )
+                    }
+                }
             }
         }
     }

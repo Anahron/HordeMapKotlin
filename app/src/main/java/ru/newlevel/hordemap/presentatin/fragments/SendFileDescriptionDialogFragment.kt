@@ -12,7 +12,7 @@ import ru.newlevel.hordemap.databinding.FragmentSendFileDescriptionDialogBinding
 
 class SendFileDescriptionDialogFragment(
     private val uri: Uri,
-    private val fileName: String?,
+    private var fileName: String,
     private val fileSize: Long,
     private val onFileDescriptionListener: OnFileDescriptionListener,
     private val isImage: Boolean
@@ -29,11 +29,13 @@ class SendFileDescriptionDialogFragment(
         else{
             val fileSizeText = " (" + fileSize / 1000 + "kb)"
             imageViewPhoto.visibility = View.GONE
-            textView3.text = "Отправить как файл: $fileName $fileSizeText"
+            textView3.text = resources.getText(R.string.send_as_file)
+            fileDiscriptions.visibility = View.VISIBLE
+            fileDiscriptions.text = "$fileName $fileSizeText"
         }
         btnSend.setOnClickListener {
             val description = editTextDescription.text.toString()
-            onFileDescriptionListener.onFileDescriptionReceived(description, uri, fileName!!, fileSize)
+            onFileDescriptionListener.onFileDescriptionReceived(description, uri, fileName, fileSize)
             dismiss()
         }
         btnCancel.setOnClickListener {

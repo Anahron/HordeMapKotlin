@@ -96,4 +96,5 @@
     <string name="send">Отправить</string>
     <string name="added_image">Отправить изображение:</string>
     <string name="descriptions">Описание</string>
+    <string name="send_as_file">Отправить как файл:</string>
 </resources>
