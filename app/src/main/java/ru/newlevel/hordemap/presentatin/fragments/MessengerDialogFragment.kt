@@ -14,6 +14,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
 import androidx.activity.result.ActivityResultLauncher
@@ -90,8 +91,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
                 dialogFragment.show(childFragmentManager, "pick_image_description_dialog")
             }
         }
-        takePicture =
-            registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
+        takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
                 if (isSuccess) {
                     val dialogFragment = SendFileDescriptionDialogFragment(
                         photoUri,
@@ -343,6 +343,9 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         dialog.setContentView(R.layout.fragment_full_screen_image)
         val imageView =
             dialog.findViewById<ZoomageView>(R.id.myZoomageView)
+        dialog.findViewById<ImageView>(R.id.close_massager).setOnClickListener{
+            dialog.dismiss()
+        }
         Glide.with(requireContext())
             .load(url)
             .into(imageView)

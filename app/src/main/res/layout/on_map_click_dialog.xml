@@ -1,5 +1,6 @@
 <androidx.appcompat.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -95,32 +96,59 @@
         </RadioGroup>
 
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/description_edit_text"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        app:boxStrokeColor="@color/main_green_dark"
+        android:layout_marginHorizontal="8dp"
         android:layout_width="match_parent"
-        android:textColorHighlight="@color/main_green_dark"
         android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="@string/entry_text"
-        android:inputType="textPersonName"
-        android:minHeight="48dp"
-        android:padding="12dp"
-        android:textColor="@color/main_green_dark"
+        app:boxCornerRadiusBottomEnd="7dp"
+        app:boxCornerRadiusTopEnd="7dp"
+        app:boxCornerRadiusBottomStart="7dp"
+        app:boxCornerRadiusTopStart="7dp"
+        app:helperTextTextColor="@color/main_green_dark"
         android:textColorHint="@color/main_green_dark"
-        android:textColorLink="@color/main_green_dark" />
+        app:boxStrokeWidth="1dp"
+        android:hint="@string/entry_text">
 
-    <EditText
-        android:id="@+id/description_edit_text_number"
-        style="@style/Widget.AppCompat.AutoCompleteTextView"
-        android:textColor="@color/main_green_dark"
-        android:textColorHint="@color/main_green_dark"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/description_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textLongMessage"
+            android:textColor="@color/main_green_dark"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        app:boxStrokeColor="@color/main_green_dark"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginVertical="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:boxCornerRadiusBottomEnd="7dp"
+        app:boxCornerRadiusTopEnd="7dp"
+        app:boxCornerRadiusBottomStart="7dp"
+        app:boxCornerRadiusTopStart="7dp"
+        app:helperTextTextColor="@color/main_green_dark"
+        android:textColorHint="@color/main_green_dark"
+        app:boxStrokeWidth="1dp"
         android:hint="@string/number09"
-        android:inputType="number"
-        android:maxLength="1"
-        android:visibility="gone"
-        android:autofillHints="" />
+        >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/description_edit_text_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textColor="@color/main_green_dark"
+            android:maxLength="1"
+            android:visibility="gone"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 
     <LinearLayout

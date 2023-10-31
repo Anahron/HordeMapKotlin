@@ -19,21 +19,37 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="22dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         android:textColor="@color/text_green_dark"
-        android:text="@string/myName"
+        android:text="@string/settings"
         android:textSize="18sp" />
 
-    <EditText
-        android:id="@+id/edit_name"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:ems="10"
-        android:hint="@string/put_name_here"
-        android:inputType="textPersonName"
-        android:textColor="@color/black"
-        android:textSize="22sp"
-        android:autofillHints="" />
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_marginVertical="4dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        app:boxStrokeColor="@color/main_green_dark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:helperTextTextColor="@color/main_green_dark"
+        android:textColorHint="@color/main_green_dark"
+        app:boxStrokeWidth="1dp"
+        app:boxCornerRadiusBottomEnd="7dp"
+        app:boxCornerRadiusTopEnd="7dp"
+        app:boxCornerRadiusBottomStart="7dp"
+        app:boxCornerRadiusTopStart="7dp"
+        android:hint="@string/myName">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textLongMessage"
+            android:textColor="@color/main_green_dark"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"

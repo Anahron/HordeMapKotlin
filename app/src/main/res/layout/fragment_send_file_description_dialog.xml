@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="0dp"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="@drawable/border_light"
     android:padding="15dp">
@@ -30,24 +31,38 @@
         android:id="@+id/imageViewPhoto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxHeight="400dp"
+        android:maxHeight="360dp"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
         android:layout_gravity="center_horizontal"
         android:src="@drawable/downloaded_image"
         android:contentDescription="@string/todo" />
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/editTextDescription"
-        style="@style/Widget.AppCompat.EditText"
-        android:inputType="textLongMessage"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        app:boxStrokeColor="@color/main_green_dark"
+        android:layout_margin="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/main_green_dark"
+        app:boxCornerRadiusBottomEnd="7dp"
+        app:boxCornerRadiusTopEnd="7dp"
+        app:boxCornerRadiusBottomStart="7dp"
+        app:boxCornerRadiusTopStart="7dp"
+        app:helperTextTextColor="@color/main_green_dark"
         android:textColorHint="@color/main_green_dark"
-        android:textColorLink="@color/main_green_dark"
-        android:hint="@string/descriptions"
-        android:layout_marginTop="16dp" />
+        app:boxStrokeWidth="1dp"
+        android:hint="@string/descriptions">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textLongMessage"
+            android:textColor="@color/main_green_dark"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"
