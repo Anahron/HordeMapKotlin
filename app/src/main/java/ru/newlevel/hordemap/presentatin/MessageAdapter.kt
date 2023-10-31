@@ -3,8 +3,8 @@ package ru.newlevel.hordemap.presentatin
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
@@ -12,6 +12,7 @@ import ru.newlevel.hordemap.databinding.ItemMessageBinding
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MessagesAdapter(
@@ -20,11 +21,13 @@ class MessagesAdapter(
 ) :
     RecyclerView.Adapter<MessagesAdapter.MessageViewHolder>() {
 
-    private var messageDataModels: ArrayList<MessageDataModel>? = null
+    private var messageDataModels: ArrayList<MessageDataModel> = ArrayList()
 
-    fun setMessages(newMessageDataModels: ArrayList<MessageDataModel>) {
-        messageDataModels = newMessageDataModels
-        notifyDataSetChanged()
+    fun setMessages(newList: ArrayList<MessageDataModel>) {
+        val diffCallback = MessageDiffCallback(messageDataModels, newList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        messageDataModels = newList
+        diffResult.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(
@@ -40,18 +43,17 @@ class MessagesAdapter(
         holder: MessageViewHolder,
         position: Int
     ) {
-        val messageDataModel: MessageDataModel? = messageDataModels?.get(position)
+        val messageDataModel: MessageDataModel = messageDataModels[position]
         holder.bind(messageDataModel, onButtonSaveClickListener, onImageClickListener)
     }
 
     override fun getItemCount(): Int {
-        return messageDataModels?.size ?: 0
+        return messageDataModels.size
     }
 
     class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        private val binding: ItemMessageBinding by viewBinding()
-
+        private val binding = ItemMessageBinding.bind(itemView)
         private val dateFormat: DateFormat = SimpleDateFormat("HH:mm")
         private val timeZone = TimeZone.getDefault()
 
@@ -60,48 +62,52 @@ class MessagesAdapter(
         }
 
         fun bind(
-            messageDataModel: MessageDataModel?,
+            messageDataModel: MessageDataModel,
             onButtonSaveClickListener: OnButtonSaveClickListener,
             onImageClickListener: OnImageClickListener
-        ) {
-            binding.downloadButton.visibility = View.GONE
-            binding.imageView.visibility = View.GONE
-            if (messageDataModel != null) {
-                binding.textViewUsername.text = messageDataModel.userName
-                binding.textViewTime.text = dateFormat.format(Date(messageDataModel.timestamp))
-                val messageText: String = messageDataModel.message
+        ) = with(binding) {
+            downloadButton.visibility = View.GONE
+            downloadButton.visibility = View.GONE
+            imageView.visibility = View.GONE
+            textViewUsername.text = messageDataModel.userName
+            textViewTime.text = dateFormat.format(Date(messageDataModel.timestamp))
+            val messageText = messageDataModel.message
+            if (messageText.isEmpty())
+                textViewMessage.visibility = View.GONE
+            else
+                textViewMessage.text = messageText
+            if (messageDataModel.url.isNotEmpty()) {
+                try {
+                    val fileName = messageDataModel.fileName
 
-                if (messageText.startsWith("https://firebasestorage")) {
-                    try {
-                        val fileName = messageDataModel.fileName
-                        val fileSizeText = if (messageDataModel.fileSize > 0)
-                            " (" + messageDataModel.fileSize / 1000 + "kb)" else ""
-                        if (fileName.contains(".jpg")) {
-                            binding.textViewMessage.visibility = View.GONE
-                            binding.downloadButton.visibility = View.GONE
-                            binding.imageView.visibility = View.VISIBLE
-                            Glide.with(itemView.context)
-                                .load(messageDataModel.message)
-                                .thumbnail(0.1f)
-                                .timeout(30_000)
-                                .into(binding.imageView)
-                            binding.imageView.setOnClickListener {
-                                onImageClickListener.onImageClick(messageDataModel.message)
-                            }
-
-                        } else {
-                            binding.textViewMessage.text = getContentText(fileName, fileSizeText)
-                            binding.downloadButton.visibility = View.VISIBLE
-                            binding.downloadButton.setOnClickListener {
-                                onButtonSaveClickListener.onButtonSaveClick(messageDataModel.message, fileName)
-                            }
+                    val fileSizeText = if ((messageDataModel.fileSize / 1000) < 1000)
+                        " (" + (messageDataModel.fileSize / 1000) + "kb)"
+                    else
+                        " (" + String.format("%.1f", (messageDataModel.fileSize.toDouble() / 1000000)) + "Mb)"
+                    if (fileName.contains(".jpg")) {
+                        downloadButton.visibility = View.GONE
+                        imageView.visibility = View.VISIBLE
+                        Glide.with(itemView.context)
+                            .load(messageDataModel.url)
+                            .thumbnail(0.1f)
+                            .timeout(30_000)
+                            .into(imageView)
+                        imageView.setOnClickListener {
+                            onImageClickListener.onImageClick(messageDataModel.url)
                         }
-                    } catch (e: Exception) {
-                        binding.textViewMessage.text = messageText
-                        e.printStackTrace()
+                    } else {
+                        downloadButton.visibility = View.VISIBLE
+                        textViewMessage.text = messageText
+                        downloadButton.text = getContentText(fileName, fileSizeText)
+                        downloadButton.setOnClickListener {
+                            onButtonSaveClickListener.onButtonSaveClick(
+                                messageDataModel.url,
+                                fileName
+                            )
+                        }
                     }
-                } else {
-                    binding.textViewMessage.text = messageText
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }
@@ -114,6 +120,24 @@ class MessagesAdapter(
             }
         }
     }
+
+    class MessageDiffCallback(
+        private val oldList: List<MessageDataModel>,
+        private val newList: List<MessageDataModel>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize() = oldList.size
+
+        override fun getNewListSize() = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].timestamp == newList[newItemPosition].timestamp
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].message == newList[newItemPosition].message
+        }
+    }
+
 
     interface OnButtonSaveClickListener {
         fun onButtonSaveClick(uri: String, fileName: String)

@@ -20,8 +20,8 @@ class MessengerRepositoryImpl(private val messageStorage: MessageStorage) : Mess
         messageStorage.stopMessageUpdate()
     }
 
-    override fun sendFile(uri: Uri, fileName: String?, fileSize: Long) {
-        messageStorage.sendFile(uri, fileName, fileSize)
+    override fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long) {
+        messageStorage.sendFile(message, uri, fileName, fileSize)
     }
 
     override fun downloadFile(context: Context, uri: Uri, fileName: String?) {

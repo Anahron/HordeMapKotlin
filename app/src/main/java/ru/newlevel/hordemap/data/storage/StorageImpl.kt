@@ -25,19 +25,18 @@ private const val GEO_USER_MARKERS_PATH = "geoData0"
 private const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
 private const val MESSAGE_FILE_FOLDER = "MessengerFiles0"
 private const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах
+private const val MAP_URL = "gs://horde-4112c.appspot.com/maps/map.kmz"  // карта полигона
 private const val MESSAGE_PATH = "messages0"
 private const val TIMESTAMP_PATH = "timestamp"
 private const val TAG = "AAA"
 
 class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
 
-    private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
-    private val storageReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseStorage.getInstance().reference }
-
-    var storage: FirebaseStorage = FirebaseStorage.getInstance()
+    private val databaseReference = FirebaseDatabase.getInstance().reference
+    private val storageReference = FirebaseStorage.getInstance().reference
 
     private val gsReference =
-        storage.getReferenceFromUrl("gs://horde-4112c.appspot.com/maps/map.kmz")
+        this.storageReference.storage.getReferenceFromUrl(MAP_URL)
 
     private val staticDatabaseReference = databaseReference.child(GEO_STATIC_MARKERS_PATH)
     private val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
@@ -56,7 +55,6 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
     }
 
     override fun sendUserMarker(markerModel: MarkerDataModel) {
-        Log.e(TAG, "Координаты отправлены")
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
@@ -68,7 +66,6 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val messages = ArrayList<MessageDataModel>()
                     for (snapshot in dataSnapshot.children) {
-                        Log.e("AAA", snapshot.toString())
                         val message: MessageDataModel? =
                             snapshot.getValue(MessageDataModel::class.java)
                         if (message != null) {
@@ -79,7 +76,6 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
                         liveDataMessageDataModel.postValue(messages)
                     }
                 }
-
                 override fun onCancelled(error: DatabaseError) {
 
                 }
@@ -93,7 +89,6 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         valueUserEventListener =
             userDatabaseReference.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    Log.e(TAG, "данные в startUserMarkerUpdates обновлены")
                     val savedUserMarkers: ArrayList<MarkerDataModel> = ArrayList()
                     val timeNow = System.currentTimeMillis()
                     for (snapshot in dataSnapshot.children) {
@@ -103,7 +98,7 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
                                 snapshot.child(TIMESTAMP_PATH).getValue(Long::class.java)
                             val timeDiffMillis = timeNow - timestamp!!
                             val timeDiffMinutes = timeDiffMillis / 60000
-                            // Удаляем маркера, которым больше TIME_TO_DELETE_USER_MARKER минут
+                            // Удаляем маркера в базе, которым больше TIME_TO_DELETE_USER_MARKER минут
                             alpha = if (timeDiffMinutes >= TIME_TO_DELETE_USER_MARKER) {
                                 snapshot.ref.removeValue()
                                 continue
@@ -134,7 +129,6 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         valueStaticEventListener =
             staticDatabaseReference.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    Log.e(TAG, "данные в startStaticMarkerUpdates обновлены")
                     val savedStaticMarkers: ArrayList<MarkerDataModel> = ArrayList()
                     for (snapshot in dataSnapshot.children) {
                         try {
@@ -175,10 +169,9 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         }
     }
 
-    override fun sendFile(uri: Uri, fileName: String?, fileSize: Long) {
-        val messageFilesStorage = storageReference.child("$MESSAGE_FILE_FOLDER/$fileName")
+    override fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long) {
+        val messageFilesStorage = this.storageReference.child("$MESSAGE_FILE_FOLDER/$fileName")
         val uploadTask = messageFilesStorage.putFile(uri)
-
         uploadTask.addOnProgressListener { taskSnapshot: UploadTask.TaskSnapshot ->
             val progress = 100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount
             progressLiveData.postValue(progress.toInt())
@@ -190,7 +183,7 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
                     .addOnSuccessListener { uri: Uri ->
                         val downloadUrl = uri.toString()
                         val fileNameToSend = fileName ?: ""
-                        sendMessage(downloadUrl, fileSize, fileNameToSend)
+                        sendMessage(message, downloadUrl, fileSize, fileNameToSend)
                     }
             }
         }
@@ -227,12 +220,13 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         databaseReference.updateChildren(updates)
     }
 
-    private fun sendMessage(text: String, fileSize: Long, fileName: String) {
+    private fun sendMessage(text: String, downloadUrl: String, fileSize: Long, fileName: String) {
         val time = System.currentTimeMillis()
         val geoDataPath = "$MESSAGE_PATH/$time"
         val updates: MutableMap<String, Any> = HashMap()
         updates["$geoDataPath/userName"] = UserEntityProvider.userEntity?.name.toString()
         updates["$geoDataPath/message"] = text
+        updates["$geoDataPath/url"] = downloadUrl
         updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity?.deviceID.toString()
         updates["$geoDataPath/timestamp"] = time
         updates["$geoDataPath/fileSize"] = fileSize
@@ -240,9 +234,8 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
         databaseReference.updateChildren(updates)
     }
 
-
     override fun stopMarkerUpdates() {
-        Log.e(TAG, "stopMarkerUpdates вызван")
+        Log.e(TAG, "stopMarkerUpdates in StorageImpl вызван")
         if (valueUserEventListener != null)
             userDatabaseReference.removeEventListener(valueUserEventListener!!)
         if (valueStaticEventListener != null)
@@ -250,6 +243,7 @@ class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
     }
 
     override fun stopMessageUpdate() {
+        Log.e(TAG, "stopMessageUpdate in StorageImpl вызван")
         if (valueMessageEventListener != null)
             databaseReference.removeEventListener(valueMessageEventListener!!)
     }

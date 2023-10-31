@@ -36,8 +36,8 @@ class MessengerViewModel(
         sendMessageUseCase.execute(text)
     }
 
-    fun sendFile(uri: Uri, fileName: String?, fileSize: Long) {
-     sendFileUseCase.execute(uri, fileName, fileSize)
+    fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long) {
+     sendFileUseCase.execute(message, uri, fileName, fileSize)
     }
 
    fun downloadFile(context: Context, uri: Uri, fileName: String?) {

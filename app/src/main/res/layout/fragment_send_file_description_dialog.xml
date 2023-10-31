@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/border_light"
+    android:padding="15dp">
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/added_image"
+        android:padding="4dp"
+        android:textSize="20sp"
+        android:textColor="@color/main_green_dark"/>
+
+    <ImageView
+        android:id="@+id/imageViewPhoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxHeight="400dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/downloaded_image"
+        android:contentDescription="@string/todo" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/editTextDescription"
+        style="@style/Widget.AppCompat.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/main_green_dark"
+        android:textColorHint="@color/main_green_dark"
+        android:textColorLink="@color/main_green_dark"
+        android:hint="@string/descriptions"
+        android:layout_marginTop="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_margin="6dp"
+        android:background="@drawable/border"
+        android:textColor="@color/main_green_dark"
+        android:text="@string/cancel"
+        android:padding="15dp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_margin="6dp"
+        android:background="@drawable/border_dark"
+        android:textColor="@color/main_green"
+        android:text="@string/send"
+        android:padding="15dp"
+        style="?android:attr/backgroundDimEnabled" />
+
+    </LinearLayout>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

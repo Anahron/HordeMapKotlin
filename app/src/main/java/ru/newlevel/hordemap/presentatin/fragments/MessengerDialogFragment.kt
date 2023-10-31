@@ -6,7 +6,6 @@ import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -15,7 +14,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
 import androidx.activity.result.ActivityResultLauncher
@@ -24,11 +22,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.SmoothScroller
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -51,7 +46,8 @@ import java.util.*
 
 
 class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
-    MessagesAdapter.OnButtonSaveClickListener, MessagesAdapter.OnImageClickListener {
+    MessagesAdapter.OnButtonSaveClickListener, MessagesAdapter.OnImageClickListener,
+    SendFileDescriptionDialogFragment.OnFileDescriptionListener {
 
     private val binding: MessagesDialogBinding by viewBinding()
     private val messengerViewModel by viewModel<MessengerViewModel>()
@@ -60,40 +56,50 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private lateinit var adapter: MessagesAdapter
     private lateinit var layoutManager: LinearLayoutManager
     private lateinit var file: File
-    private lateinit var uri: Uri
+    private lateinit var photoUri: Uri
+    private var isDownloadingState = false
 
     private lateinit var activityLauncher: ActivityResultLauncher<String>
     private lateinit var pickImage: ActivityResultLauncher<String>
     private lateinit var takePicture: ActivityResultLauncher<Uri>
 
-    private var isDownloadingState = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
-            lifecycleScope.launch {
-                if (result != null) {
-                    messengerViewModel.sendFile(
-                        result, getFileNameFromUri(result), getFileSizeFromUri(result)
-                    )
-                }
+        activityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
+            if (uri != null) {
+                val dialogFragment = SendFileDescriptionDialogFragment(
+                    uri,
+                    getFileNameFromUri(uri),
+                    getFileSizeFromUri(uri),
+                    this,
+                    false
+                )
+                dialogFragment.show(childFragmentManager, "file_description_dialog")
             }
         }
         pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            lifecycleScope.launch {
-                if (uri != null) {
-                    messengerViewModel.sendFile(
-                        uri, getFileNameFromUri(uri), getFileSizeFromUri(uri)
-                    )
-                }
+            if (uri != null) {
+                val dialogFragment = SendFileDescriptionDialogFragment(
+                    uri,
+                    getFileNameFromUri(uri),
+                    getFileSizeFromUri(uri),
+                    this,
+                    true
+                )
+                dialogFragment.show(childFragmentManager, "pick_image_description_dialog")
             }
         }
         takePicture =
             registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
                 if (isSuccess) {
-                    messengerViewModel.sendFile(
-                        uri, getFileNameFromUri(uri), getFileSizeFromUri(uri)
+                    val dialogFragment = SendFileDescriptionDialogFragment(
+                        photoUri,
+                        getFileNameFromUri(photoUri),
+                        getFileSizeFromUri(photoUri),
+                        this, true
                     )
+                    dialogFragment.show(childFragmentManager, "photo_description_dialog")
                 }
             }
 
@@ -198,7 +204,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     private fun openPhotoButtonClick(context: Context) {
         file = createTempImageFile(context)!!
-        uri = FileProvider.getUriForFile(
+        photoUri = FileProvider.getUriForFile(
             requireContext(),
             "ru.newlevel.hordemap.app",
             file
@@ -209,7 +215,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             .setItems(items) { _, which ->
                 when (which) {
                     0 -> pickImage.launch("image/*") // Выбор из галереи
-                    1 -> takePicture.launch(uri) // Фотографирование с камеры
+                    1 -> takePicture.launch(photoUri) // Фотографирование с камеры
                 }
             }
             .show()
@@ -231,6 +237,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         recyclerView = binding.recyclerViewMessages
         layoutManager = LinearLayoutManager(requireContext())
         layoutManager.stackFromEnd = true
+        layoutManager.initialPrefetchItemCount = 20
         binding.recyclerViewMessages.layoutManager = layoutManager
         adapter = MessagesAdapter(this, this)
         binding.recyclerViewMessages.adapter = adapter
@@ -238,7 +245,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     private fun setupScrollDownButton() {
         binding.goDown.setOnClickListener {
-            recyclerView.scrollToPosition(
+            recyclerView.smoothScrollToPosition(
                 adapter.itemCount.minus(1)
             )
         }
@@ -254,10 +261,10 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
                 return@OnEditorActionListener true
             }
             false
-        }) // отпрака по нажатию энтер на клавиатуре
+        })
     }
 
-    private fun setupSendMessageButton() { // Отправка сообщения
+    private fun setupSendMessageButton() {
         binding.buttonSend.setOnClickListener {
             val text = binding.editTextMessage.text.toString().trim()
             if (text.isNotEmpty())
@@ -267,7 +274,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         }
     }
 
-    private fun setupUploadFileButton() { // Отправка файла
+    private fun setupUploadFileButton() {
         binding.buttonSendFile.setOnClickListener {
             activityLauncher.launch("*/*")
             binding.editTextMessage.requestFocus()
@@ -348,5 +355,14 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             .load(url)
             .into(imageView)
         dialog.show()
+    }
+
+    override fun onFileDescriptionReceived(
+        description: String,
+        photoUri: Uri,
+        fileName: String,
+        fileSize: Long
+    ) {
+        messengerViewModel.sendFile(description, photoUri, fileName, fileSize)
     }
 }
