@@ -4,7 +4,7 @@
 
     <queries tools:ignore="ExtraText">
         <package android:name="ru.newlevel.hordemap.app" />
-      <package android:name="com.google.android.gms" />
+        <package android:name="com.google.android.gms" />
         <package android:name="com.google.android.apps.maps" />
     </queries>
 
@@ -56,16 +56,23 @@
 
         <activity
             android:name=".presentatin.MainActivity"
-            android:screenOrientation="portrait"
             android:exported="true"
-            android:label="Horde Map">
+            android:label="Horde Map"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
-        <receiver android:name=".app.LocationUpdatesBroadcastReceiver" />
+        <receiver
+            android:name=".app.LocationUpdatesBroadcastReceiver"
+            android:exported="false">
+        <intent-filter>
+            <action android:name="ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES" />
+        </intent-filter>
+
+        </receiver>
         <receiver android:name=".app.MyAlarmReceiver" />
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -78,11 +85,10 @@
         </provider>
         <service
             android:name=".device.MyLocationManager"
-            android:stopWithTask="false"
-            android:exported="false"
             android:enabled="true"
+            android:exported="false"
             android:foregroundServiceType="location"
-            />
+            android:stopWithTask="false" />
     </application>
 
 </manifest>

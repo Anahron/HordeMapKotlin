@@ -16,6 +16,9 @@ val domainModule = module {
     factory<SendMessageUseCase> {
         SendMessageUseCase(messengerRepository = get())
     }
+    factory<CreateRouteUseCase> {
+        CreateRouteUseCase()
+    }
 
     factory<CompassUseCase> {
         CompassUseCase(sensorRepository = get())

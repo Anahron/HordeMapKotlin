@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.device
 
-import android.Manifest
 import android.app.*
 import android.content.Intent
 import android.os.IBinder
@@ -10,77 +9,51 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.presentatin.MainActivity
-import java.util.concurrent.TimeUnit
 
 private const val TAG = "AAA"
 
 class MyLocationManager : Service() {
 
+    private var timeToSendData = 60000L
+
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
     }
+
     private lateinit var locationRequest: LocationRequest
 
     private val locationUpdatePendingIntent: PendingIntent by lazy {
-        val intent = Intent(this.applicationContext, LocationUpdatesBroadcastReceiver::class.java)
+        val intent = Intent(this, LocationUpdatesBroadcastReceiver::class.java)
         intent.action = LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES
-        PendingIntent.getBroadcast(this.applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
     }
 
     @Throws(SecurityException::class)
     @MainThread
     fun startLocationUpdates() {
-        Log.d(TAG, "startLocationUpdates()")
-        if (!this.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) return
-
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationUpdatePendingIntent)
         } catch (permissionRevoked: SecurityException) {
-            Log.d(TAG, "Location permission revoked; details: $permissionRevoked")
+            Log.e(TAG, "Location permission revoked; details: $permissionRevoked")
             throw permissionRevoked
         }
-    }
-
-    @MainThread
-    fun stopLocationUpdates() {
-        Log.d(TAG, "stopLocationUpdates()")
-        fusedLocationClient.removeLocationUpdates(locationUpdatePendingIntent)
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        stopLocationUpdates()
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val timeToSendData = UserEntityProvider.userEntity?.timeToSendData
-        locationRequest = LocationRequest().apply {
-            interval = if (timeToSendData != null) timeToSendData * 1000L else 60000
-            fastestInterval = if (timeToSendData != null) timeToSendData * 1000L / 2 else 30000
-            maxWaitTime = TimeUnit.MINUTES.toMillis(1)
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-
-        startLocationUpdates()
-        val notification = createNotification()
-        startForeground(1, notification)
-        return START_STICKY
     }
 
     private fun createNotification(): Notification {
         val intent = Intent(this.applicationContext, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         val pendingIntent =
-            PendingIntent.getActivity(this.applicationContext, 9990, intent, PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getActivity(
+                this.applicationContext,
+                9990,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
 
         val channel = NotificationChannel("CHANNEL_1", "GPS", NotificationManager.IMPORTANCE_HIGH)
         val notificationManager = getSystemService(NotificationManager::class.java)
@@ -90,7 +63,7 @@ class MyLocationManager : Service() {
             .setSmallIcon(R.mipmap.hordecircle_round)
             .setContentTitle("Horde Map")
             .setContentText("Horde Map получает GPS данные в фоновом режиме")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setCategory(Notification.CATEGORY_LOCATION_SHARING)
@@ -98,4 +71,42 @@ class MyLocationManager : Service() {
 
         return builder.build()
     }
+
+    private fun startService() {
+        timeToSendData = UserEntityProvider.userEntity?.timeToSendData?.times(1000L) ?: 60000L
+        locationRequest =
+            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData).build()
+        startLocationUpdates()
+        val notification = createNotification()
+        startForeground(1, notification)
+    }
+
+    private fun stopService() {
+        Log.d(TAG, "stopLocationUpdates()")
+        fusedLocationClient.removeLocationUpdates(locationUpdatePendingIntent)
+        stopForeground(1)
+        stopSelf()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_START -> startService()
+            ACTION_STOP -> stopService()
+        }
+        return START_REDELIVER_INTENT
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        startService()
+    }
+    companion object{
+        const val ACTION_START = "ACTION_START"
+        const val ACTION_STOP = "ACTION_STOP"
+    }
 }
+

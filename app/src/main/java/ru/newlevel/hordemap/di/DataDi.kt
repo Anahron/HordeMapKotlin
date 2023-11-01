@@ -16,7 +16,7 @@ val dataModule = module {
         androidContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager }
 
 
-    //Storeges
+    //Storages
     single<UserStorage> {
         SharedPrefUserStorage(context = get())
     }
@@ -43,7 +43,6 @@ val dataModule = module {
     single<StorageImpl> {
        get()
     }
-
 
     // Repos
     single<SettingsRepository> {

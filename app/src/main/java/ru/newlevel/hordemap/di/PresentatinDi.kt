@@ -2,7 +2,6 @@ package ru.newlevel.hordemap.di
 
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
-import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentatin.viewmodels.*
 
 val presentationModule = module {
@@ -24,7 +23,8 @@ val presentationModule = module {
             sendStaticMarkerUseCase = get(),
             startMarkerUpdateUseCase = get(),
             stopMarkerUpdateUseCase = get(),
-            compassUseCase = get()
+            compassUseCase = get(),
+            createRouteUseCase = get()
         )
     }
     viewModel<LocationUpdateViewModel>{

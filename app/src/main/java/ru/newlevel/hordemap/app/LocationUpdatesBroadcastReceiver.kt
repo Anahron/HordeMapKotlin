@@ -30,7 +30,7 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     Log.e(TAG, "Location services are no longer available!")
                 }
             }
-
+            Log.e(TAG, LocationResult.extractResult(intent).toString())
             LocationResult.extractResult(intent)?.let { locationResult ->
                 val locations = locationResult.locations
                 if (locations.isNotEmpty()) {
@@ -43,7 +43,7 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     }
                 }
             }
-        }
+        } else   Log.e(TAG, "intent.action != ACTION_PROCESS_UPDATES")
     }
 
     private fun mapLocationToMarker(

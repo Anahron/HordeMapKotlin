@@ -40,7 +40,7 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
             PendingIntent.FLAG_IMMUTABLE
         )
         val userEntity = UserEntityProvider.userEntity
-        time = userEntity?.timeToSendData?.times(1000) ?: 60000
+        time = userEntity?.timeToSendData?.times(2000) ?: 120000
         (context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
             SystemClock.elapsedRealtime() + time,
@@ -61,7 +61,6 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
                 override fun isCancellationRequested() = false
             })
             .addOnSuccessListener {
-                Log.e(TAG, "onReceive getCurrentLocation = " + it.toString())
                 if (it != null && userEntity != null) {
                     val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
                     userDatabaseReference.child(userEntity.deviceID)

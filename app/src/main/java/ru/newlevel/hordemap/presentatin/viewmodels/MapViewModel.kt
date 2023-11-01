@@ -1,18 +1,17 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.collections.MarkerManager
-import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
@@ -35,7 +34,8 @@ class MapViewModel(
     private val sendStaticMarkerUseCase: SendStaticMarkerUseCase,
     private val stopMarkerUpdateUseCase: StopMarkerUpdateUseCase,
     private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase,
-    private val compassUseCase: CompassUseCase
+    private val compassUseCase: CompassUseCase,
+    private val createRouteUseCase: CreateRouteUseCase
 ) : ViewModel() {
 
     val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState }
@@ -60,24 +60,16 @@ class MapViewModel(
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
     }
 
-    fun compassActivate(){
-       compassAngle = compassUseCase.startSensorEventListener()
+    fun compassActivate() {
+        compassAngle = compassUseCase.startSensorEventListener()
     }
 
-    fun compassDeActivate(){
+    fun compassDeActivate() {
         compassUseCase.stopSensorEventListener()
-    }
-
-    fun getDestination(): LatLng? {
-        return destination
     }
 
     fun setDestination(destination: LatLng) {
         this.destination = destination
-    }
-
-    fun getRoutePolyline(): Polyline? {
-        return routePolyline
     }
 
     fun setRoutePolyline(polyline: Polyline) {
@@ -85,28 +77,25 @@ class MapViewModel(
     }
 
     fun createRoute(currentLatLng: LatLng, destination: LatLng, context: Context): PolylineOptions {
-        val bitmapcustomcap =
-            BitmapFactory.decodeResource(context.resources, R.drawable.star)
-        val bitmapcustomcapicon = BitmapDescriptorFactory.fromBitmap(
-            Bitmap.createScaledBitmap(
-                bitmapcustomcap,
-                60,
-                60,
-                false
-            )
-        )
-        val customCap = CustomCap(bitmapcustomcapicon)
-        return PolylineOptions().addAll(listOf(currentLatLng, destination)).endCap(customCap)
-            .geodesic(true).color(Color.BLUE).width(6f)
+        removeRoute()
+        setDistanceText(currentLatLng, destination)
+        return createRouteUseCase.execute(currentLatLng,destination, context)
     }
 
     fun removeRoute() {
+        routePolyline?.remove()
         routePolyline = null
     }
 
-    fun updateRoute(currentLatLng: LatLng, destination: LatLng) {
+    fun updateRoute(currentLatLng: LatLng) {
+        if (destination != null && routePolyline != null) {
+            routePolyline?.points?: listOf(currentLatLng, destination)
+            setDistanceText(currentLatLng, destination)
+        }
+    }
+
+    private fun setDistanceText(currentLatLng: LatLng, destination: LatLng?) {
         val distance = SphericalUtil.computeDistanceBetween(currentLatLng, destination)
-        routePolyline?.points ?: listOf(currentLatLng, destination)
         _distanceText.postValue(
             if (distance.toInt() > 1000) ((distance / 10).roundToInt() / 100.0).toString() + " км." else distance.toInt()
                 .toString() + " м."
@@ -120,10 +109,12 @@ class MapViewModel(
     fun setUriForMap(uri: Uri) {
         _kmzUri.postValue(uri)
     }
+
     fun cleanUriForMap() {
         _kmzUri.postValue(Uri.parse(""))
     }
-    fun reCreateMarkers(){
+
+    fun reCreateMarkers() {
         userMarkersLiveData.value = userMarkersLiveData.value
         staticMarkersLiveData.value = staticMarkersLiveData.value
     }
@@ -163,12 +154,18 @@ class MapViewModel(
             state.value = MapState.MarkersOffState
     }
 
-    fun createUsersMarkers(it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
-            createMarkersUseCase.createUsersMarkers(it, markerCollection)
+    fun createUsersMarkers(
+        it: List<MarkerDataModel>,
+        markerCollection: MarkerManager.Collection
+    ) {
+        createMarkersUseCase.createUsersMarkers(it, markerCollection)
     }
 
-    fun createStaticMarkers(it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection) {
-            createMarkersUseCase.createStaticMarkers(it, markerCollection = markerCollection)
+    fun createStaticMarkers(
+        it: List<MarkerDataModel>,
+        markerCollection: MarkerManager.Collection
+    ) {
+        createMarkersUseCase.createStaticMarkers(it, markerCollection = markerCollection)
     }
 
     fun stopMarkerUpdates() {
