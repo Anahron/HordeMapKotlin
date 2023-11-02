@@ -1,10 +1,10 @@
-package ru.newlevel.hordemap.data.storage
+package ru.newlevel.hordemap.data.storage.interfaces
 
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.Marker
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 
-interface MarkersDataStorage {
+interface MarkersRemoteStorage {
     fun deleteStaticMarker(marker: Marker)
 
     fun sendUserMarker(markerModel: MarkerDataModel)

@@ -1,8 +1,8 @@
-package ru.newlevel.hordemap.data.storage
+package ru.newlevel.hordemap.data.storage.interfaces
 
 import android.content.Context
 import android.net.Uri
 
-interface MapStorage {
+interface GameMapRemoteStorage {
     suspend fun loadGameMapFromServer(context: Context): Uri?
 }

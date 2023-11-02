@@ -8,11 +8,13 @@ import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 interface MessengerRepository {
     fun sendMessage(text: String)
 
+    fun sendMessage(text: String, downloadUrl: String, fileSize: Long, fileName: String)
+
     fun startMessageUpdate(): MutableLiveData<List<MessageDataModel>>
 
     fun stopMessageUpdate()
 
-    fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long)
+    suspend fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long): String
 
     fun downloadFile(context: Context, uri: Uri, fileName: String?)
 

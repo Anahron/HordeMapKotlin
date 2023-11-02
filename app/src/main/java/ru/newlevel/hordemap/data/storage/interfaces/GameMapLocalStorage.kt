@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.data.storage
+package ru.newlevel.hordemap.data.storage.interfaces
 
 import android.net.Uri
 

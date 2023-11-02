@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.data.storage
 import android.content.Context
 import android.content.SharedPreferences
 import ru.newlevel.hordemap.app.getDeviceId
+import ru.newlevel.hordemap.data.storage.interfaces.UserLocalStorage
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
 
@@ -16,7 +17,7 @@ const val DEFAULT_SIZE = 60
 const val DEFAULT_TIME = 30
 const val KEY_IS_AUTO_LOAD = "isAutoLoad"
 
-class SharedPrefUserStorage(private val context: Context): UserStorage {
+class SharedPrefUserLocalStorage(private val context: Context): UserLocalStorage {
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(SHARE_PREFS_NAME, Context.MODE_PRIVATE)
 

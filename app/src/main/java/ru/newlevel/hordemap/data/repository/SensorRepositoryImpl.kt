@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.data.repository
 
-
 import android.hardware.SensorEvent
 import androidx.lifecycle.LiveData
 import ru.newlevel.hordemap.device.MySensorManager

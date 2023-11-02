@@ -5,7 +5,11 @@ import android.hardware.SensorManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import ru.newlevel.hordemap.data.repository.*
-import ru.newlevel.hordemap.data.storage.*
+import ru.newlevel.hordemap.data.storage.FilesLocalStorage
+import ru.newlevel.hordemap.data.storage.MyFirebaseDatabase
+import ru.newlevel.hordemap.data.storage.MyFirebaseStorage
+import ru.newlevel.hordemap.data.storage.SharedPrefUserLocalStorage
+import ru.newlevel.hordemap.data.storage.interfaces.*
 import ru.newlevel.hordemap.device.MySensorManager
 import ru.newlevel.hordemap.domain.repository.*
 
@@ -16,12 +20,12 @@ val dataModule = module {
         androidContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager }
 
     //Storages
-    single<UserStorage> {
-        SharedPrefUserStorage(context = get())
+    single<UserLocalStorage> {
+        SharedPrefUserLocalStorage(context = get())
     }
 
-    single<MarkersDataStorage> {
-        FirebaseStorageImpl()
+    single<MarkersRemoteStorage> {
+        MyFirebaseDatabase()
     }
     single<FilesLocalStorage> {
         FilesLocalStorage(context = get())
@@ -30,25 +34,29 @@ val dataModule = module {
     single<GameMapLocalStorage> {
         FilesLocalStorage(context = get())
     }
-    single<MapStorage> {
-        FirebaseStorageImpl()
+    single<GameMapRemoteStorage> {
+        MyFirebaseStorage()
     }
     single<MySensorManager> {
         MySensorManager(sensorManager = get())
     }
-    single<MessageStorage> {
-        FirebaseStorageImpl()
+    single<MessageRemoteStorage> {
+        MyFirebaseDatabase()
     }
-    single<FirebaseStorageImpl> {
+    single<MessageFilesStorage> {
+        MyFirebaseStorage()
+    }
+
+    single<MyFirebaseDatabase> {
        get()
     }
 
     // Repos
     single<SettingsRepository> {
-        SettingsRepositoryImpl(userStorage = get())
+        SettingsRepositoryImpl(userLocalStorage = get())
     }
     single<GeoDataRepository> {
-        GeoDataRepositoryImpl(markersDataStorage = get())
+        GeoDataRepositoryImpl(markersRemoteStorage = get())
     }
 
     single<LocationRepository> {
@@ -56,7 +64,7 @@ val dataModule = module {
     }
 
     single<GameMapRepository> {
-        GameMapRepositoryImpl(gameMapLocalStorage = get(), mapStorage = get())
+        GameMapRepositoryImpl(gameMapLocalStorage = get(), gameMapRemoteStorage = get())
     }
 
     single<SensorRepository> {
@@ -64,6 +72,6 @@ val dataModule = module {
     }
 
     single<MessengerRepository> {
-        MessengerRepositoryImpl(messageStorage = get())
+        MessengerRepositoryImpl(messageRemoteStorage = get(), messageFilesStorage = get())
     }
 }

@@ -2,14 +2,14 @@ package ru.newlevel.hordemap.data.repository
 
 import android.content.Context
 import android.net.Uri
-import ru.newlevel.hordemap.data.storage.MapStorage
-import ru.newlevel.hordemap.data.storage.GameMapLocalStorage
+import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
+import ru.newlevel.hordemap.data.storage.interfaces.GameMapLocalStorage
 import ru.newlevel.hordemap.domain.repository.GameMapRepository
 
-class GameMapRepositoryImpl(private val gameMapLocalStorage: GameMapLocalStorage, private val mapStorage: MapStorage): GameMapRepository {
+class GameMapRepositoryImpl(private val gameMapLocalStorage: GameMapLocalStorage, private val gameMapRemoteStorage: GameMapRemoteStorage): GameMapRepository {
 
     override suspend fun loadGameMapFromServer(context: Context): Uri? {
-       return mapStorage.loadGameMapFromServer(context)
+       return gameMapRemoteStorage.loadGameMapFromServer(context)
     }
 
     override suspend fun loadLastGameMap(): Uri? {
