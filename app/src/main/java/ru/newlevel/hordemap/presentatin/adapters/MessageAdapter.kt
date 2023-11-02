@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin
+package ru.newlevel.hordemap.presentatin.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -70,19 +70,15 @@ class MessagesAdapter(
             val fileName = messageDataModel.fileName
             val fileSize = messageDataModel.fileSize
             val url = messageDataModel.url
-
             downloadButton.visibility = View.GONE
             imageView.visibility = View.GONE
             textViewMessage.visibility = View.GONE
-
             textViewUsername.text = messageDataModel.userName
             textViewTime.text = dateFormat.format(Date(messageDataModel.timestamp))
-
             if (message.isNotEmpty()) {
                 textViewMessage.visibility = View.VISIBLE
                 textViewMessage.text = message
             }
-
             if (url.isNotEmpty()) {
                 val fileSizeText = if ((fileSize / 1000) < 1000)
                     " (" + (fileSize / 1000) + "kb)"
@@ -101,6 +97,7 @@ class MessagesAdapter(
                     imageView.setOnClickListener {
                         onImageClickListener.onImageClick(messageDataModel.url)
                     }
+
                 } else {
                     downloadButton.visibility = View.VISIBLE
                     downloadButton.text = fileName + fileSizeText
@@ -111,6 +108,7 @@ class MessagesAdapter(
                     }
                 }
             }
+           rootLinear.requestLayout()
         }
     }
 
@@ -119,13 +117,10 @@ class MessagesAdapter(
         private val newList: List<MessageDataModel>
     ) : DiffUtil.Callback() {
         override fun getOldListSize() = oldList.size
-
         override fun getNewListSize() = newList.size
-
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             return oldList[oldItemPosition].timestamp == newList[newItemPosition].timestamp
         }
-
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             return oldList[oldItemPosition].message == newList[newItemPosition].message
         }

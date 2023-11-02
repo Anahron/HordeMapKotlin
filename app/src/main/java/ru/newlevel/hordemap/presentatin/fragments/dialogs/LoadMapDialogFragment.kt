@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.fragments
+package ru.newlevel.hordemap.presentatin.fragments.dialogs
 
 import android.net.Uri
 import android.os.Bundle

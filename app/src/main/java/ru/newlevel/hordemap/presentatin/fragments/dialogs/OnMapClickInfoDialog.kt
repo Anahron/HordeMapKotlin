@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.fragments
+package ru.newlevel.hordemap.presentatin.fragments.dialogs
 
 import android.content.DialogInterface
 import android.os.Bundle
@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.RadioButton
 import androidx.fragment.app.DialogFragment
 import by.kirich1409.viewbindingdelegate.viewBinding
-import com.google.android.gms.maps.model.LatLng
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.OnMapClickDialogBinding
 

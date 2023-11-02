@@ -38,7 +38,8 @@ import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.makeShortToast
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.MessagesDialogBinding
-import ru.newlevel.hordemap.presentatin.MessagesAdapter
+import ru.newlevel.hordemap.presentatin.adapters.MessagesAdapter
+import ru.newlevel.hordemap.presentatin.fragments.dialogs.SendFileDescriptionDialogFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.MessengerViewModel
 import java.io.File
 import java.io.IOException
@@ -234,8 +235,10 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         recyclerView = binding.recyclerViewMessages
         layoutManager = LinearLayoutManager(requireContext())
         layoutManager.stackFromEnd = true
-        layoutManager.initialPrefetchItemCount = 20
+        layoutManager.initialPrefetchItemCount = 30
+//        layoutManager.isAutoMeasureEnabled = false
         binding.recyclerViewMessages.layoutManager = layoutManager
+        recyclerView.setHasFixedSize(true)
         adapter = MessagesAdapter(this, this)
         binding.recyclerViewMessages.adapter = adapter
     }

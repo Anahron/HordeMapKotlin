@@ -5,10 +5,10 @@ import android.hardware.SensorManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import ru.newlevel.hordemap.data.repository.*
-import ru.newlevel.hordemap.data.storage.FilesLocalStorage
-import ru.newlevel.hordemap.data.storage.MyFirebaseDatabase
-import ru.newlevel.hordemap.data.storage.MyFirebaseStorage
-import ru.newlevel.hordemap.data.storage.SharedPrefUserLocalStorage
+import ru.newlevel.hordemap.data.storage.implementation.FilesLocalStorage
+import ru.newlevel.hordemap.data.storage.implementation.MyFirebaseDatabase
+import ru.newlevel.hordemap.data.storage.implementation.MyFirebaseStorage
+import ru.newlevel.hordemap.data.storage.implementation.SharedPrefUserLocalStorage
 import ru.newlevel.hordemap.data.storage.interfaces.*
 import ru.newlevel.hordemap.device.MySensorManager
 import ru.newlevel.hordemap.domain.repository.*

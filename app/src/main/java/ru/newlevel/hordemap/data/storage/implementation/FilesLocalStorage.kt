@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.data.storage
+package ru.newlevel.hordemap.data.storage.implementation
 
 import android.content.Context
 import android.net.Uri
