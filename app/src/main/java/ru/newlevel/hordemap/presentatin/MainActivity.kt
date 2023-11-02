@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 arrayOf(Manifest.permission_group.SENSORS), MY_PERMISSIONS_REQUEST_SENSOR
             )
         }
-
         if (!applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) requestPermission()
         else loginCheck()
     }
@@ -45,7 +44,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
                 Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()
                 val mapFragment = MapFragment(loginViewModel)
                 supportFragmentManager.beginTransaction().replace(R.id.container, mapFragment)
-                    .addToBackStack(null)
                     .commit()
                 loginViewModel.loginResultData.removeObservers(this)
             } else {

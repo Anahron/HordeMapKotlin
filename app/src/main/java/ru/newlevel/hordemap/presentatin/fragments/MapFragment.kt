@@ -196,7 +196,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     private fun startBackgroundWork() {
         locationUpdateViewModel.startLocationUpdates()
         startAlarmManager()
-        buildWorkManager()
+       // buildWorkManager()
     }
 
     private fun buildRoute(destination: LatLng) {
@@ -360,7 +360,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         )
         (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + 1000,
+            SystemClock.elapsedRealtime() + 600000,
             pendingIntent
         )
     }

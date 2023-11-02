@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
@@ -53,12 +54,13 @@ fun mapUserDomainToData(userDomainModel: UserDomainModel): UserDataModel {
     )
 }
 
-
 fun getDeviceId(context: Context): String {
     @SuppressLint("HardwareIds") val androidId =
         Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
     return androidId ?: UUID.randomUUID().toString()
 }
+
+fun <T : Any?> MutableLiveData<T>.default(initialValue:T) = apply{ setValue(initialValue)}
 
 fun Context.hasPermission(permission: String): Boolean {
     return ContextCompat.checkSelfPermission(

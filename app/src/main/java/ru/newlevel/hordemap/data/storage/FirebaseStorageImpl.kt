@@ -30,7 +30,7 @@ private const val MESSAGE_PATH = "messages0"
 private const val TIMESTAMP_PATH = "timestamp"
 private const val TAG = "AAA"
 
-class StorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
+class FirebaseStorageImpl : MarkersDataStorage, MapStorage, MessageStorage {
 
     private val databaseReference = FirebaseDatabase.getInstance().reference
     private val storageReference = FirebaseStorage.getInstance().reference

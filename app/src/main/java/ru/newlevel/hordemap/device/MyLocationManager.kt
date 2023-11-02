@@ -45,11 +45,11 @@ class MyLocationManager : Service() {
     }
 
     private fun createNotification(): Notification {
-        val intent = Intent(this.applicationContext, MainActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         val pendingIntent =
             PendingIntent.getActivity(
-                this.applicationContext,
+                this,
                 9990,
                 intent,
                 PendingIntent.FLAG_IMMUTABLE

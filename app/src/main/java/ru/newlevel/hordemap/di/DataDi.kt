@@ -15,14 +15,13 @@ val dataModule = module {
     single<SensorManager>  {
         androidContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager }
 
-
     //Storages
     single<UserStorage> {
         SharedPrefUserStorage(context = get())
     }
 
     single<MarkersDataStorage> {
-        StorageImpl()
+        FirebaseStorageImpl()
     }
     single<FilesLocalStorage> {
         FilesLocalStorage(context = get())
@@ -32,15 +31,15 @@ val dataModule = module {
         FilesLocalStorage(context = get())
     }
     single<MapStorage> {
-        StorageImpl()
+        FirebaseStorageImpl()
     }
     single<MySensorManager> {
         MySensorManager(sensorManager = get())
     }
     single<MessageStorage> {
-        StorageImpl()
+        FirebaseStorageImpl()
     }
-    single<StorageImpl> {
+    single<FirebaseStorageImpl> {
        get()
     }
 
