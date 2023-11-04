@@ -10,6 +10,7 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +24,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
@@ -92,7 +94,8 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
                 dialogFragment.show(childFragmentManager, "pick_image_description_dialog")
             }
         }
-        takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
+        takePicture =
+            registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
                 if (isSuccess) {
                     val dialogFragment = SendFileDescriptionDialogFragment(
                         photoUri,
@@ -133,30 +136,32 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         setupOpenCameraButton()
         setupCloseMessengerButton()
 
-        messengerViewModel.startMessageUpdate()
-        messengerViewModel.messagesLiveData.observe(this) { messages ->
-            if (adapter.itemCount < messages.size) {
-                val onDown =
-                    recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
-                adapter.setMessages(messages as ArrayList<MessageDataModel>)
-                if (onDown) {
-                    binding.newMessage.visibility = View.VISIBLE
-                } else {
-                    recyclerView.scrollToPosition(adapter.itemCount - 1)
+        lifecycleScope.launchWhenResumed {
+            messengerViewModel.startMessageUpdate()
+            messengerViewModel.messagesLiveData.observe(this@MessengerDialogFragment) { messages ->
+                Log.e("AAA", "  messengerViewModel.messagesLiveData.observe получил данные" + this)
+                if (adapter.itemCount < messages.size) {
+                    val onDown =
+                        recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
+                    adapter.setMessages(messages as ArrayList<MessageDataModel>)
+                    if (onDown) {
+                        binding.newMessage.visibility = View.VISIBLE
+                    } else {
+                        recyclerView.scrollToPosition(adapter.itemCount - 1)
+                    }
                 }
             }
-        }
-
-        messengerViewModel.progressLiveData.observe(this) { progress ->
-            if (progress < 1000) {
-                isDownloadingState = true
-                binding.progressBar.visibility = View.VISIBLE
-                binding.progressBar.setProgress(progress, true)
-                binding.progressText.visibility = View.VISIBLE
-            } else {
-                isDownloadingState = false
-                binding.progressBar.visibility = View.GONE
-                binding.progressText.visibility = View.GONE
+            messengerViewModel.progressLiveData.observe(this@MessengerDialogFragment) { progress ->
+                if (progress < 1000) {
+                    isDownloadingState = true
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.progressBar.setProgress(progress, true)
+                    binding.progressText.visibility = View.VISIBLE
+                } else {
+                    isDownloadingState = false
+                    binding.progressBar.visibility = View.GONE
+                    binding.progressText.visibility = View.GONE
+                }
             }
         }
 
@@ -164,11 +169,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
                 binding.newMessage.visibility = View.GONE
             }
-        }
-
-        dialog?.setOnDismissListener {
-            messengerViewModel.stopMessageUpdate()
-            this@MessengerDialogFragment.dismissAllowingStateLoss()
         }
     }
 
@@ -236,7 +236,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         layoutManager = LinearLayoutManager(requireContext())
         layoutManager.stackFromEnd = true
         layoutManager.initialPrefetchItemCount = 30
-//        layoutManager.isAutoMeasureEnabled = false
         binding.recyclerViewMessages.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
         adapter = MessagesAdapter(this, this)
@@ -314,14 +313,9 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        messengerViewModel.stopMessageUpdate()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        messengerViewModel.startMessageUpdate()
+    override fun onStop() {
+        super.onStop()
+       messengerViewModel.stopMessageUpdate()
     }
 
     override fun onButtonSaveClick(uri: String, fileName: String) {
@@ -346,7 +340,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         dialog.setContentView(R.layout.fragment_full_screen_image)
         val imageView =
             dialog.findViewById<ZoomageView>(R.id.myZoomageView)
-        dialog.findViewById<ImageView>(R.id.close_massager).setOnClickListener{
+        dialog.findViewById<ImageView>(R.id.close_massager).setOnClickListener {
             dialog.dismiss()
         }
         Glide.with(requireContext())

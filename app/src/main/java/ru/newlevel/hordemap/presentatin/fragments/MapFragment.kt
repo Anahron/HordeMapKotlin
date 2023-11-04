@@ -53,8 +53,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
     private val mapViewModel by viewModel<MapViewModel>()
     private lateinit var googleMap: GoogleMap
-    private var userMarkersObserver: Observer<List<MarkerDataModel>>? = null
-    private var staticMarkersObserver: Observer<List<MarkerDataModel>>? = null
+    private lateinit var markerManager: MarkerManager
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
     private var messengerDialog: MessengerDialogFragment? = null
@@ -62,8 +61,9 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     private fun init() {
         setupMap()
         menuListenersSetup()
-        userMarkerCollection = MarkerManager(googleMap).newCollection()
-        staticMarkerCollection = MarkerManager(googleMap).newCollection()
+        markerManager = MarkerManager(googleMap)
+        userMarkerCollection = markerManager.newCollection()
+        staticMarkerCollection = markerManager.newCollection()
         markerStateObserver()
         overlayObserver()
         compassObserver()
@@ -86,27 +86,27 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     }
 
     private fun markerStateObserver() {
-        mapViewModel.state.observe(this@MapFragment) { state ->
+        mapViewModel.state.observe(this) { state ->
             when (state) {
                 is MapState.LoadingState -> {
 
                 }
                 is MapState.DefaultState -> {
+                    startMarkerObservers()
                     binding.drawableSettings.closeDrawer(GravityCompat.END)
                     binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
-                    userMarkersObserver = Observer {
+                    mapViewModel.userMarkersLiveData.observe(this) {
                         userMarkerCollection.markers.forEach { marker -> marker.remove() }
                         mapViewModel.createUsersMarkers(
                             it, markerCollection = userMarkerCollection
                         )
                     }
-                    staticMarkersObserver = Observer {
+                    mapViewModel.staticMarkersLiveData.observe(this) {
                         staticMarkerCollection.markers.forEach { marker -> marker.remove() }
                         mapViewModel.createStaticMarkers(
                             it, markerCollection = staticMarkerCollection
                         )
                     }
-                    startMarkerObservers()
                 }
                 is MapState.MarkersOffState -> {
                     stopMarkerObservers()
@@ -131,20 +131,18 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
 
     private fun overlayObserver() {
         var kmlLayer: KmlLayer? = null
-        val markerManager = MarkerManager(googleMap)
         mapViewModel.isAutoLoadMap.observe(this) {
             if (it) lifecycleScope.launch {
                 mapViewModel.loadLastGameMap()
             }
         }
-        mapViewModel.kmzUri.observe(this) {
-            if (kmlLayer != null) kmlLayer!!.removeLayerFromMap()
+        mapViewModel.kmzUri.observe(this) { kmzUri ->
+            kmlLayer?.removeLayerFromMap()
             lifecycleScope.launch {
-                val inputStream = it.let { mapViewModel.getInputSteam(it!!, requireContext()) }
-                if (inputStream != null) {
+                kmzUri?.let { mapViewModel.getInputSteam(it, requireContext()) }.use { stream ->
                     kmlLayer = KmlLayer(
                         googleMap,
-                        inputStream,
+                        stream,
                         requireContext(),
                         markerManager,
                         null,
@@ -152,62 +150,49 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
                         null,
                         null
                     )
-                    kmlLayer!!.addLayerToMap()
-                    if (kmlLayer!!.isLayerOnMap && kmlLayer!!.groundOverlays != null) {
-                        kmlLayer!!.groundOverlays.any { _it ->
-                            googleMap.animateCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(
-                                        _it.latLngBox.center.latitude,
-                                        _it.latLngBox.center.longitude
-                                    ), 12F
-                                )
-                            )
-                            true
-                        }
-                    }
-                    withContext(Dispatchers.IO) {
-                        inputStream.close()
+                    kmlLayer?.addLayerToMap()
+                    kmlLayer?.groundOverlays?.first()?.let { overlay ->
+                        val center = overlay.latLngBox.center
+                        val update = CameraUpdateFactory.newLatLngZoom(
+                            LatLng(
+                                center.latitude,
+                                center.longitude
+                            ), 12F
+                        )
+                        googleMap.animateCamera(update)
                     }
                 }
             }
         }
     }
 
+
     private fun stopMarkerObservers() {
-        userMarkersObserver?.let {
-            mapViewModel.stopMarkerUpdates()
-            mapViewModel.userMarkersLiveData.removeObserver(it)
-        }
-        staticMarkersObserver?.let {
-            mapViewModel.staticMarkersLiveData.removeObserver(it)
-        }
+        mapViewModel.stopMarkerUpdates()
     }
 
     private fun startMarkerObservers() {
-        userMarkersObserver?.let {
-            mapViewModel.startMarkerUpdates()
-            mapViewModel.userMarkersLiveData.observe(viewLifecycleOwner, it)
-        }
-        staticMarkersObserver?.let {
-            mapViewModel.staticMarkersLiveData.observe(viewLifecycleOwner, it)
-        }
+        mapViewModel.startMarkerUpdates()
     }
 
     private fun startBackgroundWork() {
         locationUpdateViewModel.startLocationUpdates()
         startAlarmManager()
-       // buildWorkManager()
+        // buildWorkManager()
     }
 
     private fun buildRoute(destination: LatLng) {
         mapViewModel.setDestination(destination)
-        mapViewModel.setRoutePolyline(googleMap.addPolyline(mapViewModel.createRoute(
-            LatLng(
-                googleMap.myLocation.latitude,
-                googleMap.myLocation.longitude
-            ), destination, requireContext().applicationContext
-        )))
+        mapViewModel.setRoutePolyline(
+            googleMap.addPolyline(
+                mapViewModel.createRoute(
+                    LatLng(
+                        googleMap.myLocation.latitude,
+                        googleMap.myLocation.longitude
+                    ), destination, requireContext().applicationContext
+                )
+            )
+        )
         mapViewModel.distanceText.observe(viewLifecycleOwner)
         {
             lifecycleScope.launch(Dispatchers.Main) {
@@ -333,7 +318,10 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
 
     private fun setupMap() {
         googleMap.uiSettings.isZoomControlsEnabled = true
-        if (requireContext().hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || requireContext().hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+        if (requireContext().hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || requireContext().hasPermission(
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        ) {
             googleMap.isMyLocationEnabled = true
             googleMap.uiSettings.isCompassEnabled = true
             googleMap.uiSettings.isMapToolbarEnabled = false
@@ -369,13 +357,11 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     override fun onPause() {
         super.onPause()
         mapViewModel.compassDeActivate()
-        stopMarkerObservers()
     }
 
     override fun onResume() {
         super.onResume()
         mapViewModel.compassActivate()
-        startMarkerObservers()
     }
 
     override fun onDetach() {

@@ -1,15 +1,12 @@
 package ru.newlevel.hordemap.presentatin.fragments.dialogs
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.makeLongToast
@@ -24,28 +21,25 @@ class LoadMapDialogFragment(
 
     private val binding: LoadMapDialogBinding by viewBinding()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) = with(binding) {
         super.onViewCreated(view, savedInstanceState)
         var boolean = UserEntityProvider.userEntity?.autoLoad
         if (boolean != null) {
-            binding.checkBox.isChecked = boolean
+            checkBox.isChecked = boolean
         }
 
-        binding.checkBox.setOnClickListener {
-            boolean = binding.checkBox.isChecked
+        checkBox.setOnClickListener {
+            boolean = checkBox.isChecked
             mapViewModel.setIsAutoLoadMap(boolean!!)
             settingsViewModel.saveAutoLoad(boolean!!)
         }
 
-        binding.btnFromServer.setOnClickListener {
+        btnFromServer.setOnClickListener {
             lifecycleScope.launch {
                 makeLongToast("Загрузка началась, подождите...", requireContext())
-                var uri: Uri?
-                withContext(Dispatchers.IO) {
-                    uri = mapViewModel.loadMapFromServer(requireContext().applicationContext)
-                }
+                val uri = mapViewModel.loadMapFromServer(requireContext().applicationContext)
                 if (uri != null)
-                    mapViewModel.setUriForMap(uri!!)
+                    mapViewModel.setUriForMap(uri)
                 else {
                     makeLongToast("Скачивание завершилось неудачно", requireContext())
                 }
@@ -53,27 +47,29 @@ class LoadMapDialogFragment(
         }
 
         val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
-            lifecycleScope.launch {
-                if (result != null) {
-                    mapViewModel.saveGameMapToFile(result)
-                    mapViewModel.setUriForMap(result)
+            result?.let {
+                lifecycleScope.launch {
+                    mapViewModel.saveGameMapToFile(it)
+                    mapViewModel.setUriForMap(it)
                 }
             }
         }
-        binding.btnFromFiles.setOnClickListener {
+
+        btnFromFiles.setOnClickListener {
             activityLauncher.launch("application/vnd.google-earth.kmz")
         }
 
-        binding.btnLastSaved.setOnClickListener {
+        btnLastSaved.setOnClickListener {
             lifecycleScope.launch {
-                if (!mapViewModel.loadLastGameMap()) Toast.makeText(
-                    requireContext().applicationContext,
-                    "Сохраненная карта отсутствует",
-                    Toast.LENGTH_LONG
-                ).show()
+                if (!mapViewModel.loadLastGameMap())
+                    Toast.makeText(
+                        requireContext().applicationContext,
+                        "Сохраненная карта отсутствует",
+                        Toast.LENGTH_LONG
+                    ).show()
             }
         }
-        binding.btnCleanMap.setOnClickListener {
+        btnCleanMap.setOnClickListener {
             mapViewModel.cleanUriForMap()
         }
     }
