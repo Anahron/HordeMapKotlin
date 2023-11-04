@@ -17,8 +17,8 @@ class MessengerRepositoryImpl(private val messageRemoteStorage: MessageRemoteSto
         messageRemoteStorage.sendMessage(text, downloadUrl, fileSize, fileName)
     }
 
-    override fun startMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
-        return messageRemoteStorage.startMessageUpdate()
+    override fun getMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
+        return messageRemoteStorage.getMessageUpdate()
     }
 
     override fun stopMessageUpdate() {

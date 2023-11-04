@@ -25,11 +25,6 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
     private val databaseReference = FirebaseDatabase.getInstance().reference
     private val staticDatabaseReference = databaseReference.child(GEO_STATIC_MARKERS_PATH)
     private val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
-
-    private var valueUserEventListener: ValueEventListener? = null
-    private var valueStaticEventListener: ValueEventListener? = null
-    private var valueMessageEventListener: ValueEventListener? = null
-
     private val liveDataStaticMarkers = MutableLiveData<List<MarkerDataModel>>()
     private val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
     private val liveDataMessageDataModel = MutableLiveData<List<MessageDataModel>>()
@@ -42,100 +37,26 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
-    override fun startMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
-        if (valueMessageEventListener != null)
-            databaseReference.removeEventListener(valueMessageEventListener!!)
-        valueMessageEventListener = databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val messages = ArrayList<MessageDataModel>()
-                    for (snapshot in dataSnapshot.children) {
-                        val message: MessageDataModel? =
-                            snapshot.getValue(MessageDataModel::class.java)
-                        if (message != null) {
-                            messages.add(message)
-                        }
-                    }
-                    if (messages.isNotEmpty()) {
-                        liveDataMessageDataModel.postValue(messages)
-                    }
-                }
-                override fun onCancelled(error: DatabaseError) {
-
-                }
-            })
+    override fun getMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
+        Log.e(TAG, "startMessageUpdate() вызван")
+        databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
+            .addValueEventListener(messageEventListener)
         return liveDataMessageDataModel
     }
 
     override fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        if (valueUserEventListener != null)
-            userDatabaseReference.removeEventListener(valueUserEventListener!!)
-        valueUserEventListener =
-            userDatabaseReference.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val savedUserMarkers: ArrayList<MarkerDataModel> = ArrayList()
-                    val timeNow = System.currentTimeMillis()
-                    for (snapshot in dataSnapshot.children) {
-                        try {
-                            var alpha: Float
-                            val timestamp: Long? =
-                                snapshot.child(TIMESTAMP_PATH).getValue(Long::class.java)
-                            val timeDiffMillis = timeNow - timestamp!!
-                            val timeDiffMinutes = timeDiffMillis / 60000
-                            // Удаляем маркера в базе, которым больше TIME_TO_DELETE_USER_MARKER минут
-                            alpha = if (timeDiffMinutes >= TIME_TO_DELETE_USER_MARKER) {
-                                snapshot.ref.removeValue()
-                                continue
-                            } else {
-                                // Устанавливаем прозрачность маркера от 0 до 5 минут максимум до 50%
-                                1f - (timeDiffMinutes / 10f).coerceAtMost(0.5f)
-                            }
-                            val myMarker: MarkerDataModel =
-                                snapshot.getValue(MarkerDataModel::class.java)!!
-                            myMarker.deviceId = snapshot.key.toString()
-                            myMarker.alpha = alpha
-                            savedUserMarkers.add(myMarker)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                    liveDataUserMarkers.postValue(savedUserMarkers)
-                }
-
-                override fun onCancelled(error: DatabaseError) {}
-            })
+        userDatabaseReference.addValueEventListener(valueUserEventListener)
         return liveDataUserMarkers
     }
 
     override fun startStaticMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        if (valueStaticEventListener != null)
-            staticDatabaseReference.removeEventListener(valueStaticEventListener!!)
-        valueStaticEventListener =
-            staticDatabaseReference.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val savedStaticMarkers: ArrayList<MarkerDataModel> = ArrayList()
-                    for (snapshot in dataSnapshot.children) {
-                        try {
-                            val myMarker: MarkerDataModel =
-                                snapshot.getValue(MarkerDataModel::class.java)!!
-                            savedStaticMarkers.add(myMarker)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                    liveDataStaticMarkers.postValue(savedStaticMarkers)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                }
-            })
+        staticDatabaseReference.addValueEventListener(valueStaticEventListener)
         return liveDataStaticMarkers
     }
 
     override fun sendStaticMarker(markerModel: MarkerDataModel) {
         staticDatabaseReference.child(markerModel.timestamp.toString()).setValue(markerModel)
     }
-
 
     override fun sendMessage(text: String) {
         val time = System.currentTimeMillis()
@@ -164,17 +85,89 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
 
     override fun stopMarkerUpdates() {
         Log.e(TAG, "stopMarkerUpdates in StorageImpl вызван")
-        if (valueUserEventListener != null)
-            userDatabaseReference.removeEventListener(valueUserEventListener!!)
-        if (valueStaticEventListener != null)
-            staticDatabaseReference.removeEventListener(valueStaticEventListener!!)
+        userDatabaseReference.removeEventListener(valueUserEventListener)
+        staticDatabaseReference.removeEventListener(valueStaticEventListener)
     }
 
     override fun stopMessageUpdate() {
-        Log.e(TAG, "stopMessageUpdate in StorageImpl вызван")
-        if (valueMessageEventListener != null)
-            databaseReference.removeEventListener(valueMessageEventListener!!)
+        Log.e(TAG, "stopMessageUpdate вызван")
+        databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
+            .removeEventListener(messageEventListener)
+    }
+
+    private var valueUserEventListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            val savedUserMarkers: ArrayList<MarkerDataModel> = ArrayList()
+            val timeNow = System.currentTimeMillis()
+            for (snapshot in dataSnapshot.children) {
+                try {
+                    var alpha: Float
+                    val timestamp: Long? =
+                        snapshot.child(TIMESTAMP_PATH).getValue(Long::class.java)
+                    val timeDiffMillis = timeNow - timestamp!!
+                    val timeDiffMinutes = timeDiffMillis / 60000
+                    // Удаляем маркера в базе, которым больше TIME_TO_DELETE_USER_MARKER минут
+                    alpha = if (timeDiffMinutes >= TIME_TO_DELETE_USER_MARKER) {
+                        snapshot.ref.removeValue()
+                        continue
+                    } else {
+                        // Устанавливаем прозрачность маркера от 0 до 5 минут максимум до 50%
+                        1f - (timeDiffMinutes / 10f).coerceAtMost(0.5f)
+                    }
+                    val myMarker: MarkerDataModel =
+                        snapshot.getValue(MarkerDataModel::class.java)!!
+                    myMarker.deviceId = snapshot.key.toString()
+                    myMarker.alpha = alpha
+                    savedUserMarkers.add(myMarker)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            liveDataUserMarkers.postValue(savedUserMarkers)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+
+        }
+    }
+
+    private var valueStaticEventListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            val savedStaticMarkers: ArrayList<MarkerDataModel> = ArrayList()
+            for (snapshot in dataSnapshot.children) {
+                try {
+                    val myMarker: MarkerDataModel =
+                        snapshot.getValue(MarkerDataModel::class.java)!!
+                    savedStaticMarkers.add(myMarker)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            liveDataStaticMarkers.postValue(savedStaticMarkers)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+        }
+    }
+
+    private val messageEventListener = object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            Log.e(TAG, "startMessageUpdate пришло обновление сообщений")
+            val messages = ArrayList<MessageDataModel>()
+            for (snap in snapshot.children) {
+                val message: MessageDataModel? = snap.getValue(MessageDataModel::class.java)
+                if (message != null) {
+                    messages.add(message)
+                }
+            }
+            if (messages.isNotEmpty()) {
+                liveDataMessageDataModel.postValue(messages)
+            }
+        }
+
+        override fun onCancelled(error: DatabaseError) {}
     }
 }
+
 
 

@@ -27,7 +27,7 @@ class MessengerViewModel(
 
 
     fun startMessageUpdate() {
-        messagesMutableLiveData = startMessageUpdateUseCase.execute()
+        messagesMutableLiveData = startMessageUpdateUseCase.getMessageUpdate()
         progressMutableLiveData = startMessageUpdateUseCase.getDownloadProgress()
     }
 

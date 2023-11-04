@@ -13,11 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -29,21 +25,20 @@ import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.data.kml.KmlLayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.BgLocationWorker
 import ru.newlevel.hordemap.app.MyAlarmReceiver
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentatin.MainActivity
-import ru.newlevel.hordemap.presentatin.fragments.dialogs.*
+import ru.newlevel.hordemap.presentatin.fragments.dialogs.LoadMapDialogFragment
+import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialog
+import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialogResult
+import ru.newlevel.hordemap.presentatin.fragments.dialogs.SettingsFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapState
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
-import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 class MapFragment(private val settingsViewModel: SettingsViewModel) :
@@ -178,7 +173,6 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     private fun startBackgroundWork() {
         locationUpdateViewModel.startLocationUpdates()
         startAlarmManager()
-        // buildWorkManager()
     }
 
     private fun buildRoute(destination: LatLng) {
@@ -328,18 +322,6 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         } else {
             (activity as MainActivity).requestPermission()
         }
-    }
-
-    private fun buildWorkManager() {
-        val workManager = WorkManager.getInstance(requireContext().applicationContext)
-        workManager.enqueueUniquePeriodicWork(
-            BgLocationWorker.workName,
-            ExistingPeriodicWorkPolicy.KEEP,
-            PeriodicWorkRequestBuilder<BgLocationWorker>(
-                5,
-                TimeUnit.MINUTES,
-            ).build(),
-        )
     }
 
     private fun startAlarmManager() {

@@ -10,7 +10,7 @@ interface MessengerRepository {
 
     fun sendMessage(text: String, downloadUrl: String, fileSize: Long, fileName: String)
 
-    fun startMessageUpdate(): MutableLiveData<List<MessageDataModel>>
+    fun getMessageUpdate(): MutableLiveData<List<MessageDataModel>>
 
     fun stopMessageUpdate()
 
