@@ -7,13 +7,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
-import ru.newlevel.hordemap.databinding.ItemMessageBinding
+import ru.newlevel.hordemap.databinding.ItemMessageInBinding
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
-
 
 class MessagesAdapter(
     private val onButtonSaveClickListener: OnButtonSaveClickListener,
@@ -34,8 +33,12 @@ class MessagesAdapter(
         parent: ViewGroup,
         viewType: Int
     ): MessageViewHolder {
-        val view: View =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_message, parent, false)
+        val view = when (viewType) {
+            ITEM_IN ->  LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_message_in, parent, false)
+            else -> LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_message_out, parent, false)
+        }
         return MessageViewHolder(view)
     }
 
@@ -43,17 +46,20 @@ class MessagesAdapter(
         holder: MessageViewHolder,
         position: Int
     ) {
-        val messageDataModel: MessageDataModel = messageDataModels[position]
-        holder.bind(messageDataModel, onButtonSaveClickListener, onImageClickListener)
+        holder.bind(messageDataModels[position], onButtonSaveClickListener, onImageClickListener)
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (messageDataModels[position].deviceID == UserEntityProvider.userEntity?.deviceID) ITEM_OUT else ITEM_IN
     }
 
     override fun getItemCount(): Int {
         return messageDataModels.size
     }
 
-    class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class MessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-        private val binding = ItemMessageBinding.bind(itemView)
+        private val binding = ItemMessageInBinding.bind(view)
         private val dateFormat: DateFormat = SimpleDateFormat("HH:mm")
         private val timeZone = TimeZone.getDefault()
 
@@ -108,7 +114,7 @@ class MessagesAdapter(
                     }
                 }
             }
-           rootLinear.requestLayout()
+            rootLinear.requestLayout()
         }
     }
 
@@ -121,6 +127,7 @@ class MessagesAdapter(
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             return oldList[oldItemPosition].timestamp == newList[newItemPosition].timestamp
         }
+
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             return oldList[oldItemPosition].message == newList[newItemPosition].message
         }
@@ -133,5 +140,10 @@ class MessagesAdapter(
 
     interface OnImageClickListener {
         fun onImageClick(url: String)
+    }
+
+    companion object {
+        private const val ITEM_IN = 1
+        private const val ITEM_OUT = 2
     }
 }

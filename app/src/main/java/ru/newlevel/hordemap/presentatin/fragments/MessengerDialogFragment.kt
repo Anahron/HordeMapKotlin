@@ -60,8 +60,8 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private val messengerViewModel by viewModel<MessengerViewModel>()
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: MessagesAdapter
-    private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var messageAdapter: MessagesAdapter
+    private lateinit var messageLayoutManager: LinearLayoutManager
     private lateinit var file: File
     private lateinit var photoUri: Uri
     private var isDownloadingState = false
@@ -135,21 +135,22 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             )
         }
     }
-    private fun handleNewMessages(messages: List<MessageDataModel>){
+
+    private fun handleNewMessages(messages: List<MessageDataModel>) {
         Log.e("AAA", "  messengerViewModel.messagesLiveData.observe получил данные" + this)
-        if (adapter.itemCount < messages.size) {
+        if (messageAdapter.itemCount < messages.size) {
             val onDown =
                 recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
-            adapter.setMessages(messages as ArrayList<MessageDataModel>)
+            messageAdapter.setMessages(messages as ArrayList<MessageDataModel>)
             if (onDown) {
                 binding.newMessage.visibility = View.VISIBLE
             } else {
-                recyclerView.scrollToPosition(adapter.itemCount - 1)
+                recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
             }
         }
     }
 
-    private fun handleProgressUpdate(progress: Int){
+    private fun handleProgressUpdate(progress: Int) {
         if (progress < 1000) {
             isDownloadingState = true
             binding.progressBar.visibility = View.VISIBLE
@@ -249,17 +250,19 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     }
 
     private fun setupRecyclerView() {
-        recyclerView = binding.recyclerViewMessages
-        layoutManager = LinearLayoutManager(requireContext())
-        layoutManager.stackFromEnd = true
-        layoutManager.initialPrefetchItemCount = 30
-        binding.recyclerViewMessages.layoutManager = layoutManager
-        recyclerView.setHasFixedSize(true)
-        adapter = MessagesAdapter(this, this)
-        binding.recyclerViewMessages.adapter = adapter
-        recyclerView.setOnScrollChangeListener { _, _, _, _, _ ->
-            if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
-                binding.newMessage.visibility = View.GONE
+        messageAdapter = MessagesAdapter(this, this)
+        messageLayoutManager = LinearLayoutManager(requireContext()).apply {
+            stackFromEnd = true
+            initialPrefetchItemCount = 30
+        }
+        recyclerView = binding.recyclerViewMessages.apply {
+            layoutManager = messageLayoutManager
+            adapter = messageAdapter
+            setHasFixedSize(false)
+            setOnScrollChangeListener { _, _, _, _, _ ->
+                if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
+                    binding.newMessage.visibility = View.GONE
+                }
             }
         }
     }
@@ -267,7 +270,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private fun setupScrollDownButton() {
         binding.goDown.setOnClickListener {
             recyclerView.smoothScrollToPosition(
-                adapter.itemCount.minus(1)
+                messageAdapter.itemCount.minus(1)
             )
         }
     }
@@ -330,7 +333,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     private fun setupNewMessageAnnounces() {
         binding.newMessage.setOnClickListener {
-            recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
+            recyclerView.smoothScrollToPosition(messageAdapter.itemCount - 1)
             binding.newMessage.visibility = View.GONE
         }
     }

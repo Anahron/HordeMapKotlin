@@ -5,5 +5,5 @@
         android:startColor="#F2FFFFFF"
         android:type="linear"
         android:useLevel="false" />
-    <corners android:radius="7dp" /> <!-- Радиус скругления краев -->
+    <corners android:radius="8dp" /> <!-- Радиус скругления краев -->
 </shape>
