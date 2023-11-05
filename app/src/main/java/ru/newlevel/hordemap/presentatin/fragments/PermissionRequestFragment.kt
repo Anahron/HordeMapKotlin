@@ -1,6 +1,7 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -11,6 +12,7 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
@@ -224,6 +226,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
             .show()
     }
 
+    @SuppressLint("BatteryLife")
     private fun requestBatteryOptimizationPermission() {
         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
         intent.data = Uri.parse("package:${requireContext().packageName}")
@@ -239,6 +242,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun requestBackgroundLocationPermission() {
         permissionBackgroundLocation.launch(
             Manifest.permission.ACCESS_BACKGROUND_LOCATION,

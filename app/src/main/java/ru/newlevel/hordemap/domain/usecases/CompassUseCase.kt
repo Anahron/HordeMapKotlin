@@ -3,7 +3,7 @@ package ru.newlevel.hordemap.domain.usecases
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.map
 import ru.newlevel.hordemap.domain.repository.SensorRepository
 
 class CompassUseCase(private val sensorRepository: SensorRepository) {
@@ -12,14 +12,13 @@ class CompassUseCase(private val sensorRepository: SensorRepository) {
     private val rotationVectorReading = FloatArray(3)
     private val rotationMatrix = FloatArray(9)
 
-
     fun stopSensorEventListener(){
         sensorRepository.stopSensorEventListener()
     }
 
     fun startSensorEventListener(): LiveData<Float> {
         val sensorLiveData: LiveData<SensorEvent> = sensorRepository.startSensorEventListener()
-        val angleLiveData: LiveData<Float> = Transformations.map(sensorLiveData) { sensorEvent ->
+        val angleLiveData: LiveData<Float> = sensorLiveData.map { sensorEvent ->
             return@map eventToAngle(sensorEvent)
         }
         return angleLiveData

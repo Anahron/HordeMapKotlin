@@ -28,7 +28,6 @@ private const val GEO_USER_MARKERS_PATH = "geoData0"
 
 class MyAlarmReceiver : WakefulBroadcastReceiver() {
     private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
-    private var time = 60000
 
     @SuppressLint("MissingPermission")
     override fun onReceive(context: Context, intent: Intent?) {
@@ -40,7 +39,6 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
             PendingIntent.FLAG_IMMUTABLE
         )
         val userEntity = UserEntityProvider.userEntity
-        //time = userEntity?.timeToSendData?.times(2000) ?: 120000
         (context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
             SystemClock.elapsedRealtime() + 600000,
@@ -62,13 +60,14 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
             .addOnSuccessListener {
                 if (it != null && userEntity != null) {
                     val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
-                    Log.e(TAG, "onReceive в аларм менеджер " + it.toString())
+                    Log.e(TAG, "SuccessListener в аларм менеджер " + it.toString())
                     userDatabaseReference.child(userEntity.deviceID)
                         .setValue(mapLocationToMarker(it, userEntity))
                 }
             }
     }
 
+    @SuppressLint("SimpleDateFormat")
     private fun mapLocationToMarker(
         location: Location,
         userDomainModel: UserDataModel

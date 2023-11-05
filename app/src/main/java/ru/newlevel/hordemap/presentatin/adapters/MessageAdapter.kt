@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.presentatin.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,7 +35,7 @@ class MessagesAdapter(
         viewType: Int
     ): MessageViewHolder {
         val view = when (viewType) {
-            ITEM_IN ->  LayoutInflater.from(parent.context)
+            ITEM_IN -> LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_message_in, parent, false)
             else -> LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_message_out, parent, false)
@@ -60,6 +61,7 @@ class MessagesAdapter(
     class MessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         private val binding = ItemMessageInBinding.bind(view)
+        @SuppressLint("SimpleDateFormat")
         private val dateFormat: DateFormat = SimpleDateFormat("HH:mm")
         private val timeZone = TimeZone.getDefault()
 
@@ -106,7 +108,8 @@ class MessagesAdapter(
 
                 } else {
                     downloadButton.visibility = View.VISIBLE
-                    downloadButton.text = fileName + fileSizeText
+                    val downloadBtnText = "$fileName $fileSizeText"
+                    downloadButton.text = downloadBtnText
                     downloadButton.setOnClickListener {
                         onButtonSaveClickListener.onButtonSaveClick(
                             messageDataModel.url, fileName
@@ -132,7 +135,6 @@ class MessagesAdapter(
             return oldList[oldItemPosition].message == newList[newItemPosition].message
         }
     }
-
 
     interface OnButtonSaveClickListener {
         fun onButtonSaveClick(uri: String, fileName: String)

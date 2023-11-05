@@ -1,6 +1,7 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -114,6 +115,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun compassObserver() {
         mapViewModel.compassAngle.observe(this) { angle ->
             binding.imgCompass.visibility = View.VISIBLE
@@ -310,6 +312,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         dialogFragment.show(this.childFragmentManager, "customDialog")
     }
 
+    @SuppressLint("MissingPermission")
     private fun setupMap() {
         googleMap.uiSettings.isZoomControlsEnabled = true
         if (requireContext().hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || requireContext().hasPermission(

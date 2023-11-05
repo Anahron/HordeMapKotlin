@@ -3,6 +3,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+          app:navGraph="@navigation/main_nav_graph"
         android:id="@+id/frameLayout"
          android:background="@color/main_green_dialog"
         android:layout_width="match_parent"

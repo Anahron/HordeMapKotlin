@@ -2,9 +2,9 @@ package ru.newlevel.hordemap.device
 
 import android.app.*
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.MainThread
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
@@ -30,12 +30,11 @@ class MyLocationManager : Service() {
     private val locationUpdatePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, LocationUpdatesBroadcastReceiver::class.java)
         intent.action = LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES
-        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
-    @Throws(SecurityException::class)
-    @MainThread
-    fun startLocationUpdates() {
+
+    private fun startLocationUpdates() {
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationUpdatePendingIntent)
         } catch (permissionRevoked: SecurityException) {
@@ -54,8 +53,7 @@ class MyLocationManager : Service() {
                 intent,
                 PendingIntent.FLAG_IMMUTABLE
             )
-
-        val channel = NotificationChannel("CHANNEL_1", "GPS", NotificationManager.IMPORTANCE_HIGH)
+        val channel = NotificationChannel("CHANNEL_1", "GPS", NotificationManager.IMPORTANCE_LOW)
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(channel)
 
@@ -66,25 +64,27 @@ class MyLocationManager : Service() {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-            .setCategory(Notification.CATEGORY_LOCATION_SHARING)
             .setTimeoutAfter(500)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setCategory(Notification.CATEGORY_LOCATION_SHARING)
+        }
         return builder.build()
     }
 
     private fun startService() {
+        val notification = createNotification()
+        startForeground(1, notification)
         timeToSendData = UserEntityProvider.userEntity?.timeToSendData?.times(1000L) ?: 60000L
         locationRequest =
             LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData).build()
         startLocationUpdates()
-        val notification = createNotification()
-        startForeground(1, notification)
     }
 
     private fun stopService() {
         Log.d(TAG, "stopLocationUpdates()")
         fusedLocationClient.removeLocationUpdates(locationUpdatePendingIntent)
-        stopForeground(1)
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
@@ -102,9 +102,10 @@ class MyLocationManager : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        startService()
+        stopService()
     }
-    companion object{
+
+    companion object {
         const val ACTION_START = "ACTION_START"
         const val ACTION_STOP = "ACTION_STOP"
     }
