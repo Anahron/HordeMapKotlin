@@ -9,9 +9,13 @@ import android.util.Log
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationResult
 import com.google.firebase.database.FirebaseDatabase
+import ru.newlevel.hordemap.data.db.MyLocationDatabase
+import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
+import ru.newlevel.hordemap.data.storage.implementation.MyFirebaseDatabase
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
+import ru.newlevel.hordemap.domain.repository.LocationRepository
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -38,8 +42,18 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     val location = locationResult.lastLocation
                     if (location != null && userEntity != null) {
                         Log.e(TAG, "Отправляется на сервер" + location.toString())
-                        val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
-                            userDatabaseReference.child(userEntity.deviceID).setValue(mapLocationToMarker(location, userEntity))
+                        val myLocationDatabase: MyLocationDatabase = get()
+                        myLocationDatabase.locationDao().addLocation(MyLocationEntity(
+                            latitude = location.latitude,
+                            longitude = location.longitude,
+                            date = Date(location.time),
+                            sessionId = UserEntityProvider.toString()
+                        ))
+                        val myFirebaseDatabase: MyFirebaseDatabase = get()
+                        myFirebaseDatabase.sendUserMarker(mapLocationToMarker(location, userEntity))
+
+                       // val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
+                       //     userDatabaseReference.child(userEntity.deviceID).setValue(mapLocationToMarker(location, userEntity))
                     }
                 }
             }

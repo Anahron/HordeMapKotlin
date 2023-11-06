@@ -2,8 +2,12 @@ package ru.newlevel.hordemap.di
 
 import android.content.Context
 import android.hardware.SensorManager
+import androidx.room.Room
+import androidx.room.Room.databaseBuilder
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.newlevel.hordemap.data.db.MyLocationDao
+import ru.newlevel.hordemap.data.db.MyLocationDatabase
 import ru.newlevel.hordemap.data.repository.*
 import ru.newlevel.hordemap.data.storage.implementation.FilesLocalStorage
 import ru.newlevel.hordemap.data.storage.implementation.MyFirebaseDatabase
@@ -13,11 +17,29 @@ import ru.newlevel.hordemap.data.storage.interfaces.*
 import ru.newlevel.hordemap.device.MySensorManager
 import ru.newlevel.hordemap.domain.repository.*
 
+
+val databaseModule = module {
+
+    single<MyLocationDatabase> {
+        databaseBuilder(
+            androidContext(),
+            MyLocationDatabase::class.java,
+            "my-location-database"
+        ).build()
+    }
+}
+
 val dataModule = module {
 
+    single<MyLocationDao> {
+        val database = get<MyLocationDatabase>()
+        database.locationDao()
+    }
+
     //Device
-    single<SensorManager>  {
-        androidContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    single<SensorManager> {
+        androidContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    }
 
     //Storages
     single<UserLocalStorage> {
@@ -48,7 +70,7 @@ val dataModule = module {
     }
 
     single<MyFirebaseDatabase> {
-       get()
+        get()
     }
 
     // Repos
@@ -60,7 +82,7 @@ val dataModule = module {
     }
 
     single<LocationRepository> {
-        LocationRepositoryImpl(context = get())
+        LocationRepositoryImpl(context = get(), myLocationDao = get())
     }
 
     single<GameMapRepository> {
