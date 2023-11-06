@@ -30,11 +30,12 @@ class MyLocationManager : Service() {
     private val locationUpdatePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, LocationUpdatesBroadcastReceiver::class.java)
         intent.action = LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES
-        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
     }
 
 
     private fun startLocationUpdates() {
+        Log.e("AAA", "startLocationUpdates()" )
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationUpdatePendingIntent)
         } catch (permissionRevoked: SecurityException) {
@@ -73,6 +74,7 @@ class MyLocationManager : Service() {
     }
 
     private fun startService() {
+        Log.e("AAA", "startService()" )
         val notification = createNotification()
         startForeground(1, notification)
         timeToSendData = UserEntityProvider.userEntity?.timeToSendData?.times(1000L) ?: 60000L
@@ -89,6 +91,7 @@ class MyLocationManager : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.e("AAA", "onStartCommand c " + intent?.action.toString() )
         when (intent?.action) {
             ACTION_START -> startService()
             ACTION_STOP -> stopService()

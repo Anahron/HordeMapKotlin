@@ -8,26 +8,27 @@ import android.location.Location
 import android.util.Log
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationResult
-import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
 import ru.newlevel.hordemap.data.db.MyLocationDatabase
 import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.data.storage.implementation.MyFirebaseDatabase
+import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
-import ru.newlevel.hordemap.domain.repository.LocationRepository
-import java.text.DateFormat
-import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 private const val TAG = "AAA"
-private const val GEO_USER_MARKERS_PATH = "geoData0"
 
-class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
-    private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
+class LocationUpdatesBroadcastReceiver : BroadcastReceiver(), KoinComponent {
 
     @SuppressLint("SuspiciousIndentation")
     override fun onReceive(context: Context, intent: Intent) {
+        Log.e(TAG, "onReceive in LocationUpdatesBroadcastReceiver")
         if (intent.action == ACTION_PROCESS_UPDATES) {
             LocationAvailability.extractLocationAvailability(intent)?.let { locationAvailability ->
                 if (!locationAvailability.isLocationAvailable) {
@@ -41,19 +42,21 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
                     val userEntity = UserEntityProvider.userEntity
                     val location = locationResult.lastLocation
                     if (location != null && userEntity != null) {
-                        Log.e(TAG, "Отправляется на сервер" + location.toString())
-                   //     val myLocationDatabase: MyLocationDatabase = get()
-//                        myLocationDatabase.locationDao().addLocation(MyLocationEntity(
-//                            latitude = location.latitude,
-//                            longitude = location.longitude,
-//                            date = Date(location.time),
-//                            sessionId = UserEntityProvider.toString()
-//                        ))
-//                   //     val myFirebaseDatabase: MyFirebaseDatabase = get()
-//                        myFirebaseDatabase.sendUserMarker(mapLocationToMarker(location, userEntity))
+                        Log.e(TAG, "Location result = $location")
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val locationDao = getKoin().get<MyLocationDatabase>().locationDao()
+                            locations.forEach { location ->
+                                locationDao.addLocation(
+                                MyLocationEntity(
+                                    latitude = location.latitude,
+                                    longitude = location.longitude,
+                                    date = Date(location.time),
+                                    sessionId = UserEntityProvider.sessionId.toString()
+                                )
+                            )}
+                            getKoin().get<MarkersRemoteStorage>().sendUserMarker(mapLocationToMarker(location, userEntity))
+                        }
 
-                       // val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
-                       //     userDatabaseReference.child(userEntity.deviceID).setValue(mapLocationToMarker(location, userEntity))
                     }
                 }
             }
@@ -65,15 +68,16 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver() {
         userDomainModel: UserDataModel
     ): MarkerDataModel {
         val marker = MarkerDataModel()
-        val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss")
-        val date = dateFormat.format(Date(System.currentTimeMillis()))
+        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+        val currentTime = LocalTime.now()
+        val formattedTime = currentTime.format(timeFormatter)
         marker.latitude = location.latitude
         marker.longitude = location.longitude
         marker.userName = userDomainModel.name
         marker.deviceId = userDomainModel.deviceID
         marker.timestamp = System.currentTimeMillis()
         marker.item = userDomainModel.selectedMarker
-        marker.title = date
+        marker.title = formattedTime
         return marker
     }
 

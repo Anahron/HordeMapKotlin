@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.presentatin.fragments.MapFragment
 import ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        UserEntityProvider.sessionId = System.currentTimeMillis()
         windowSettings()
         if (!applicationContext.hasPermission(Manifest.permission_group.SENSORS)) {
             ActivityCompat.requestPermissions(

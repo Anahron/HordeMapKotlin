@@ -34,6 +34,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
     }
 
     override fun sendUserMarker(markerModel: MarkerDataModel) {
+        Log.e(TAG, " sendUserMarker" + markerModel.toString())
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
