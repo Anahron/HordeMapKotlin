@@ -7,11 +7,11 @@ import ru.newlevel.hordemap.domain.usecases.GetSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.SaveSettingsUseCase
 
 sealed class PermissionState {
-    class AddLocationPermState : PermissionState()
-    class AddBackLocationState : PermissionState()
-    class AddUserNameState : PermissionState()
-    class InfoState : PermissionState()
-    class AddBackWorking : PermissionState()
+    object AddLocationPermState : PermissionState()
+    object AddBackLocationState : PermissionState()
+    object AddUserNameState : PermissionState()
+    object InfoState : PermissionState()
+    object AddBackWorking : PermissionState()
 }
 
 class PermissionViewModel(
@@ -19,7 +19,7 @@ class PermissionViewModel(
     private val saveSettingsUseCase: SaveSettingsUseCase
 ) : ViewModel() {
 
-    private val _state = MutableLiveData<PermissionState>().apply { value = PermissionState.InfoState() }
+    private val _state = MutableLiveData<PermissionState>().apply { value = PermissionState.InfoState }
     val state: LiveData<PermissionState> get() = _state
 
     fun checkUserName(): Boolean {
@@ -33,18 +33,18 @@ class PermissionViewModel(
     }
 
     fun turnToAddBackWorkingState() {
-        _state.value = PermissionState.AddBackWorking()
+        _state.value = PermissionState.AddBackWorking
     }
 
     fun turnToAddLocationState() {
-        _state.value = PermissionState.AddLocationPermState()
+        _state.value = PermissionState.AddLocationPermState
     }
 
     fun turnToAddBackLocationState() {
-        _state.value = PermissionState.AddBackLocationState()
+        _state.value = PermissionState.AddBackLocationState
     }
 
     fun turnToAddUserNameState() {
-        _state.value = PermissionState.AddUserNameState()
+        _state.value = PermissionState.AddUserNameState
     }
 }

@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.app
 
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -26,7 +25,6 @@ private const val TAG = "AAA"
 
 class LocationUpdatesBroadcastReceiver : BroadcastReceiver(), KoinComponent {
 
-    @SuppressLint("SuspiciousIndentation")
     override fun onReceive(context: Context, intent: Intent) {
         Log.e(TAG, "onReceive in LocationUpdatesBroadcastReceiver")
         if (intent.action == ACTION_PROCESS_UPDATES) {
@@ -39,28 +37,33 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver(), KoinComponent {
             LocationResult.extractResult(intent)?.let { locationResult ->
                 val locations = locationResult.locations
                 if (locations.isNotEmpty()) {
-                    val userEntity = UserEntityProvider.userEntity
-                    val location = locationResult.lastLocation
-                    if (location != null && userEntity != null) {
-                        Log.e(TAG, "Location result = $location")
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val locationDao = getKoin().get<MyLocationDatabase>().locationDao()
-                            locations.forEach { location ->
-                                locationDao.addLocation(
-                                MyLocationEntity(
-                                    latitude = location.latitude,
-                                    longitude = location.longitude,
-                                    date = Date(location.time),
-                                    sessionId = UserEntityProvider.sessionId.toString()
-                                )
-                            )}
-                            getKoin().get<MarkersRemoteStorage>().sendUserMarker(mapLocationToMarker(location, userEntity))
-                        }
-
-                    }
+                    saveLocation(locations)
                 }
             }
-        } else   Log.e(TAG, "intent.action != ACTION_PROCESS_UPDATES")
+        } else Log.e(TAG, "intent.action != ACTION_PROCESS_UPDATES")
+    }
+
+    private fun saveLocation(locations: List<Location>) {
+        val userEntity = UserEntityProvider.userEntity
+        val location = locations[locations.lastIndex]
+        Log.e(TAG, "Location result = $location")
+        CoroutineScope(Dispatchers.IO).launch {
+            val locationDao = getKoin().get<MyLocationDatabase>().locationDao()
+            locations.forEach { location ->
+                locationDao.addLocation(
+                    MyLocationEntity(
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        date = Date(location.time),
+                        sessionId = UserEntityProvider.sessionId.toString()
+                    )
+                )
+            }
+            userEntity?.let {
+                getKoin().get<MarkersRemoteStorage>()
+                    .sendUserMarker(mapLocationToMarker(location, it))
+            }
+        }
     }
 
     private fun mapLocationToMarker(

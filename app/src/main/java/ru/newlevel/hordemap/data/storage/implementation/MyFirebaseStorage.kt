@@ -2,13 +2,20 @@ package ru.newlevel.hordemap.data.storage.implementation
 
 import android.app.DownloadManager
 import android.content.Context
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
 import java.io.File
@@ -41,7 +48,12 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
         }
     }
 
-    override suspend fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long): String {
+    override suspend fun sendFile(
+        message: String,
+        uri: Uri,
+        fileName: String?,
+        fileSize: Long
+    ): String {
         return withContext(Dispatchers.IO) {
             val messageFilesStorage = storageReference.child("$MESSAGE_FILE_FOLDER/$fileName")
             val uploadTask = messageFilesStorage.putFile(uri)
@@ -79,7 +91,9 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
             val request = DownloadManager.Request(uri)
             request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            request.allowScanningByMediaScanner()
+            request.setAllowedOverMetered(true)
+            request.setAllowedOverRoaming(true)
+            MediaScannerConnection.scanFile(context, arrayOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + fileName),null,null)
             val downloadManager =
                 context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadManager.enqueue(request)
@@ -90,33 +104,43 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
         }
     }
 
+
     private fun observeDownloadProgress(downloadManager: DownloadManager, downloadId: Long) {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Main).launch {
             var downloading = true
             while (downloading) {
-                val cursor =
-                    downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
-                if (cursor.moveToFirst()) {
-                    when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
-                        DownloadManager.STATUS_SUCCESSFUL, DownloadManager.STATUS_FAILED -> {
-                            downloading = false
-                            progressLiveData.postValue(1000)
-                        }
-                        else -> {
-                            val bytesDownloaded =
-                                cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                            val bytesTotal =
-                                cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-                            val percent = bytesDownloaded * 100.0f / bytesTotal
-                            progressLiveData.postValue(percent.toInt())
+                val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadId))
+                cursor.use {
+                    if (it.moveToFirst()) {
+                        val columnIndexStatus = it.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                        if (columnIndexStatus != -1) {
+                            when (it.getInt(columnIndexStatus)) {
+                                DownloadManager.STATUS_SUCCESSFUL, DownloadManager.STATUS_FAILED -> {
+                                    downloading = false
+                                    progressLiveData.value = 1000
+                                }
+                                else -> {
+                                    val columnIndexBytesDownloaded =
+                                        it.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+                                    val columnIndexBytesTotal =
+                                        it.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+                                    if (columnIndexBytesDownloaded != -1 && columnIndexBytesTotal != -1) {
+                                        val bytesDownloaded = it.getInt(columnIndexBytesDownloaded)
+                                        val bytesTotal = cursor.getInt(columnIndexBytesTotal)
+                                        val percent = bytesDownloaded * 100.0f / bytesTotal
+                                        progressLiveData.value = percent.toInt()
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-                cursor.close()
                 delay(500) // Ожидание 0.5 секунды перед следующей проверкой
+                progressLiveData.value = 1000
             }
         }
     }
+
 }
 
 

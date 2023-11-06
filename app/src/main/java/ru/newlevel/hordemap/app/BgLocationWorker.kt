@@ -22,7 +22,6 @@ import java.util.*
 private const val TAG = "AAA"
 private const val GEO_USER_MARKERS_PATH = "geoData0"
 
-
 class BgLocationWorker(context: Context, param: WorkerParameters) :
     CoroutineWorker(context, param) {
 
@@ -51,11 +50,13 @@ class BgLocationWorker(context: Context, param: WorkerParameters) :
         ).addOnSuccessListener { location ->
             location?.let {
                 Log.e(
-                    TAG, "Current Location = [lat : ${location.latitude}, lng : ${location.longitude}]",
+                    TAG,
+                    "Current Location = [lat : ${location.latitude}, lng : ${location.longitude}]",
                 )
                 val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
                 if (userEntity != null) {
-                    userDatabaseReference.child(userEntity.deviceID).setValue(mapLocationToMarker(location, userEntity))
+                    userDatabaseReference.child(userEntity.deviceID)
+                        .setValue(mapLocationToMarker(location, userEntity))
                 }
             }
         }
