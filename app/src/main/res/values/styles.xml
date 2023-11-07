@@ -7,8 +7,15 @@
         <item name="trackColorActive">@color/main_green</item>
         <item name="trackColorInactive">@color/middle_transparent</item>
         <item name="haloRadius">14dp</item>
+        <item name="labelStyle">@style/CustomTooltip</item>
         <item name="haloColor">@color/gray_blue</item>
         <item name="thumbRadius">8dp</item>
+    </style>
+
+    <style name="CustomTooltip" parent="@style/Widget.Material3.Tooltip">
+        <item name="android:textAppearance">?attr/textAppearanceBody1</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
     </style>
 
     <style name="CustomProgressBar" parent="@android:style/Widget.ProgressBar.Horizontal">

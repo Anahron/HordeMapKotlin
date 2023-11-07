@@ -135,12 +135,11 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
                         }
                     }
                 }
+                cursor.close()
                 delay(500) // Ожидание 0.5 секунды перед следующей проверкой
-                progressLiveData.value = 1000
             }
         }
     }
-
 }
 
 

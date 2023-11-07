@@ -114,11 +114,23 @@
                 android:contentDescription="@string/todo" />
 
             <ImageButton
+                android:id="@+id/ibPath"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="285dp"
+                android:padding="15dp"
+                android:alpha="0.6"
+                android:background="@drawable/img_path"
+                android:layout_gravity="end|top"
+                />
+
+            <ImageButton
                 android:id="@+id/ibMessenger"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginTop="290dp"
+                android:layout_marginTop="345dp"
                 android:padding="15dp"
                 android:alpha="0.6"
                 android:background="@drawable/img_message_no"

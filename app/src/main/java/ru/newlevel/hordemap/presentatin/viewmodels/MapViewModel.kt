@@ -111,7 +111,7 @@ class MapViewModel(
     }
 
     fun cleanUriForMap() {
-        _kmzUri.postValue(Uri.parse(""))
+        _kmzUri.postValue(null)
     }
 
     fun reCreateMarkers() {

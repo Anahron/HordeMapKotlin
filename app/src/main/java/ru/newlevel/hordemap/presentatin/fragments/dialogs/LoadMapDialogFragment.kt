@@ -70,7 +70,12 @@ class LoadMapDialogFragment(
             }
         }
         btnCleanMap.setOnClickListener {
+            boolean = false
+            checkBox.isChecked = false
+            mapViewModel.setIsAutoLoadMap(boolean!!)
+            settingsViewModel.saveAutoLoad(boolean!!)
             mapViewModel.cleanUriForMap()
+
         }
     }
 }

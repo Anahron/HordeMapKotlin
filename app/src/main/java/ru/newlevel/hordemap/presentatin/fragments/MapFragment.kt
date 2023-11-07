@@ -87,6 +87,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
                 is MapState.LoadingState -> {
 
                 }
+
                 is MapState.DefaultState -> {
                     startMarkerObservers()
                     binding.drawableSettings.closeDrawer(GravityCompat.END)
@@ -104,12 +105,14 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
                         )
                     }
                 }
+
                 is MapState.MarkersOffState -> {
                     stopMarkerObservers()
                     staticMarkerCollection.hideAll()
                     userMarkerCollection.hideAll()
                     binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_off)
                 }
+
                 else -> {}
             }
         }
@@ -134,32 +137,38 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
             }
         }
         mapViewModel.kmzUri.observe(this) { kmzUri ->
-            kmlLayer?.removeLayerFromMap()
-            lifecycleScope.launch {
-                kmzUri?.let { mapViewModel.getInputSteam(it, requireContext()) }.use { stream ->
-                    kmlLayer = KmlLayer(
-                        googleMap,
-                        stream,
-                        requireContext(),
-                        markerManager,
-                        null,
-                        null,
-                        null,
-                        null
-                    )
-                    kmlLayer?.addLayerToMap()
-                    kmlLayer?.groundOverlays?.first()?.let { overlay ->
-                        val center = overlay.latLngBox.center
-                        val update = CameraUpdateFactory.newLatLngZoom(
-                            LatLng(
-                                center.latitude,
-                                center.longitude
-                            ), 12F
-                        )
-                        googleMap.animateCamera(update)
-                    }
+            if (kmzUri != null) {
+                kmlLayer?.removeLayerFromMap()
+                lifecycleScope.launch {
+                    kmzUri.let { mapViewModel.getInputSteam(kmzUri, requireContext()) }
+                        .let { stream ->
+                            stream?.let {
+                                kmlLayer = KmlLayer(
+                                    googleMap,
+                                    it,
+                                    requireContext(),
+                                    markerManager,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                                )
+                            }
+
+                            kmlLayer?.addLayerToMap()
+                            kmlLayer?.groundOverlays?.first()?.let { overlay ->
+                                val center = overlay.latLngBox.center
+                                val update = CameraUpdateFactory.newLatLngZoom(
+                                    LatLng(
+                                        center.latitude,
+                                        center.longitude
+                                    ), 12F
+                                )
+                                googleMap.animateCamera(update)
+                            }
+                        }
                 }
-            }
+            } else kmlLayer?.removeLayerFromMap()
         }
     }
 
@@ -224,10 +233,12 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
                     0 -> {
                         buildRoute(latLng)
                     }
+
                     1 -> {
                         mapViewModel.removeRoute()
                         binding.distanceTextView.visibility = View.GONE
                     }
+
                     2 -> {
                         createStaticMarkerDialog(latLng)
                     }

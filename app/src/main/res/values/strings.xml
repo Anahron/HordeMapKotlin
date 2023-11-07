@@ -13,7 +13,7 @@
     <string name="show_path">Показать путь</string>
     <string name="hide_path">Скрыть путь</string>
     <string name="save_path">Сохранить путь</string>
-    <string name="Load_path">Загрузить путь</string>
+    <string name="load_path">Загрузить путь</string>
     <string name="delete_all_path">Удалить все пути</string>
     <string name="self_marker_change">Выбор своего маркера</string>
     <string name="time_to_send_data">Частота отправки данных</string>
@@ -97,4 +97,6 @@
     <string name="added_image">Отправить изображение:</string>
     <string name="descriptions">Описание</string>
     <string name="send_as_file">Отправить как файл:</string>
+    <string name="show_current_path">Показать текущий путь</string>
+    <string name="put_saved_path">Выбрать сохраненный путь</string>
 </resources>
