@@ -99,4 +99,7 @@
     <string name="send_as_file">Отправить как файл:</string>
     <string name="show_current_path">Показать текущий путь</string>
     <string name="put_saved_path">Выбрать сохраненный путь</string>
+    <string name="my_track">My track</string>
+    <string name="my_tracks">My tracks</string>
+    <string name="my_current_track">My current track</string>
 </resources>

@@ -9,6 +9,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GravityCompat
@@ -36,6 +37,7 @@ import ru.newlevel.hordemap.presentatin.fragments.dialogs.LoadMapDialogFragment
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialog
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialogResult
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.SettingsFragment
+import ru.newlevel.hordemap.presentatin.fragments.dialogs.TracksDialogFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapState
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
@@ -43,7 +45,7 @@ import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 import kotlin.math.roundToInt
 
 class MapFragment(private val settingsViewModel: SettingsViewModel) :
-    Fragment(R.layout.fragment_maps), OnMapReadyCallback {
+    Fragment(R.layout.fragment_maps), OnMapReadyCallback, TracksDialogFragment.OnTrackItemClick {
 
     private val binding: FragmentMapsBinding by viewBinding()
     private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
@@ -53,6 +55,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
     private var messengerDialog: MessengerDialogFragment? = null
+    private var tracksDialog: TracksDialogFragment? = null
 
     private fun init() {
         setupMap()
@@ -259,7 +262,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         }
     }
 
-    private fun menuListenersSetup() {
+    private fun menuListenersSetup()  {
         val fragmentTrans = childFragmentManager.beginTransaction()
         val loadMapFragment = LoadMapDialogFragment(
             mapViewModel = mapViewModel, settingsViewModel = settingsViewModel
@@ -308,6 +311,16 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
 
             if (!messengerDialog!!.isAdded) {
                 messengerDialog!!.show(this.childFragmentManager, "messengerDialog")
+            }
+        }
+        binding.ibTracks.setOnClickListener {
+            Log.e("AAA", "ibTracks clicked")
+            if (tracksDialog == null) {
+                tracksDialog = TracksDialogFragment(locationUpdateViewModel = locationUpdateViewModel, this)
+            }
+
+            if (!tracksDialog!!.isAdded) {
+                tracksDialog!!.show(this.childFragmentManager, "messengerDialog")
             }
         }
     }
@@ -376,5 +389,77 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         val density: Float = resources.displayMetrics.density
         return (dp.toFloat() * density).roundToInt()
     }
-}
 
+    override fun onTrackItemClick(listLatLng: List<LatLng>) {
+        //TODO
+        googleMap.addPolyline(mapViewModel.createRoute(listLatLng))
+    }
+}
+//
+//import android.content.Context
+//import android.graphics.Bitmap
+//import android.graphics.Canvas
+//import android.graphics.Color
+//import android.graphics.Paint
+//import android.os.Bundle
+//import androidx.appcompat.app.AppCompatActivity
+//import androidx.core.content.ContextCompat
+//
+//class MiniaturePathActivity : AppCompatActivity() {
+//
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContentView(R.layout.activity_miniature_path)
+//
+//        // Ваши географические координаты
+//        val pathCoordinates = listOf(
+//            Pair(36.7674747, 66.5353535),
+//            // Добавьте другие координаты по мере необходимости
+//        )
+//
+//        // Создаем миниатюру пути
+//        val miniatureBitmap = createMiniaturePath(this, pathCoordinates)
+//
+//        // Ваш код для использования миниатюры, например, отображение в ImageView
+//    }
+//
+//    private fun createMiniaturePath(context: Context, pathCoordinates: List<Pair<Double, Double>>): Bitmap {
+//        val width = 200 // Ширина миниатюры в пикселях
+//        val height = 200 // Высота миниатюры в пикселях
+//
+//        // Создаем битмап
+//        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+//        val canvas = Canvas(bitmap)
+//
+//        // Рисуем фон
+//        val backgroundColor = ContextCompat.getColor(context, android.R.color.white)
+//        canvas.drawColor(backgroundColor)
+//
+//        // Настраиваем кисти для рисования
+//        val pathPaint = Paint().apply {
+//            color = Color.RED
+//            strokeWidth = 5f
+//            style = Paint.Style.STROKE
+//        }
+//
+//        // Преобразуем географические координаты в пиксели на битмапе
+//        val pixelCoordinates = pathCoordinates.map { geoToPixel(it.first, it.second, width, height) }
+//
+//        // Рисуем путь на битмапе
+//        val path = android.graphics.Path()
+//        path.moveTo(pixelCoordinates.first().first, pixelCoordinates.first().second)
+//        for (coordinate in pixelCoordinates) {
+//            path.lineTo(coordinate.first, coordinate.second)
+//        }
+//        canvas.drawPath(path, pathPaint)
+//
+//        return bitmap
+//    }
+//
+//    private fun geoToPixel(latitude: Double, longitude: Double, width: Int, height: Int): Pair<Float, Float> {
+//        // Пример преобразования географических координат в пиксели (просто для иллюстрации)
+//        val x = (longitude + 180) * (width / 360f)
+//        val y = (90 - latitude) * (height / 180f)
+//        return Pair(x, y)
+//    }
+//}

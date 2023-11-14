@@ -20,4 +20,7 @@ interface MyLocationDao {
 
     @Insert
     fun addLocations(myLocationEntities: List<MyLocationEntity>)
+
+    @Query("SELECT DISTINCT sessionId FROM my_location_table")
+    fun getUniqueSessionIds(): List<String>
 }

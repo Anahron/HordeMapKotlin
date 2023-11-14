@@ -13,7 +13,7 @@ val presentationModule = module {
             saveAutoLoadUseCase = get()
         )
     }
-    viewModel<MapViewModel>{
+    viewModel<MapViewModel> {
         MapViewModel(
             deleteMarkerUseCase = get(),
             createMarkersUseCase = get(),
@@ -27,15 +27,22 @@ val presentationModule = module {
             createRouteUseCase = get()
         )
     }
-    viewModel<LocationUpdateViewModel>{
+    viewModel<LocationUpdateViewModel> {
         LocationUpdateViewModel(
-            locationRepository = get()
+            getSessionLocationsUseCase = get(),
+            locationUpdatesUseCase = get()
         )
     }
-    viewModel<PermissionViewModel>{
-        PermissionViewModel( getSettingsUseCase = get(), saveSettingsUseCase = get())
+    viewModel<PermissionViewModel> {
+        PermissionViewModel(getSettingsUseCase = get(), saveSettingsUseCase = get())
     }
-    viewModel<MessengerViewModel>{
-        MessengerViewModel(startMessageUpdateUseCase = get(), stopMessageUpdateUseCase = get(), sendMessageUseCase = get(), sendFileUseCase = get(), downloadFileUseCase = get())
+    viewModel<MessengerViewModel> {
+        MessengerViewModel(
+            startMessageUpdateUseCase = get(),
+            stopMessageUpdateUseCase = get(),
+            sendMessageUseCase = get(),
+            sendFileUseCase = get(),
+            downloadFileUseCase = get()
+        )
     }
 }

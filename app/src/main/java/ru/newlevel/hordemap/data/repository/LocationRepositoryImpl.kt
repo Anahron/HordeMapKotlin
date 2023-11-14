@@ -38,6 +38,10 @@ class LocationRepositoryImpl(private val context: Context, private val myLocatio
     override fun getLocationsSortedByUpdateTime(sessionId: String): List<MyLocationEntity> =
         myLocationDao.getLocationsSortedByUpdateTime(sessionId = sessionId)
 
+    override suspend fun getAllLocationsGroupedBySessionId(): List<String> {
+        return myLocationDao.getUniqueSessionIds()
+    }
+
     override fun updateLocation(myLocationEntity: MyLocationEntity) {
         myLocationDao.updateLocation(myLocationEntity)
     }

@@ -57,6 +57,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
 
     private val binding: MessagesDialogBinding by viewBinding()
+
     private val messengerViewModel by viewModel<MessengerViewModel>()
 
     private lateinit var recyclerView: RecyclerView
@@ -308,7 +309,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private fun setupOpenCameraButton() {
         binding.buttonPhoto.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
-                    context!!, Manifest.permission.CAMERA
+                    requireContext(), Manifest.permission.CAMERA
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(

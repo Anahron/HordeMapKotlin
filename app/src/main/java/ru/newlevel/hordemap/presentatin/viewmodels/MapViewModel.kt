@@ -82,6 +82,11 @@ class MapViewModel(
         return createRouteUseCase.execute(currentLatLng,destination, context)
     }
 
+   fun createRoute(listLatLng: List<LatLng>): PolylineOptions{
+       removeRoute()
+       return PolylineOptions().addAll(listLatLng)
+   }
+
     fun removeRoute() {
         routePolyline?.remove()
         routePolyline = null

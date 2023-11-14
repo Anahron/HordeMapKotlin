@@ -68,4 +68,12 @@ val domainModule = module {
     factory<StopMarkerUpdateUseCase> {
         StopMarkerUpdateUseCase(geoDataRepository = get())
     }
+
+    factory<GetSessionLocationsUseCase> {
+        GetSessionLocationsUseCase(locationRepository = get())
+    }
+
+    factory<LocationUpdatesUseCase> {
+        LocationUpdatesUseCase(locationRepository = get())
+    }
 }
