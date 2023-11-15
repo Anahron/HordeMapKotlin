@@ -12,18 +12,18 @@ import kotlin.math.roundToInt
 
 class GetSessionLocationsUseCase(private val locationRepository: LocationRepository) {
 
-    fun getCurrentSessionLocations(sessionId: String): TrackItemDomainModel {
+    fun getCurrentSessionLocations(sessionId: String): TrackItemDomainModel? {
         val locationEntity = locationRepository.getLocationsSortedByUpdateTime(sessionId)
         val locationsList = locationEntity.map {
             LatLng(it.latitude, it.longitude)
         }
-        return TrackItemDomainModel(
+        return if (locationEntity.isNotEmpty()) TrackItemDomainModel(
             "My track",
             convertTimestampToDate(locationEntity[0].date.time),
             calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
             calculateDistance(locationsList),
             locationsList
-        )
+        )else null
     }
 
     suspend fun getAllSessionLocations(): List<TrackItemDomainModel> {
@@ -51,21 +51,12 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
     }
 
     private fun calculateDistance(latLngList: List<LatLng>): String {
-        val formattedString = StringBuilder()
-        var result = ""
-        var resultDistance = SphericalUtil.computeLength(latLngList)
-        if (resultDistance < 1000) {
-            result = resultDistance.roundToInt().toString()
-            formattedString.append(result + "m ")
-        } else {
-            resultDistance /= 1000
-            result = String.format("%.2f", resultDistance).toDouble().toString()
-            formattedString.append(result + "km ")
+        val resultDistance = SphericalUtil.computeLength(latLngList)
+        return when {
+            resultDistance < 1000 -> "${resultDistance.roundToInt()}m"
+            else -> String.format("%.2fkm", resultDistance / 1000)
         }
-        return formattedString.toString()
-
     }
-
     private fun calculateDurations(milliseconds: Long): String {
         val days = (milliseconds / (1000 * 60 * 60 * 24)).toInt()
         val hours = ((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toInt()

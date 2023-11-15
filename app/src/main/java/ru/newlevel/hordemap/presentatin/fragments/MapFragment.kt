@@ -392,7 +392,14 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
 
     override fun onTrackItemClick(listLatLng: List<LatLng>) {
         //TODO
-        googleMap.addPolyline(mapViewModel.createRoute(listLatLng))
+        mapViewModel.setRoutePolyline(googleMap.addPolyline(mapViewModel.createRoute(listLatLng)))
+        val update = CameraUpdateFactory.newLatLngZoom(
+            LatLng(
+                listLatLng[0].latitude,
+                listLatLng[0].longitude
+            ), 18F
+        )
+        googleMap.animateCamera(update)
     }
 }
 //
