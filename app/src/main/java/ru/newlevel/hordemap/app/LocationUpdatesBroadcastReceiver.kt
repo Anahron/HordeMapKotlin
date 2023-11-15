@@ -55,7 +55,8 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver(), KoinComponent {
                         latitude = location.latitude,
                         longitude = location.longitude,
                         date = Date(location.time),
-                        sessionId = UserEntityProvider.sessionId.toString()
+                        sessionId = UserEntityProvider.sessionId.toString(),
+                        trackName = "My track"
                     )
                 )
             }

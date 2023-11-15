@@ -1,6 +1,7 @@
 <resources>
     <!-- Base application theme. -->
     <style name="Theme.HordeMap" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:popupMenuStyle">@style/MyPopupMenu</item>
         <item name="android:fontFamily">@font/inter</item>
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/main_green_dark</item>
@@ -15,7 +16,6 @@
         <item name="android:statusBarColor">?attr/colorPrimary</item>
         <!-- Customize your theme here. -->
     </style>
-
     <style name="ThemeOverlay.HordeMap.FullscreenContainer" parent="">
         <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
         <item name="fullscreenTextColor">@color/light_blue_A200</item>
@@ -23,6 +23,14 @@
     <!--Floating label text style-->
     <style name="MyHintText" parent="TextAppearance.AppCompat.Small">
         <item name="android:textColor">@color/main_green_dark</item>
+    </style>
+
+    <style name="MyPopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:textColor">@color/slate_800</item>
+        <item name="android:textColorPrimary">@color/slate_800</item>
+        <item name="android:titleTextColor">@color/slate_800</item>
     </style>
 
     <!--Input field style-->

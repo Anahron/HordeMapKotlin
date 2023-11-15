@@ -12,6 +12,12 @@ interface MyLocationDao {
     @Query("SELECT * FROM my_location_table WHERE sessionId =(:sessionId) ORDER BY date DESC")
     fun getLocationsSortedByUpdateTime(sessionId: String): List<MyLocationEntity>
 
+    @Query("DELETE FROM my_location_table WHERE sessionId = :sessionId")
+    fun deleteLocationsBySessionId(sessionId: String)
+
+    @Query("UPDATE my_location_table SET trackName = :newTrackName WHERE sessionId = :sessionId")
+    fun renameTrackNameForSession(sessionId: String, newTrackName: String)
+
     @Update
     fun updateLocation(myLocationEntity: MyLocationEntity)
 

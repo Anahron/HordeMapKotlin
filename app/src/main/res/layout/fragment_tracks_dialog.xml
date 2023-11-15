@@ -1,33 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/border_light"
     android:orientation="vertical">
 
-    <TextView
-        android:paddingTop="12dp"
-        android:id="@+id/tvTitleLoadPath"
-        android:layout_width="wrap_content"
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="36dp"
+        android:paddingStart="12dp">
+
+
+        <ImageButton
+            android:id="@+id/btnGoBack"
+            android:layout_width="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_height="24dp"
+            app:srcCompat="@drawable/vector_back"
+            android:background="@color/transparent"/>
+
+        <TextView
+            android:id="@+id/tvTitleLoadPath"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:layout_weight="1"
+            android:fontFamily="@font/inter_semibold"
+            android:text="@string/my_tracks"
+            android:textColor="@color/slate_800"
+            android:textSize="20sp" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleGroup"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="8dp"
-        android:fontFamily="@font/inter_semibold"
-        android:text="@string/my_tracks"
-        android:textColor="@color/slate_800"
-        android:textSize="22sp" />
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="6dp"
+        app:checkedButton="@id/btnDate"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Date"
+            app:shapeAppearanceOverlay="@style/RoundedButton"
+            app:textAllCaps="false" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDuration"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Duration"
+            app:shapeAppearanceOverlay="@style/RoundedButton"
+            app:textAllCaps="false" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDistance"
+            style="@style/ShapeAppearanceOverlay.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Distance"
+            app:shapeAppearanceOverlay="@style/RoundedButton"
+            app:textAllCaps="false" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
 
     <androidx.cardview.widget.CardView
         android:id="@+id/itemCurrentTrack"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="8dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginVertical="6dp"
-        >
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="8dp">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
@@ -53,7 +111,7 @@
                     android:textSize="16sp" />
 
                 <ImageButton
-                    android:id="@+id/imageButton"
+                    android:id="@+id/ibPopup"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="end"

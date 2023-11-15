@@ -30,7 +30,8 @@ val presentationModule = module {
     viewModel<LocationUpdateViewModel> {
         LocationUpdateViewModel(
             getSessionLocationsUseCase = get(),
-            locationUpdatesUseCase = get()
+            locationUpdatesUseCase = get(),
+            deleteSessionLocationUseCase = get()
         )
     }
     viewModel<PermissionViewModel> {

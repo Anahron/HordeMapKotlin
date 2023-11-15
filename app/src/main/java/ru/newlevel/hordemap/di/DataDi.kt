@@ -25,7 +25,8 @@ val databaseModule = module {
             androidContext(),
             MyLocationDatabase::class.java,
             "my-location-database"
-        ).build()
+        )
+            .build()
     }
 }
 

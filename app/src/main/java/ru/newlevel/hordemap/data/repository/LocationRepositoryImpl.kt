@@ -54,5 +54,9 @@ class LocationRepositoryImpl(private val context: Context, private val myLocatio
         myLocationDao.addLocations(myLocationEntities)
     }
 
+    override fun deleteLocationsBySessionId(sessionId: String) {
+       myLocationDao.deleteLocationsBySessionId(sessionId = sessionId)
+    }
+
 
 }

@@ -17,13 +17,18 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
         val locationsList = locationEntity.map {
             LatLng(it.latitude, it.longitude)
         }
+        val distance = SphericalUtil.computeLength(locationsList)
         return if (locationEntity.isNotEmpty()) TrackItemDomainModel(
+            locationEntity[0].date.time,
             "My track",
+            sessionId,
             convertTimestampToDate(locationEntity[0].date.time),
             calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
-            calculateDistance(locationsList),
+            locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time,
+            distanceToString(distance),
+            distance.toInt(),
             locationsList
-        )else null
+        ) else null
     }
 
     suspend fun getAllSessionLocations(): List<TrackItemDomainModel> {
@@ -36,27 +41,35 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
                 LatLng(it.latitude, it.longitude)
             }
             if (locationEntity[0].sessionId != UserEntityProvider.sessionId.toString()) {
-                allLocations.add(
-                    TrackItemDomainModel(
-                        "My track",
-                        convertTimestampToDate(locationEntity[0].date.time),
-                        calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
-                        calculateDistance(locationsList),
-                        locationsList
+                val distance = SphericalUtil.computeLength(locationsList)
+                if (distance < 300)
+                    locationRepository.deleteLocationsBySessionId(sessionId = sessionId)
+                else
+                    allLocations.add(
+                        TrackItemDomainModel(
+                            locationEntity[0].date.time,
+                            "My track",
+                            sessionId,
+                            convertTimestampToDate(locationEntity[0].date.time),
+                            calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
+                            locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time,
+                            distanceToString(distance),
+                            distance.toInt(),
+                            locationsList
+                        )
                     )
-                )
             }
         }
-        return allLocations
+        return allLocations.sortedByDescending { it.timestamp }
     }
 
-    private fun calculateDistance(latLngList: List<LatLng>): String {
-        val resultDistance = SphericalUtil.computeLength(latLngList)
+    private fun distanceToString(resultDistance: Double): String {
         return when {
             resultDistance < 1000 -> "${resultDistance.roundToInt()}m"
             else -> String.format("%.2fkm", resultDistance / 1000)
         }
     }
+
     private fun calculateDurations(milliseconds: Long): String {
         val days = (milliseconds / (1000 * 60 * 60 * 24)).toInt()
         val hours = ((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toInt()

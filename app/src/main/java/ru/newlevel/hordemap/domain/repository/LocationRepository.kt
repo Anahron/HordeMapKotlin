@@ -15,4 +15,7 @@ interface LocationRepository {
     fun addLocation(myLocationEntity: MyLocationEntity)
 
     fun addLocations(myLocationEntities: List<MyLocationEntity>)
+
+    fun deleteLocationsBySessionId(sessionId: String)
+
 }

@@ -73,6 +73,10 @@ val domainModule = module {
         GetSessionLocationsUseCase(locationRepository = get())
     }
 
+    factory<DeleteSessionLocationUseCase> {
+        DeleteSessionLocationUseCase(locationRepository = get())
+    }
+
     factory<LocationUpdatesUseCase> {
         LocationUpdatesUseCase(locationRepository = get())
     }
