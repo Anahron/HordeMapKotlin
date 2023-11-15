@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import android.widget.RadioButton
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import by.kirich1409.viewbindingdelegate.viewBinding
 import ru.newlevel.hordemap.R
@@ -23,6 +24,12 @@ class OnMapClickInfoDialog(private val onMapClickInfoDialogResult: OnMapClickInf
         val numberPointText =
             binding.descriptionEditTextNumber
         var description = "Маркер"
+        dialog?.window?.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
+            )
+        )
 
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             val selectedRadioButton = binding.radioGroup.findViewById<RadioButton>(checkedId)
@@ -32,10 +39,7 @@ class OnMapClickInfoDialog(private val onMapClickInfoDialogResult: OnMapClickInf
                 numberPointText.visibility = View.VISIBLE
             else
                 numberPointText.visibility = View.GONE
-            for (i in 0 until binding.radioGroup.childCount) {
-                val radioButton = binding.radioGroup.getChildAt(i) as? RadioButton
-                radioButton?.alpha = if (radioButton?.tag == checkedTag) 1.0f else 0.3f
-            }
+            setAlphaToRadioButtons(checkedTag)
         }
 
         binding.btnCancel.setOnClickListener {
@@ -51,8 +55,15 @@ class OnMapClickInfoDialog(private val onMapClickInfoDialogResult: OnMapClickInf
             if (descriptionEditText.text.toString().isNotEmpty()) {
                 description = descriptionEditText.text.toString()
             }
-            onMapClickInfoDialogResult.onMapClickInfoDialogResult(description,checkedRadioButton)
+            onMapClickInfoDialogResult.onMapClickInfoDialogResult(description, checkedRadioButton)
             dialog?.dismiss()
+        }
+    }
+
+    private fun setAlphaToRadioButtons(checkedTag: String) {
+        for (i in 0 until binding.radioGroup.childCount) {
+            val radioButton = binding.radioGroup.getChildAt(i) as? RadioButton
+            radioButton?.alpha = if (radioButton?.tag == checkedTag) 1.0f else 0.3f
         }
     }
 
@@ -62,6 +73,6 @@ class OnMapClickInfoDialog(private val onMapClickInfoDialogResult: OnMapClickInf
     }
 }
 
-interface  OnMapClickInfoDialogResult{
+interface OnMapClickInfoDialogResult {
     fun onMapClickInfoDialogResult(description: String, checkedRadioButton: Int)
 }

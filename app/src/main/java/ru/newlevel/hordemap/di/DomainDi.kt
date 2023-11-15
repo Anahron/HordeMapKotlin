@@ -80,4 +80,7 @@ val domainModule = module {
     factory<LocationUpdatesUseCase> {
         LocationUpdatesUseCase(locationRepository = get())
     }
+    factory<RenameTrackNameForSessionUseCase> {
+        RenameTrackNameForSessionUseCase(locationRepository = get())
+    }
 }

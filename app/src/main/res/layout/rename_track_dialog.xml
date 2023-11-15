@@ -1,7 +1,6 @@
 <androidx.appcompat.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/round_white"
@@ -14,86 +13,10 @@
         android:textColor="@color/main_green_dark"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/choose_icon"
+        android:text="@string/rename_track"
         android:layout_margin="8dp"
         android:textSize="22sp"/>
 
-    <RadioGroup
-            android:id="@+id/radioGroup"
-            android:layout_width="wrap_content"
-             android:padding="8dp"
-            android:background="@drawable/border"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/icon2_swords"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_margin="4dp"
-                android:alpha="0.3"
-                android:background="@drawable/img_marker_swords"
-                android:button="@null"
-                android:tag="1"
-                tools:ignore="TouchTargetSizeCheck,DuplicateSpeakableTextCheck" />
-
-            <RadioButton
-                android:id="@+id/icon1_focus"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_margin="4dp"
-                android:alpha="0.3"
-                android:button="@null"
-                android:foreground="@drawable/marker_point9"
-                android:tag="10"
-                tools:ignore="TouchTargetSizeCheck" />
-
-            <RadioButton
-                android:id="@+id/icon3_flag_red"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_margin="4dp"
-                android:alpha="0.3"
-                android:button="@null"
-                android:foreground="@drawable/flag_red"
-                android:tag="2"
-                tools:ignore="TouchTargetSizeCheck" />
-
-            <RadioButton
-                android:id="@+id/icon4_flag_yellow"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_margin="4dp"
-                android:alpha="0.3"
-                android:button="@null"
-                android:foreground="@drawable/flag_yellow"
-                android:tag="3"
-                tools:ignore="TouchTargetSizeCheck" />
-
-            <RadioButton
-                android:id="@+id/icon5_flag_green"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_margin="4dp"
-                android:alpha="0.3"
-                android:button="@null"
-                android:foreground="@drawable/flag_green"
-                android:tag="4"
-                tools:ignore="TouchTargetSizeCheck" />
-
-            <RadioButton
-                android:id="@+id/icon6_flag_blue"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_margin="4dp"
-                android:alpha="0.3"
-                android:button="@null"
-                android:foreground="@drawable/flag_blue"
-                android:tag="5"
-                tools:ignore="TouchTargetSizeCheck" />
-
-        </RadioGroup>
 
 
     <com.google.android.material.textfield.TextInputLayout
@@ -173,9 +96,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="6dp"
+            android:fontFamily="@font/inter_semibold"
             android:background="@drawable/border_dark"
             android:textColor="@color/main_green"
-            android:text="@string/put"
+            android:text="@string/confirm"
             android:padding="15dp"
             style="?android:attr/backgroundDimEnabled" />
     </LinearLayout>

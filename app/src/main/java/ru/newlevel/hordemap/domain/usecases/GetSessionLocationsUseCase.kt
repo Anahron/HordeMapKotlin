@@ -20,7 +20,7 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
         val distance = SphericalUtil.computeLength(locationsList)
         return if (locationEntity.isNotEmpty()) TrackItemDomainModel(
             locationEntity[0].date.time,
-            "My track",
+            locationEntity[0].trackName,
             sessionId,
             convertTimestampToDate(locationEntity[0].date.time),
             calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
@@ -48,7 +48,7 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
                     allLocations.add(
                         TrackItemDomainModel(
                             locationEntity[0].date.time,
-                            "My track",
+                            locationEntity[0].trackName,
                             sessionId,
                             convertTimestampToDate(locationEntity[0].date.time),
                             calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
@@ -91,7 +91,7 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
     }
 
     private fun convertTimestampToDate(timestamp: Long): String {
-        val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
         val date = Date(timestamp)
         return dateFormat.format(date)
     }

@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.presentatin.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -35,6 +36,7 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
         )
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setMessages(newList: List<TrackItemDomainModel>) {
         tracksData = newList
         notifyDataSetChanged()
@@ -77,7 +79,8 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
             popupWindow.isFocusable = true
             popupWindow.showAsDropDown(binding.btnPopup, -convertDpToPx(v.context,104 ), -convertDpToPx(v.context, 36))
             view.findViewById<MaterialButton>(R.id.btnRename).setOnClickListener {
-
+                popupWindow.dismiss()
+                callback?.renameTrack(trackItemDomainModel.sessionId)
             }
             view.findViewById<MaterialButton>(R.id.btnDelete).setOnClickListener {
                 popupWindow.dismiss()
@@ -98,7 +101,7 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
         fun onTrackRvItemClick(listLatLng: List<LatLng>)
 
         fun deleteTrack(sessionId: String)
-        fun renameTrack()
+        fun renameTrack(sessionId: String)
 
         fun shareTrack()
 

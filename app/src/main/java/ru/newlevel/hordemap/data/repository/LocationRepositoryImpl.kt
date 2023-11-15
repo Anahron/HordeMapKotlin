@@ -12,6 +12,9 @@ import ru.newlevel.hordemap.domain.repository.LocationRepository
 
 class LocationRepositoryImpl(private val context: Context, private val myLocationDao: MyLocationDao) :
     LocationRepository {
+    override fun renameTrackNameForSession(sessionId: String, newTrackName: String) {
+        myLocationDao.renameTrackNameForSession(sessionId = sessionId, newTrackName = newTrackName)
+    }
 
     @MainThread
     override fun startLocationUpdates() {

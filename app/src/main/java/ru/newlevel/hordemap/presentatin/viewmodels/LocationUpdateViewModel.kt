@@ -10,10 +10,12 @@ import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.domain.usecases.DeleteSessionLocationUseCase
 import ru.newlevel.hordemap.domain.usecases.GetSessionLocationsUseCase
 import ru.newlevel.hordemap.domain.usecases.LocationUpdatesUseCase
+import ru.newlevel.hordemap.domain.usecases.RenameTrackNameForSessionUseCase
 
 class LocationUpdateViewModel(
     private val getSessionLocationsUseCase: GetSessionLocationsUseCase,
     private val deleteSessionLocationUseCase: DeleteSessionLocationUseCase,
+    private val renameTrackNameForSessionUseCase: RenameTrackNameForSessionUseCase,
     private val locationUpdatesUseCase: LocationUpdatesUseCase
 ) : ViewModel() {
 
@@ -36,13 +38,19 @@ class LocationUpdateViewModel(
         }
     }
 
+    fun  renameTrackNameForSession(sessionId: String, newTrackName: String){
+        CoroutineScope(Dispatchers.IO).launch {
+           renameTrackNameForSessionUseCase.execute(sessionId = sessionId, newTrackName = newTrackName)
+            _trackItemAll.postValue(trackItemAll.value)
+        }
+    }
     fun deleteSessionLocations(sessionId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             deleteSessionLocationUseCase.execute(sessionId)
         }
 
         val currentList = trackItemAll.value?.toMutableList()
-        currentList?.removeAll { trackItem -> trackItem.title == sessionId }
+        currentList?.removeAll { trackItem -> trackItem.sessionId == sessionId }
         _trackItemAll.value = currentList
     }
 

@@ -1,34 +1,28 @@
 package ru.newlevel.hordemap.presentatin.fragments.dialogs
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.MenuRes
-import androidx.annotation.RequiresApi
-import androidx.appcompat.widget.MenuPopupWindow
-import androidx.appcompat.widget.PopupMenu
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import androidx.core.view.iterator
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.button.MaterialButton
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentTracksDialogBinding
-import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.button.MaterialButtonToggleGroup
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.presentatin.adapters.TracksAdapter
+import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 
 class TracksDialogFragment(
     private val locationUpdateViewModel: LocationUpdateViewModel,
@@ -41,6 +35,7 @@ class TracksDialogFragment(
     private lateinit var recyclerView: RecyclerView
     private lateinit var trackAdapter: TracksAdapter
     private lateinit var backgroundView: View
+    private lateinit var alertDialog: AlertDialog
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) = with(binding) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,7 +53,7 @@ class TracksDialogFragment(
 
         }
 
-        backgroundView  = View(requireContext())
+        backgroundView = View(requireContext())
         backgroundView.setBackgroundColor(Color.BLACK)
         backgroundView.alpha = 0.15f
 
@@ -106,8 +101,11 @@ class TracksDialogFragment(
                 locationUpdateViewModel.deleteSessionLocations(sessionId = sessionId)
             }
 
-            override fun renameTrack() {
-
+            override fun renameTrack(sessionId: String) {
+                showInputDialog(requireContext(), onConfirm = { enteredText ->
+                    locationUpdateViewModel.renameTrackNameForSession(sessionId = sessionId, newTrackName = enteredText)
+                    locationUpdateViewModel.getAllSessionsLocations()
+                })
             }
 
             override fun shareTrack() {
@@ -116,17 +114,48 @@ class TracksDialogFragment(
 
             override fun menuActive(isActive: Boolean) {
                 if (isActive) {
-                    dialog?.window?.addContentView(backgroundView,ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    ))
-                }  else
-                    backgroundView.let {
-                        (it.parent as? ViewGroup)?.removeView(it)
-                    }
+                    setBackgroundShadow()
+                } else
+                   setBackgroundShadowToNormal()
             }
         })
     }
+
+    fun setBackgroundShadow(){
+        dialog?.window?.addContentView(
+            backgroundView, ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            ))
+    }
+    fun setBackgroundShadowToNormal(){
+        backgroundView.let {
+            (it.parent as? ViewGroup)?.removeView(it)
+        }
+    }
+
+    fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
+        setBackgroundShadow()
+
+        val customLayout = View.inflate(context, R.layout.rename_track_dialog, null)
+        val editText = customLayout.findViewById<EditText>(R.id.description_edit_text)
+        alertDialog = AlertDialog.Builder(context)
+            .setView(customLayout)
+            .create()
+        customLayout.findViewById<AppCompatButton>(R.id.btn_save).setOnClickListener {
+            onConfirm(editText.text.toString())
+            alertDialog.dismiss()
+        }
+        customLayout.findViewById<AppCompatButton>(R.id.btn_cancel).setOnClickListener {
+            alertDialog.dismiss()
+        }
+        alertDialog.window?.setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.round_white))
+        alertDialog.show()
+        alertDialog.setOnDismissListener {
+            setBackgroundShadowToNormal()
+        }
+    }
+
 
     private fun setButtonsColors(checkedId: Int) {
         val defaultColor = ContextCompat.getColor(requireContext(), R.color.slate_800)

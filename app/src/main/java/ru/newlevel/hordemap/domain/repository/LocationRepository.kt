@@ -4,6 +4,7 @@ import ru.newlevel.hordemap.data.db.MyLocationEntity
 
 interface LocationRepository {
 
+    fun  renameTrackNameForSession(sessionId: String, newTrackName: String)
     fun startLocationUpdates()
 
     fun stopLocationUpdates()

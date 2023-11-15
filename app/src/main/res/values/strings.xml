@@ -102,4 +102,9 @@
     <string name="my_track">My track</string>
     <string name="my_tracks">My tracks</string>
     <string name="my_current_track">My current track</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="rename_track">Переименовать трек</string>
+    <string name="distance">Distance</string>
+    <string name="duration">Duration</string>
+    <string name="date">Date</string>
 </resources>

@@ -40,7 +40,8 @@
                 android:layout_height="24dp"
                 android:layout_gravity="end"
                 android:background="@color/transparent"
-                app:srcCompat="@drawable/vector_dots" />
+                app:srcCompat="@drawable/vector_dots"
+                android:contentDescription="@string/todo"/>
 
         </LinearLayout>
 
@@ -58,14 +59,14 @@
                 android:layout_width="13dp"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="6dp"
-                app:srcCompat="@drawable/vector_calendar" />
+                app:srcCompat="@drawable/vector_calendar"
+                android:contentDescription="@string/todo"/>
 
             <TextView
                 android:id="@+id/tv_track_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
-                android:layout_marginEnd="12dp"
                 android:layout_weight="1"
                 android:textColor="@color/slate_500"
                 android:textSize="12sp" />
@@ -75,7 +76,8 @@
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:layout_marginEnd="6dp"
-                app:srcCompat="@drawable/vector_clock" />
+                app:srcCompat="@drawable/vector_clock"
+                android:contentDescription="@string/todo"/>
 
             <TextView
                 android:id="@+id/tv_track_duration"
@@ -92,7 +94,8 @@
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:layout_marginEnd="6dp"
-                app:srcCompat="@drawable/vector_track" />
+                app:srcCompat="@drawable/vector_track"
+                android:contentDescription="@string/todo"/>
 
             <TextView
                 android:id="@+id/tv_track_distance"
