@@ -63,7 +63,7 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
             tvTrackDistance.text = trackItemDomainModel.distance
             tvTrackDuration.text = trackItemDomainModel.duration
             tvTrackTitle.text = trackItemDomainModel.title
-            btnPopup.setOnClickListener {
+            ibPopup.setOnClickListener {
                 showMenu(it, trackItemDomainModel)
                 callback?.menuActive(true)
             }
@@ -77,7 +77,7 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
             popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(v.context, R.drawable.round_white))
             popupWindow.elevation = 6f
             popupWindow.isFocusable = true
-            popupWindow.showAsDropDown(binding.btnPopup, -convertDpToPx(v.context,104 ), -convertDpToPx(v.context, 36))
+            popupWindow.showAsDropDown(binding.ibPopup, -convertDpToPx(v.context,104 ), -convertDpToPx(v.context, 36))
             view.findViewById<MaterialButton>(R.id.btnRename).setOnClickListener {
                 popupWindow.dismiss()
                 callback?.renameTrack(trackItemDomainModel.sessionId)
