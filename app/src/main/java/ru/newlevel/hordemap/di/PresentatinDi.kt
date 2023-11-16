@@ -32,7 +32,8 @@ val presentationModule = module {
             getSessionLocationsUseCase = get(),
             locationUpdatesUseCase = get(),
             deleteSessionLocationUseCase = get(),
-            renameTrackNameForSessionUseCase = get()
+            renameTrackNameForSessionUseCase = get(),
+            setFavouriteTrackForSessionUseCase = get()
         )
     }
     viewModel<PermissionViewModel> {

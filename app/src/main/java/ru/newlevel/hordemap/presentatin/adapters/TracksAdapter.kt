@@ -2,11 +2,13 @@ package ru.newlevel.hordemap.presentatin.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
@@ -38,8 +40,10 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
 
     @SuppressLint("NotifyDataSetChanged")
     fun setMessages(newList: List<TrackItemDomainModel>) {
+        val diffCallback = TracksDiffCallback(tracksData, newList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
         tracksData = newList
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
     override fun getItemCount(): Int {
@@ -63,21 +67,42 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
             tvTrackDistance.text = trackItemDomainModel.distance
             tvTrackDuration.text = trackItemDomainModel.duration
             tvTrackTitle.text = trackItemDomainModel.title
+            ibFavourite.setBackgroundResource(R.drawable.vector_favourite_off)
+            if (trackItemDomainModel.isFavourite)
+                ibFavourite.setBackgroundResource(R.drawable.vector_favourite_on)
+            else
+                ibFavourite.setBackgroundResource(R.drawable.vector_favourite_off)
             ibPopup.setOnClickListener {
                 showMenu(it, trackItemDomainModel)
                 callback?.menuActive(true)
+            }
+
+            ibFavourite.setOnClickListener {
+                if (trackItemDomainModel.isFavourite) callback?.setFavourite(false, trackItemDomainModel.sessionId)
+                else callback?.setFavourite(true, trackItemDomainModel.sessionId)
+
             }
         }
 
         private fun showMenu(v: View, trackItemDomainModel: TrackItemDomainModel) {
             val popupWindow = PopupWindow(v.context)
             val view: View =
-                LayoutInflater.from(v.context).inflate(R.layout.list_popup_window_item, v.rootView as ViewGroup, false)
+                LayoutInflater.from(v.context)
+                    .inflate(R.layout.list_popup_window_item, v.rootView as ViewGroup, false)
             popupWindow.contentView = view
-            popupWindow.setBackgroundDrawable(ContextCompat.getDrawable(v.context, R.drawable.round_white))
+            popupWindow.setBackgroundDrawable(
+                ContextCompat.getDrawable(
+                    v.context,
+                    R.drawable.round_white
+                )
+            )
             popupWindow.elevation = 6f
             popupWindow.isFocusable = true
-            popupWindow.showAsDropDown(binding.ibPopup, -convertDpToPx(v.context,104 ), -convertDpToPx(v.context, 36))
+            popupWindow.showAsDropDown(
+                binding.ibPopup,
+                -convertDpToPx(v.context, 104),
+                -convertDpToPx(v.context, 36)
+            )
             view.findViewById<MaterialButton>(R.id.btnRename).setOnClickListener {
                 popupWindow.dismiss()
                 callback?.renameTrack(trackItemDomainModel.sessionId)
@@ -90,21 +115,35 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
                 callback?.menuActive(false)
             }
         }
+
         private fun convertDpToPx(context: Context, dp: Int): Int {
             val density: Float = context.resources.displayMetrics.density
             return (dp.toFloat() * density).roundToInt()
         }
     }
 
+    class TracksDiffCallback(
+        private val oldList: List<TrackItemDomainModel>,
+        private val newList: List<TrackItemDomainModel>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize() = oldList.size
+        override fun getNewListSize() = newList.size
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].timestamp == newList[newItemPosition].timestamp
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            Log.e("AAA","areContentsTheSame" + (oldList[oldItemPosition].isFavourite == newList[newItemPosition].isFavourite) + (oldList[oldItemPosition].title == newList[newItemPosition].title))
+            return (oldList[oldItemPosition].isFavourite == newList[newItemPosition].isFavourite && oldList[oldItemPosition].title == newList[newItemPosition].title)
+        }
+    }
 
     interface TracksAdapterCallback {
         fun onTrackRvItemClick(listLatLng: List<LatLng>)
-
         fun deleteTrack(sessionId: String)
         fun renameTrack(sessionId: String)
-
         fun shareTrack()
-
+        fun setFavourite(isFavourite: Boolean, sessionId: String)
         fun menuActive(isActive: Boolean)
     }
 

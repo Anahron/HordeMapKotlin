@@ -83,4 +83,7 @@ val domainModule = module {
     factory<RenameTrackNameForSessionUseCase> {
         RenameTrackNameForSessionUseCase(locationRepository = get())
     }
+    factory<SetFavouriteTrackForSessionUseCase> {
+        SetFavouriteTrackForSessionUseCase(locationRepository = get())
+    }
 }

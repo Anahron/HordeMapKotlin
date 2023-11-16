@@ -55,12 +55,14 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
                             locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time,
                             distanceToString(distance),
                             distance.toInt(),
-                            locationsList
+                            locationsList,
+                            locationEntity[0].favourite
                         )
                     )
             }
         }
-        return allLocations.sortedByDescending { it.timestamp }
+        return allLocations.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+            .thenByDescending { it.timestamp })
     }
 
     private fun distanceToString(resultDistance: Double): String {

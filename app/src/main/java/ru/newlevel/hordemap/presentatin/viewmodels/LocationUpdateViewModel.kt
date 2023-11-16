@@ -11,19 +11,21 @@ import ru.newlevel.hordemap.domain.usecases.DeleteSessionLocationUseCase
 import ru.newlevel.hordemap.domain.usecases.GetSessionLocationsUseCase
 import ru.newlevel.hordemap.domain.usecases.LocationUpdatesUseCase
 import ru.newlevel.hordemap.domain.usecases.RenameTrackNameForSessionUseCase
+import ru.newlevel.hordemap.domain.usecases.SetFavouriteTrackForSessionUseCase
 
 class LocationUpdateViewModel(
     private val getSessionLocationsUseCase: GetSessionLocationsUseCase,
     private val deleteSessionLocationUseCase: DeleteSessionLocationUseCase,
     private val renameTrackNameForSessionUseCase: RenameTrackNameForSessionUseCase,
-    private val locationUpdatesUseCase: LocationUpdatesUseCase
+    private val locationUpdatesUseCase: LocationUpdatesUseCase,
+    private val setFavouriteTrackForSessionUseCase: SetFavouriteTrackForSessionUseCase
 ) : ViewModel() {
 
     private val _trackItemCurrent = MutableLiveData<TrackItemDomainModel>()
     val trackItemCurrent: LiveData<TrackItemDomainModel> = _trackItemCurrent
 
     private val _trackItemAll = MutableLiveData<List<TrackItemDomainModel>?>()
-    val trackItemAll: MutableLiveData<List<TrackItemDomainModel>?> = _trackItemAll
+    val trackItemAll: LiveData<List<TrackItemDomainModel>?> = _trackItemAll
     fun startLocationUpdates() = locationUpdatesUseCase.startLocationUpdates()
 
     fun stopLocationUpdates() = locationUpdatesUseCase.stopLocationUpdates()
@@ -38,19 +40,52 @@ class LocationUpdateViewModel(
         }
     }
 
-    fun  renameTrackNameForSession(sessionId: String, newTrackName: String){
+    fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean) {
         CoroutineScope(Dispatchers.IO).launch {
-           renameTrackNameForSessionUseCase.execute(sessionId = sessionId, newTrackName = newTrackName)
-            _trackItemAll.postValue(trackItemAll.value)
+            setFavouriteTrackForSessionUseCase.execute(sessionId, isFavourite)
         }
+        val currentList = trackItemAll.value?.toMutableList()
+        val trackItem = currentList?.find { it.sessionId == sessionId }
+        trackItem?.let {
+            val updatedItem = it.copy(isFavourite = isFavourite)
+            val index = currentList.indexOf(it)
+
+            if (index != -1) {
+                currentList[index] = updatedItem
+            }
+        }
+        _trackItemAll.value = currentList
     }
+
+    fun renameTrackNameForSession(sessionId: String, newTrackName: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            renameTrackNameForSessionUseCase.execute(
+                sessionId = sessionId,
+                newTrackName = newTrackName
+            )
+        }
+        val currentList = trackItemAll.value?.toMutableList()
+        val trackItem = currentList?.find { it.sessionId == sessionId }
+        trackItem?.let {
+            val updatedItem = it.copy(title = newTrackName)
+            val index = currentList.indexOf(it)
+
+            if (index != -1) {
+                currentList[index] = updatedItem
+            }
+        }
+        _trackItemAll.value = currentList
+    }
+
     fun deleteSessionLocations(sessionId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             deleteSessionLocationUseCase.execute(sessionId)
         }
 
         val currentList = trackItemAll.value?.toMutableList()
-        currentList?.removeAll { trackItem -> trackItem.sessionId == sessionId }
+        currentList?.removeAll {
+            it.sessionId == sessionId
+        }
         _trackItemAll.value = currentList
     }
 
@@ -61,14 +96,20 @@ class LocationUpdateViewModel(
     }
 
     fun sortByDate() {
-        _trackItemAll.value = trackItemAll.value?.sortedByDescending { it.timestamp }
+        _trackItemAll.value =
+            trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                .thenByDescending { it.timestamp })
     }
 
     fun sortByDistance() {
-        _trackItemAll.value = trackItemAll.value?.sortedByDescending { it.distanceMeters }
+        _trackItemAll.value =
+            trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                .thenByDescending { it.distanceMeters })
     }
 
     fun sortByDuration() {
-        _trackItemAll.value = trackItemAll.value?.sortedByDescending { it.durationLong }
+        _trackItemAll.value =
+            trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                .thenByDescending { it.durationLong })
     }
 }

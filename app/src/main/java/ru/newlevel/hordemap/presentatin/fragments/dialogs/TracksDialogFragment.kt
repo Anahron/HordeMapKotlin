@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -58,10 +59,10 @@ class TracksDialogFragment(
         backgroundView.alpha = 0.15f
 
 
-        setButtonsColors(R.id.btnDate)
+        setupSegmentButtons(R.id.btnDate)
         toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
-                setButtonsColors(checkedId)
+                setupSegmentButtons(checkedId)
             }
         }
 
@@ -88,6 +89,7 @@ class TracksDialogFragment(
         }
 
         locationUpdateViewModel.trackItemAll.observe(this@TracksDialogFragment) {
+            Log.e("AAA","trackItemAll.observe"  )
             if (it != null)
                 trackAdapter.setMessages(it)
         }
@@ -104,12 +106,16 @@ class TracksDialogFragment(
             override fun renameTrack(sessionId: String) {
                 showInputDialog(requireContext(), onConfirm = { enteredText ->
                     locationUpdateViewModel.renameTrackNameForSession(sessionId = sessionId, newTrackName = enteredText)
-                    locationUpdateViewModel.getAllSessionsLocations()
                 })
             }
 
             override fun shareTrack() {
 
+            }
+
+            override fun setFavourite(isFavourite: Boolean, sessionId: String ) {
+                locationUpdateViewModel.setFavouriteTrackForSession(sessionId, isFavourite)
+                setupSegmentButtons(toggleGroup.checkedButtonId)
             }
 
             override fun menuActive(isActive: Boolean) {
@@ -156,8 +162,7 @@ class TracksDialogFragment(
         }
     }
 
-
-    private fun setButtonsColors(checkedId: Int) {
+    private fun setupSegmentButtons(checkedId: Int) {
         val defaultColor = ContextCompat.getColor(requireContext(), R.color.slate_800)
         val selectedColor = ContextCompat.getColor(requireContext(), R.color.white)
         when (checkedId) {

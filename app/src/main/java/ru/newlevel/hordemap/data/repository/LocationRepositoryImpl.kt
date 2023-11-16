@@ -61,5 +61,7 @@ class LocationRepositoryImpl(private val context: Context, private val myLocatio
        myLocationDao.deleteLocationsBySessionId(sessionId = sessionId)
     }
 
-
+    override fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean) {
+        myLocationDao.setFavouriteTrackForSession(sessionId, isFavourite)
+    }
 }

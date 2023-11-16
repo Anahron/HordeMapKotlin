@@ -13,7 +13,8 @@ data class MyLocationEntity(
     val trackName: String = "My track",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
-    val date: Date = Date()
+    val date: Date = Date(),
+    val favourite: Boolean = false
 ) {
 
     override fun toString(): String {

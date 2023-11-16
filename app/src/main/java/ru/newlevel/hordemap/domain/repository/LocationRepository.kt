@@ -19,4 +19,5 @@ interface LocationRepository {
 
     fun deleteLocationsBySessionId(sessionId: String)
 
+    fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean)
 }
