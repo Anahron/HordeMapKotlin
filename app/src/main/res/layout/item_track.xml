@@ -48,7 +48,7 @@
                 android:layout_height="48dp"
                 android:layout_gravity="end"
                 android:background="@color/transparent"
-                app:srcCompat="@drawable/vector_dots"
+                app:srcCompat="@drawable/vector_dots30"
                 android:contentDescription="@string/todo" />
 
         </LinearLayout>

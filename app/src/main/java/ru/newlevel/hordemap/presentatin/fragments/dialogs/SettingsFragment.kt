@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.presentatin.fragments.dialogs
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.Editable
@@ -17,7 +18,7 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.app.mapUserDataToDomain
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.databinding.SettingsFragmentBinding
+import ru.newlevel.hordemap.databinding.FragmentSettingsBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
@@ -27,11 +28,12 @@ import kotlin.properties.Delegates
 class SettingsFragment(
     private val mapViewModel: MapViewModel,
     private val settingsViewModel: SettingsViewModel
-) : Fragment(R.layout.settings_fragment) {
+) : Fragment(R.layout.fragment_settings) {
 
-    private val binding: SettingsFragmentBinding by viewBinding()
+    private val binding: FragmentSettingsBinding by viewBinding()
     private var checkedRadioButton by Delegates.notNull<Int>()
-    private var user: UserDomainModel = UserEntityProvider.userEntity?.let { mapUserDataToDomain(it) }!!
+    private var user: UserDomainModel =
+        UserEntityProvider.userEntity?.let { mapUserDataToDomain(it) }!!
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,7 +49,8 @@ class SettingsFragment(
             layoutParams.apply {
                 width = user.usersMarkerSize
                 height = user.usersMarkerSize
-                requestLayout() }
+                requestLayout()
+            }
         }
         binding.imageCustomMarker.apply {
             layoutParams.apply {
@@ -58,12 +61,14 @@ class SettingsFragment(
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupUIComponents() = with(binding) {
         editName.setText(user.name)
         sbTimeToSendData.value = user.timeToSendData.toFloat()
         sbStaticMarkerSize.value = user.staticMarkerSize.toFloat()
         sbUsersMarkerSize.value = user.usersMarkerSize.toFloat()
-        tvTimeToSendData.text = "${user.timeToSendData}${getString(R.string.sec)}"
+        val timeToSend = " ${user.timeToSendData}${getString(R.string.sec)}"
+        tvTimeToSendData.text = timeToSend
         setLayoutParams(user)
         checkedRadioButton = user.selectedMarker
         for (i in 0 until radioGroup.childCount) {
@@ -74,7 +79,7 @@ class SettingsFragment(
 
         settingsViewModel.resultData.observe(viewLifecycleOwner) { user ->
             setLayoutParams(user)
-            tvTimeToSendData.text = "${user.timeToSendData}${getString(R.string.sec)}"
+            tvTimeToSendData.text =" ${user.timeToSendData}${getString(R.string.sec)}"
         }
     }
 
@@ -150,8 +155,6 @@ class SettingsFragment(
 
             override fun onStopTrackingTouch(slider: Slider) {
                 user.timeToSendData = timeToSendData.value.toInt()
-                tvTimeToSendData.text =
-                    "$timeToSendData.value.toInt() ${getString(R.string.sec)}"
                 settingsViewModel.saveUser(user)
             }
         })

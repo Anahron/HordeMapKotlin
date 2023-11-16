@@ -9,7 +9,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GravityCompat
@@ -314,7 +313,6 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
             }
         }
         binding.ibTracks.setOnClickListener {
-            Log.e("AAA", "ibTracks clicked")
             if (tracksDialog == null) {
                 tracksDialog = TracksDialogFragment(locationUpdateViewModel = locationUpdateViewModel, this)
             }
@@ -397,76 +395,8 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
             LatLng(
                 listLatLng[0].latitude,
                 listLatLng[0].longitude
-            ), 18F
+            ), 16F
         )
         googleMap.animateCamera(update)
     }
 }
-//
-//import android.content.Context
-//import android.graphics.Bitmap
-//import android.graphics.Canvas
-//import android.graphics.Color
-//import android.graphics.Paint
-//import android.os.Bundle
-//import androidx.appcompat.app.AppCompatActivity
-//import androidx.core.content.ContextCompat
-//
-//class MiniaturePathActivity : AppCompatActivity() {
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_miniature_path)
-//
-//        // Ваши географические координаты
-//        val pathCoordinates = listOf(
-//            Pair(36.7674747, 66.5353535),
-//            // Добавьте другие координаты по мере необходимости
-//        )
-//
-//        // Создаем миниатюру пути
-//        val miniatureBitmap = createMiniaturePath(this, pathCoordinates)
-//
-//        // Ваш код для использования миниатюры, например, отображение в ImageView
-//    }
-//
-//    private fun createMiniaturePath(context: Context, pathCoordinates: List<Pair<Double, Double>>): Bitmap {
-//        val width = 200 // Ширина миниатюры в пикселях
-//        val height = 200 // Высота миниатюры в пикселях
-//
-//        // Создаем битмап
-//        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-//        val canvas = Canvas(bitmap)
-//
-//        // Рисуем фон
-//        val backgroundColor = ContextCompat.getColor(context, android.R.color.white)
-//        canvas.drawColor(backgroundColor)
-//
-//        // Настраиваем кисти для рисования
-//        val pathPaint = Paint().apply {
-//            color = Color.RED
-//            strokeWidth = 5f
-//            style = Paint.Style.STROKE
-//        }
-//
-//        // Преобразуем географические координаты в пиксели на битмапе
-//        val pixelCoordinates = pathCoordinates.map { geoToPixel(it.first, it.second, width, height) }
-//
-//        // Рисуем путь на битмапе
-//        val path = android.graphics.Path()
-//        path.moveTo(pixelCoordinates.first().first, pixelCoordinates.first().second)
-//        for (coordinate in pixelCoordinates) {
-//            path.lineTo(coordinate.first, coordinate.second)
-//        }
-//        canvas.drawPath(path, pathPaint)
-//
-//        return bitmap
-//    }
-//
-//    private fun geoToPixel(latitude: Double, longitude: Double, width: Int, height: Int): Pair<Float, Float> {
-//        // Пример преобразования географических координат в пиксели (просто для иллюстрации)
-//        val x = (longitude + 180) * (width / 360f)
-//        val y = (90 - latitude) * (height / 180f)
-//        return Pair(x, y)
-//    }
-//}
