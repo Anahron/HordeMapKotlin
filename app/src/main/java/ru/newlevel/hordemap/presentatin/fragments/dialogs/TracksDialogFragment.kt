@@ -164,11 +164,11 @@ class TracksDialogFragment(
         }
     }
 
-    private fun setupItemMenu() {
+    private fun setupItemMenu(viewGroup: ViewGroup) {
         popupItemWindow = PopupWindow(requireContext())
         popupItemWindow?.contentView = layoutInflater.inflate(
             R.layout.list_popup_window_item,
-            null,
+            viewGroup,
             false
         )
         popupItemWindow?.setBackgroundDrawable(
@@ -186,7 +186,7 @@ class TracksDialogFragment(
 
     private fun showItemMenu(itemDotsView: View, sessionId: String) {
         if (popupItemWindow == null) {
-            setupItemMenu()
+            setupItemMenu(itemDotsView.rootView as ViewGroup)
         }
         popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnRename)
             ?.setOnClickListener {

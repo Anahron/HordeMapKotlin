@@ -1,7 +1,6 @@
 package ru.newlevel.hordemap.presentatin.adapters
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -108,10 +107,6 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
         }
 
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            Log.e(
-                "AAA",
-                "areContentsTheSame" + (oldList[oldItemPosition].isFavourite == newList[newItemPosition].isFavourite) + (oldList[oldItemPosition].title == newList[newItemPosition].title)
-            )
             return (oldList[oldItemPosition].isFavourite == newList[newItemPosition].isFavourite && oldList[oldItemPosition].title == newList[newItemPosition].title)
         }
     }
