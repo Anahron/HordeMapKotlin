@@ -4,10 +4,10 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.PopupWindow
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
@@ -18,12 +18,19 @@ import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentTracksDialogBinding
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.presentatin.adapters.TracksAdapter
 import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.SortState
+import kotlin.math.roundToInt
 
 class TracksDialogFragment(
     private val locationUpdateViewModel: LocationUpdateViewModel,
@@ -37,36 +44,30 @@ class TracksDialogFragment(
     private lateinit var trackAdapter: TracksAdapter
     private lateinit var backgroundView: View
     private lateinit var alertDialog: AlertDialog
+    private var popupItemWindow: PopupWindow? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) = with(binding) {
-        super.onViewCreated(view, savedInstanceState)
+    private fun initDefault() {
+        locationUpdateViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
+        locationUpdateViewModel.getAllSessionsLocations()
+    }
+
+    private fun setupUIComponents() {
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog?.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
-        locationUpdateViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
-        locationUpdateViewModel.getAllSessionsLocations()
-
         trackAdapter = TracksAdapter()
-        recyclerView = rvTracks.apply {
+        recyclerView = binding.rvTracks.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = trackAdapter
-
         }
-
         backgroundView = View(requireContext())
         backgroundView.setBackgroundColor(Color.BLACK)
         backgroundView.alpha = 0.15f
+    }
 
-
-        setupSegmentButtons(R.id.btnDate)
-        toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                setupSegmentButtons(checkedId)
-            }
-        }
-
-        binding.ibPopup.setOnClickListener {
+    private fun setupClickListeners() = with(binding) {
+        ibPopup.setOnClickListener {
             //  showMenu(it)
         }
 
@@ -79,6 +80,23 @@ class TracksDialogFragment(
             onTrackItemClick.onTrackItemClick(currentTrack.locations)
         }
 
+        toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                locationUpdateViewModel.setCheckedSortButton(checkedId)
+            }
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) = with(binding) {
+        super.onViewCreated(view, savedInstanceState)
+        setupUIComponents()
+        initDefault()
+        setupClickListeners()
+
+        locationUpdateViewModel.trackSortState.observe(this@TracksDialogFragment) {
+            sortTracks(it)
+        }
+
         locationUpdateViewModel.trackItemCurrent.observe(this@TracksDialogFragment) {
             if (it != null) {
                 currentTrack = it
@@ -89,58 +107,131 @@ class TracksDialogFragment(
         }
 
         locationUpdateViewModel.trackItemAll.observe(this@TracksDialogFragment) {
-            Log.e("AAA","trackItemAll.observe"  )
-            if (it != null)
+            if (it != null) {
                 trackAdapter.setMessages(it)
+            }
         }
+
         trackAdapter.attachCallback(object : TracksAdapter.TracksAdapterCallback {
-            override fun onTrackRvItemClick(listLatLng: List<LatLng>) {
+            override fun onTrackItemClick(listLatLng: List<LatLng>) {
                 onTrackItemClick.onTrackItemClick(listLatLng)
                 dialog?.dismiss()
             }
 
-            override fun deleteTrack(sessionId: String) {
-                locationUpdateViewModel.deleteSessionLocations(sessionId = sessionId)
+            override fun onShowMenuClick(v: View, sessionId: String) {
+                this@TracksDialogFragment.showItemMenu(v, sessionId)
             }
 
-            override fun renameTrack(sessionId: String) {
-                showInputDialog(requireContext(), onConfirm = { enteredText ->
-                    locationUpdateViewModel.renameTrackNameForSession(sessionId = sessionId, newTrackName = enteredText)
-                })
-            }
-
-            override fun shareTrack() {
-
-            }
-
-            override fun setFavourite(isFavourite: Boolean, sessionId: String ) {
-                locationUpdateViewModel.setFavouriteTrackForSession(sessionId, isFavourite)
-                setupSegmentButtons(toggleGroup.checkedButtonId)
-            }
-
-            override fun menuActive(isActive: Boolean) {
-                if (isActive) {
-                    setBackgroundShadow()
-                } else
-                   setBackgroundShadowToNormal()
+            override fun onFavouriteClick(isFavourite: Boolean, sessionId: String) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    setFavouriteItem(isFavourite, sessionId)
+                }
             }
         })
     }
 
-    fun setBackgroundShadow(){
+    private suspend fun setFavouriteItem(isFavourite: Boolean, sessionId: String) {
+        coroutineScope {
+            val job = launch {
+                locationUpdateViewModel.setFavouriteTrackForSession(
+                    sessionId,
+                    isFavourite
+                )
+            }
+            job.join()
+            withContext(Dispatchers.Main) {
+                locationUpdateViewModel.trackSortState.value?.let { sortTracks(it) }
+            }
+        }
+    }
+
+    private fun sortTracks(sortState: SortState) {
+        when (sortState) {
+            SortState.DISTANCE_SORT -> {
+                setupSegmentButtons(R.id.btnDistance)
+                locationUpdateViewModel.sortByDistance()
+            }
+
+            SortState.DURATION_SORT -> {
+                setupSegmentButtons(R.id.btnDuration)
+                locationUpdateViewModel.sortByDuration()
+            }
+
+            else -> {
+                setupSegmentButtons(R.id.btnDate)
+                locationUpdateViewModel.sortByDate()
+            }
+        }
+    }
+
+    private fun setupItemMenu() {
+        popupItemWindow = PopupWindow(requireContext())
+        popupItemWindow?.contentView = layoutInflater.inflate(
+            R.layout.list_popup_window_item,
+            null,
+            false
+        )
+        popupItemWindow?.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
+            )
+        )
+        popupItemWindow?.elevation = 8f
+        popupItemWindow?.isFocusable = true
+        popupItemWindow?.setOnDismissListener {
+            setBackgroundShadowToNormal()
+        }
+    }
+
+    private fun showItemMenu(itemDotsView: View, sessionId: String) {
+        if (popupItemWindow == null) {
+            setupItemMenu()
+        }
+        popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnRename)
+            ?.setOnClickListener {
+                popupItemWindow?.dismiss()
+                showInputDialog(requireContext(), onConfirm = { enteredText ->
+                    locationUpdateViewModel.renameTrackNameForSession(
+                        sessionId = sessionId,
+                        newTrackName = enteredText
+                    )
+                })
+            }
+        popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnDelete)
+            ?.setOnClickListener {
+                popupItemWindow?.dismiss()
+                locationUpdateViewModel.deleteSessionLocations(sessionId = sessionId)
+            }
+        popupItemWindow?.showAsDropDown(
+            itemDotsView,
+            -convertDpToPx(requireContext(), 104),
+            -convertDpToPx(requireContext(), 36)
+        )
+        setBackgroundShadow()
+    }
+
+    private fun convertDpToPx(context: Context, dp: Int): Int {
+        val density: Float = context.resources.displayMetrics.density
+        return (dp.toFloat() * density).roundToInt()
+    }
+
+    private fun setBackgroundShadow() {
         dialog?.window?.addContentView(
             backgroundView, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
-            ))
+            )
+        )
     }
-    fun setBackgroundShadowToNormal(){
+
+    private fun setBackgroundShadowToNormal() {
         backgroundView.let {
             (it.parent as? ViewGroup)?.removeView(it)
         }
     }
 
-    fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
+    private fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
         setBackgroundShadow()
 
         val customLayout = View.inflate(context, R.layout.rename_track_dialog, null)
@@ -155,7 +246,12 @@ class TracksDialogFragment(
         customLayout.findViewById<AppCompatButton>(R.id.btn_cancel).setOnClickListener {
             alertDialog.dismiss()
         }
-        alertDialog.window?.setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.round_white))
+        alertDialog.window?.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
+            )
+        )
         alertDialog.show()
         alertDialog.setOnDismissListener {
             setBackgroundShadowToNormal()
@@ -165,48 +261,16 @@ class TracksDialogFragment(
     private fun setupSegmentButtons(checkedId: Int) {
         val defaultColor = ContextCompat.getColor(requireContext(), R.color.slate_800)
         val selectedColor = ContextCompat.getColor(requireContext(), R.color.white)
-        when (checkedId) {
-            R.id.btnDate -> {
-                locationUpdateViewModel.sortByDate()
-                setButtonBackgroundTint(R.id.btnDate)
-                updateButtonTextColor(R.id.btnDate, selectedColor)
-                updateButtonTextColor(R.id.btnDuration, defaultColor)
-                updateButtonTextColor(R.id.btnDistance, defaultColor)
-            }
-
-            R.id.btnDuration -> {
-                locationUpdateViewModel.sortByDuration()
-                setButtonBackgroundTint(R.id.btnDuration)
-                updateButtonTextColor(R.id.btnDate, defaultColor)
-                updateButtonTextColor(R.id.btnDuration, selectedColor)
-                updateButtonTextColor(R.id.btnDistance, defaultColor)
-            }
-
-            R.id.btnDistance -> {
-                locationUpdateViewModel.sortByDistance()
-                setButtonBackgroundTint(R.id.btnDistance)
-                updateButtonTextColor(R.id.btnDate, defaultColor)
-                updateButtonTextColor(R.id.btnDuration, defaultColor)
-                updateButtonTextColor(R.id.btnDistance, selectedColor)
-            }
-        }
-    }
-
-    private fun updateButtonTextColor(buttonId: Int, color: Int) {
-        val button = binding.root.findViewById<MaterialButton>(buttonId)
-        button.setTextColor(color)
-    }
-
-    private fun setButtonBackgroundTint(
-        buttonId: Int,
-    ) {
         for (button in binding.toggleGroup) {
-            if (button.id == buttonId) {
+            if (button.id == checkedId) {
+                binding.root.findViewById<MaterialButton>(button.id).setTextColor(selectedColor)
                 button.backgroundTintList =
                     ContextCompat.getColorStateList(requireContext(), R.color.main_green_dark)
-            } else
+            } else {
                 button.backgroundTintList =
                     ContextCompat.getColorStateList(requireContext(), R.color.white)
+                binding.root.findViewById<MaterialButton>(button.id).setTextColor(defaultColor)
+            }
         }
     }
 

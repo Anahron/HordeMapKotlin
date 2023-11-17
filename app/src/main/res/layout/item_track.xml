@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/itemCurrentTrack"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -35,11 +35,13 @@
 
             <ImageButton
                 android:id="@+id/ibFavourite"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:foregroundGravity="center"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
                 android:layout_gravity="center"
+                android:elevation="2dp"
+                tools:src="@drawable/vector_favourite_off"
                 android:background="@color/transparent"
-                android:alpha="0.6"
                 android:contentDescription="@string/todo" />
 
             <ImageButton

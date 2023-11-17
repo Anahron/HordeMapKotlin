@@ -1,17 +1,24 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.default
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.domain.usecases.DeleteSessionLocationUseCase
 import ru.newlevel.hordemap.domain.usecases.GetSessionLocationsUseCase
 import ru.newlevel.hordemap.domain.usecases.LocationUpdatesUseCase
 import ru.newlevel.hordemap.domain.usecases.RenameTrackNameForSessionUseCase
 import ru.newlevel.hordemap.domain.usecases.SetFavouriteTrackForSessionUseCase
+
+enum class SortState {
+    DATA_SORT, DURATION_SORT, DISTANCE_SORT
+}
 
 class LocationUpdateViewModel(
     private val getSessionLocationsUseCase: GetSessionLocationsUseCase,
@@ -26,6 +33,10 @@ class LocationUpdateViewModel(
 
     private val _trackItemAll = MutableLiveData<List<TrackItemDomainModel>?>()
     val trackItemAll: LiveData<List<TrackItemDomainModel>?> = _trackItemAll
+
+    private val _trackSortState = MutableLiveData<SortState>().default(SortState.DATA_SORT)
+    val trackSortState: LiveData<SortState> = _trackSortState
+
     fun startLocationUpdates() = locationUpdatesUseCase.startLocationUpdates()
 
     fun stopLocationUpdates() = locationUpdatesUseCase.stopLocationUpdates()
@@ -40,53 +51,46 @@ class LocationUpdateViewModel(
         }
     }
 
-    fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean) {
-        CoroutineScope(Dispatchers.IO).launch {
-            setFavouriteTrackForSessionUseCase.execute(sessionId, isFavourite)
+    fun setCheckedSortButton(checkedId: Int) {
+        Log.e("AAA", "setCheckedSortButton " + checkedId)
+        when (checkedId) {
+            R.id.btnDistance -> _trackSortState.value = SortState.DISTANCE_SORT
+            R.id.btnDuration -> _trackSortState.value = SortState.DURATION_SORT
+            else -> _trackSortState.value = SortState.DATA_SORT
         }
-        val currentList = trackItemAll.value?.toMutableList()
-        val trackItem = currentList?.find { it.sessionId == sessionId }
-        trackItem?.let {
-            val updatedItem = it.copy(isFavourite = isFavourite)
-            val index = currentList.indexOf(it)
+    }
 
-            if (index != -1) {
-                currentList[index] = updatedItem
-            }
-        }
-        _trackItemAll.value = currentList
+    fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean) {
+        _trackItemAll.postValue(
+            setFavouriteTrackForSessionUseCase.execute(
+                sessionId,
+                isFavourite,
+                trackItemAll.value
+            )
+        )
     }
 
     fun renameTrackNameForSession(sessionId: String, newTrackName: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            renameTrackNameForSessionUseCase.execute(
-                sessionId = sessionId,
-                newTrackName = newTrackName
+            _trackItemAll.postValue(
+                renameTrackNameForSessionUseCase.execute(
+                    sessionId = sessionId,
+                    newTrackName = newTrackName,
+                    trackItemAll.value
+                )
             )
         }
-        val currentList = trackItemAll.value?.toMutableList()
-        val trackItem = currentList?.find { it.sessionId == sessionId }
-        trackItem?.let {
-            val updatedItem = it.copy(title = newTrackName)
-            val index = currentList.indexOf(it)
-
-            if (index != -1) {
-                currentList[index] = updatedItem
-            }
-        }
-        _trackItemAll.value = currentList
     }
 
     fun deleteSessionLocations(sessionId: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            deleteSessionLocationUseCase.execute(sessionId)
+            _trackItemAll.postValue(
+                deleteSessionLocationUseCase.execute(
+                    sessionId,
+                    trackItemAll.value
+                )
+            )
         }
-
-        val currentList = trackItemAll.value?.toMutableList()
-        currentList?.removeAll {
-            it.sessionId == sessionId
-        }
-        _trackItemAll.value = currentList
     }
 
     fun getAllSessionsLocations() {
@@ -96,20 +100,23 @@ class LocationUpdateViewModel(
     }
 
     fun sortByDate() {
-        _trackItemAll.value =
-            trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
-                .thenByDescending { it.timestamp })
+        CoroutineScope(Dispatchers.IO).launch {
+            _trackItemAll.postValue(trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                .thenByDescending { it.timestamp }))
+        }
     }
 
     fun sortByDistance() {
-        _trackItemAll.value =
-            trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
-                .thenByDescending { it.distanceMeters })
+        CoroutineScope(Dispatchers.IO).launch {
+            _trackItemAll.postValue(trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                .thenByDescending { it.distanceMeters }))
+        }
     }
 
     fun sortByDuration() {
-        _trackItemAll.value =
-            trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
-                .thenByDescending { it.durationLong })
+        CoroutineScope(Dispatchers.IO).launch {
+            _trackItemAll.postValue(trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                .thenByDescending { it.durationLong }))
+        }
     }
 }
