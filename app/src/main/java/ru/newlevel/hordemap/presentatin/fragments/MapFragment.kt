@@ -37,7 +37,6 @@ import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialog
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialogResult
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.SettingsFragment
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.TracksDialogFragment
-import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.MapState
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
@@ -47,7 +46,6 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     Fragment(R.layout.fragment_maps), OnMapReadyCallback, TracksDialogFragment.OnTrackItemClick {
 
     private val binding: FragmentMapsBinding by viewBinding()
-    private val locationUpdateViewModel by viewModel<LocationUpdateViewModel>()
     private val mapViewModel by viewModel<MapViewModel>()
     private lateinit var googleMap: GoogleMap
     private lateinit var markerManager: MarkerManager
@@ -93,7 +91,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
                 is MapState.DefaultState -> {
                     startMarkerObservers()
                     binding.drawableSettings.closeDrawer(GravityCompat.END)
-                    binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_on)
+                    binding.ibMarkers.setBackgroundResource(R.drawable.btn_map_show_markers)
                     mapViewModel.userMarkersLiveData.observe(this) {
                         userMarkerCollection.markers.forEach { marker -> marker.remove() }
                         mapViewModel.createUsersMarkers(
@@ -112,7 +110,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
                     stopMarkerObservers()
                     staticMarkerCollection.hideAll()
                     userMarkerCollection.hideAll()
-                    binding.ibMarkers.setBackgroundResource(R.drawable.img_marker_orc_off)
+                    binding.ibMarkers.setBackgroundResource(R.drawable.btn_map_show_markers)
                 }
 
                 else -> {}
@@ -184,7 +182,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     }
 
     private fun startBackgroundWork() {
-        locationUpdateViewModel.startLocationUpdates()
+        mapViewModel.startLocationUpdates()
         startAlarmManager()
     }
 
@@ -213,6 +211,16 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         googleMap.setOnMyLocationChangeListener { location ->
             val currentLatLng = LatLng(location.latitude, location.longitude)
             mapViewModel.updateRoute(currentLatLng)
+        }
+        binding.ibMyLocation.setOnClickListener {
+            val myLocation = googleMap.myLocation
+            val update = CameraUpdateFactory.newLatLngZoom(
+                LatLng(
+                    myLocation.latitude,
+                    myLocation.longitude
+                ), 15F
+            )
+            googleMap.animateCamera(update)
         }
         staticMarkerCollection.setOnInfoWindowClickListener {
             it.hideInfoWindow()
@@ -261,7 +269,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         }
     }
 
-    private fun menuListenersSetup()  {
+    private fun menuListenersSetup() {
         val fragmentTrans = childFragmentManager.beginTransaction()
         val loadMapFragment = LoadMapDialogFragment(
             mapViewModel = mapViewModel, settingsViewModel = settingsViewModel
@@ -314,7 +322,8 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         }
         binding.ibTracks.setOnClickListener {
             if (tracksDialog == null) {
-                tracksDialog = TracksDialogFragment(locationUpdateViewModel = locationUpdateViewModel, this)
+                tracksDialog =
+                    TracksDialogFragment( this)
             }
 
             if (!tracksDialog!!.isAdded) {
@@ -344,6 +353,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
             googleMap.isMyLocationEnabled = true
             googleMap.uiSettings.isCompassEnabled = true
             googleMap.uiSettings.isMapToolbarEnabled = false
+            googleMap.uiSettings.isMyLocationButtonEnabled = false
         } else {
             (activity as MainActivity).requestPermission()
         }
@@ -372,7 +382,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     }
 
     override fun onDetach() {
-        locationUpdateViewModel.stopLocationUpdates()
+        mapViewModel.stopLocationUpdates()
         val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
@@ -395,7 +405,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
             LatLng(
                 listLatLng[0].latitude,
                 listLatLng[0].longitude
-            ), 16F
+            ), 15F
         )
         googleMap.animateCamera(update)
     }

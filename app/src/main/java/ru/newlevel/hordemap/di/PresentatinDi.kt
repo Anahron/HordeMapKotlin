@@ -24,13 +24,13 @@ val presentationModule = module {
             startMarkerUpdateUseCase = get(),
             stopMarkerUpdateUseCase = get(),
             compassUseCase = get(),
-            createRouteUseCase = get()
+            createRouteUseCase = get(),
+            locationUpdatesUseCase = get()
         )
     }
-    viewModel<LocationUpdateViewModel> {
-        LocationUpdateViewModel(
+    viewModel<TracksViewModel> {
+        TracksViewModel(
             getSessionLocationsUseCase = get(),
-            locationUpdatesUseCase = get(),
             deleteSessionLocationUseCase = get(),
             renameTrackNameForSessionUseCase = get(),
             setFavouriteTrackForSessionUseCase = get()

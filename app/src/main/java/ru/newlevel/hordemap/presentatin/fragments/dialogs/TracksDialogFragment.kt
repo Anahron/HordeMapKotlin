@@ -24,21 +24,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentTracksDialogBinding
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.presentatin.adapters.TracksAdapter
-import ru.newlevel.hordemap.presentatin.viewmodels.LocationUpdateViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.TracksViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SortState
 import kotlin.math.roundToInt
 
 class TracksDialogFragment(
-    private val locationUpdateViewModel: LocationUpdateViewModel,
     private val onTrackItemClick: OnTrackItemClick
 ) :
     DialogFragment(R.layout.fragment_tracks_dialog) {
 
+    private val tracksViewModel by viewModel<TracksViewModel>()
     private val binding: FragmentTracksDialogBinding by viewBinding()
     private lateinit var currentTrack: TrackItemDomainModel
     private lateinit var recyclerView: RecyclerView
@@ -48,9 +49,9 @@ class TracksDialogFragment(
     private var popupItemWindow: PopupWindow? = null
 
     private fun initDefault() {
-        locationUpdateViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
-        if (locationUpdateViewModel.trackItemAll.value == null)
-            locationUpdateViewModel.getAllSessionsLocations()
+        tracksViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
+        if (tracksViewModel.trackItemAll.value == null)
+            tracksViewModel.getAllSessionsLocations()
     }
 
     private fun setupUIComponents() {
@@ -90,7 +91,7 @@ class TracksDialogFragment(
 
         toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
-                locationUpdateViewModel.setCheckedSortButton(checkedId)
+                tracksViewModel.setCheckedSortButton(checkedId)
             }
         }
     }
@@ -101,11 +102,11 @@ class TracksDialogFragment(
         initDefault()
         setupClickListeners()
 
-        locationUpdateViewModel.trackSortState.observe(this@TracksDialogFragment) {
+        tracksViewModel.trackSortState.observe(this@TracksDialogFragment) {
             sortTracks(it)
         }
 
-        locationUpdateViewModel.trackItemCurrent.observe(this@TracksDialogFragment) {
+        tracksViewModel.trackItemCurrent.observe(this@TracksDialogFragment) {
             if (it != null) {
                 currentTrack = it
                 tvTrackDate.text = it.date
@@ -114,7 +115,7 @@ class TracksDialogFragment(
             }
         }
 
-        locationUpdateViewModel.trackItemAll.observe(this@TracksDialogFragment) {
+        tracksViewModel.trackItemAll.observe(this@TracksDialogFragment) {
             if (it != null) {
                 trackAdapter.setMessages(it)
                 recyclerView.scrollToPosition(0)
@@ -142,14 +143,14 @@ class TracksDialogFragment(
     private suspend fun setFavouriteItem(isFavourite: Boolean, sessionId: String) {
         coroutineScope {
             val job = launch {
-                locationUpdateViewModel.setFavouriteTrackForSession(
+                tracksViewModel.setFavouriteTrackForSession(
                     sessionId,
                     isFavourite
                 )
             }
             job.join()
             withContext(Dispatchers.Main) {
-                locationUpdateViewModel.trackSortState.value?.let { sortTracks(it) }
+                tracksViewModel.trackSortState.value?.let { sortTracks(it) }
             }
         }
     }
@@ -158,17 +159,17 @@ class TracksDialogFragment(
         when (sortState) {
             SortState.DISTANCE_SORT -> {
                 setupSegmentButtons(R.id.btnDistance)
-                locationUpdateViewModel.sortByDistance()
+                tracksViewModel.sortByDistance()
             }
 
             SortState.DURATION_SORT -> {
                 setupSegmentButtons(R.id.btnDuration)
-                locationUpdateViewModel.sortByDuration()
+                tracksViewModel.sortByDuration()
             }
 
             else -> {
                 setupSegmentButtons(R.id.btnDate)
-                locationUpdateViewModel.sortByDate()
+                tracksViewModel.sortByDate()
             }
         }
     }
@@ -201,7 +202,7 @@ class TracksDialogFragment(
             ?.setOnClickListener {
                 popupItemWindow?.dismiss()
                 showInputDialog(requireContext(), onConfirm = { enteredText ->
-                    locationUpdateViewModel.renameTrackNameForSession(
+                    tracksViewModel.renameTrackNameForSession(
                         sessionId = sessionId,
                         newTrackName = enteredText
                     )
@@ -210,7 +211,7 @@ class TracksDialogFragment(
         popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnDelete)
             ?.setOnClickListener {
                 popupItemWindow?.dismiss()
-                locationUpdateViewModel.deleteSessionLocations(sessionId = sessionId)
+                tracksViewModel.deleteSessionLocations(sessionId = sessionId)
             }
         popupItemWindow?.showAsDropDown(
             itemDotsView,
@@ -228,7 +229,7 @@ class TracksDialogFragment(
             ?.setOnClickListener {
                 popupItemWindow?.dismiss()
                 showInputDialog(requireContext(), onConfirm = { enteredText ->
-                    locationUpdateViewModel.renameTrackNameForSession(
+                    tracksViewModel.renameTrackNameForSession(
                         sessionId = UserEntityProvider.sessionId.toString(),
                         newTrackName = enteredText
                     )
@@ -237,8 +238,8 @@ class TracksDialogFragment(
         popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnDelete)
             ?.setOnClickListener {
                 popupItemWindow?.dismiss()
-                locationUpdateViewModel.deleteSessionLocations(sessionId = UserEntityProvider.sessionId.toString())
-                locationUpdateViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
+                tracksViewModel.deleteSessionLocations(sessionId = UserEntityProvider.sessionId.toString())
+                tracksViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
             }
         popupItemWindow?.showAsDropDown(
             itemDotsView,

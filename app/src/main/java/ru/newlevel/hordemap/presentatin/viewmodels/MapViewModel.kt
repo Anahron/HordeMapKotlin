@@ -20,9 +20,9 @@ import java.io.InputStream
 import kotlin.math.roundToInt
 
 sealed class MapState {
-    object DefaultState : MapState()
-    object MarkersOffState : MapState()
-    object LoadingState : MapState()
+    data object DefaultState : MapState()
+    data object MarkersOffState : MapState()
+    data object LoadingState : MapState()
 }
 
 class MapViewModel(
@@ -35,7 +35,8 @@ class MapViewModel(
     private val stopMarkerUpdateUseCase: StopMarkerUpdateUseCase,
     private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase,
     private val compassUseCase: CompassUseCase,
-    private val createRouteUseCase: CreateRouteUseCase
+    private val createRouteUseCase: CreateRouteUseCase,
+    private val locationUpdatesUseCase: LocationUpdatesUseCase
 ) : ViewModel() {
 
     val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState }
@@ -60,6 +61,9 @@ class MapViewModel(
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
     }
 
+    fun startLocationUpdates() = locationUpdatesUseCase.startLocationUpdates()
+
+    fun stopLocationUpdates() = locationUpdatesUseCase.stopLocationUpdates()
     fun compassActivate() {
         compassAngle = compassUseCase.startSensorEventListener()
     }

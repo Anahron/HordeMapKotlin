@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,7 +11,6 @@ import ru.newlevel.hordemap.app.default
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.domain.usecases.DeleteSessionLocationUseCase
 import ru.newlevel.hordemap.domain.usecases.GetSessionLocationsUseCase
-import ru.newlevel.hordemap.domain.usecases.LocationUpdatesUseCase
 import ru.newlevel.hordemap.domain.usecases.RenameTrackNameForSessionUseCase
 import ru.newlevel.hordemap.domain.usecases.SetFavouriteTrackForSessionUseCase
 
@@ -20,11 +18,10 @@ enum class SortState {
     DATA_SORT, DURATION_SORT, DISTANCE_SORT
 }
 
-class LocationUpdateViewModel(
+class TracksViewModel(
     private val getSessionLocationsUseCase: GetSessionLocationsUseCase,
     private val deleteSessionLocationUseCase: DeleteSessionLocationUseCase,
     private val renameTrackNameForSessionUseCase: RenameTrackNameForSessionUseCase,
-    private val locationUpdatesUseCase: LocationUpdatesUseCase,
     private val setFavouriteTrackForSessionUseCase: SetFavouriteTrackForSessionUseCase
 ) : ViewModel() {
 
@@ -37,10 +34,6 @@ class LocationUpdateViewModel(
     private val _trackSortState = MutableLiveData<SortState>().default(SortState.DATA_SORT)
     val trackSortState: LiveData<SortState> = _trackSortState
 
-    fun startLocationUpdates() = locationUpdatesUseCase.startLocationUpdates()
-
-    fun stopLocationUpdates() = locationUpdatesUseCase.stopLocationUpdates()
-
     fun getCurrentSessionLocations(sessionId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             _trackItemCurrent.postValue(
@@ -52,7 +45,6 @@ class LocationUpdateViewModel(
     }
 
     fun setCheckedSortButton(checkedId: Int) {
-        Log.e("AAA", "setCheckedSortButton " + checkedId)
         when (checkedId) {
             R.id.btnDistance -> _trackSortState.value = SortState.DISTANCE_SORT
             R.id.btnDuration -> _trackSortState.value = SortState.DURATION_SORT

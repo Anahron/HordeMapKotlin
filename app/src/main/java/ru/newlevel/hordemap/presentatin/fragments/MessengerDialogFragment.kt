@@ -50,7 +50,6 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     MessagesAdapter.OnButtonSaveClickListener,
     MessagesAdapter.OnImageClickListener,
