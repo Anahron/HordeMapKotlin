@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.presentatin.fragments.dialogs
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -48,7 +49,8 @@ class TracksDialogFragment(
 
     private fun initDefault() {
         locationUpdateViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
-        locationUpdateViewModel.getAllSessionsLocations()
+        if (locationUpdateViewModel.trackItemAll.value == null)
+            locationUpdateViewModel.getAllSessionsLocations()
     }
 
     private fun setupUIComponents() {
@@ -63,12 +65,18 @@ class TracksDialogFragment(
         }
         backgroundView = View(requireContext())
         backgroundView.setBackgroundColor(Color.BLACK)
-        backgroundView.alpha = 0.15f
+        backgroundView.alpha = 0.0F
+        dialog?.window?.addContentView(
+            backgroundView, ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
     }
 
     private fun setupClickListeners() = with(binding) {
         ibPopup.setOnClickListener {
-            //  showMenu(it)
+            showCurrentItemMenu(it)
         }
 
         btnGoBack.setOnClickListener {
@@ -109,6 +117,7 @@ class TracksDialogFragment(
         locationUpdateViewModel.trackItemAll.observe(this@TracksDialogFragment) {
             if (it != null) {
                 trackAdapter.setMessages(it)
+                recyclerView.scrollToPosition(0)
             }
         }
 
@@ -180,7 +189,7 @@ class TracksDialogFragment(
         popupItemWindow?.elevation = 8f
         popupItemWindow?.isFocusable = true
         popupItemWindow?.setOnDismissListener {
-            setBackgroundShadowToNormal()
+            hideBackgroundShadow()
         }
     }
 
@@ -208,31 +217,58 @@ class TracksDialogFragment(
             -convertDpToPx(requireContext(), 104),
             -convertDpToPx(requireContext(), 36)
         )
-        setBackgroundShadow()
+        showBackgroundShadow()
     }
+
+    private fun showCurrentItemMenu(itemDotsView: View) {
+        if (popupItemWindow == null) {
+            setupItemMenu(itemDotsView.rootView as ViewGroup)
+        }
+        popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnRename)
+            ?.setOnClickListener {
+                popupItemWindow?.dismiss()
+                showInputDialog(requireContext(), onConfirm = { enteredText ->
+                    locationUpdateViewModel.renameTrackNameForSession(
+                        sessionId = UserEntityProvider.sessionId.toString(),
+                        newTrackName = enteredText
+                    )
+                })
+            }
+        popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnDelete)
+            ?.setOnClickListener {
+                popupItemWindow?.dismiss()
+                locationUpdateViewModel.deleteSessionLocations(sessionId = UserEntityProvider.sessionId.toString())
+                locationUpdateViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
+            }
+        popupItemWindow?.showAsDropDown(
+            itemDotsView,
+            -convertDpToPx(requireContext(), 104),
+            -convertDpToPx(requireContext(), 36)
+        )
+        showBackgroundShadow()
+    }
+
 
     private fun convertDpToPx(context: Context, dp: Int): Int {
         val density: Float = context.resources.displayMetrics.density
         return (dp.toFloat() * density).roundToInt()
     }
 
-    private fun setBackgroundShadow() {
-        dialog?.window?.addContentView(
-            backgroundView, ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-        )
+    private fun showBackgroundShadow() {
+        val fadeInAnimation = ObjectAnimator.ofFloat(backgroundView, "alpha", 0f, 0.15f)
+        fadeInAnimation.duration = 200
+        fadeInAnimation.start()
     }
 
-    private fun setBackgroundShadowToNormal() {
-        backgroundView.let {
-            (it.parent as? ViewGroup)?.removeView(it)
-        }
+    private fun hideBackgroundShadow() {
+        val fadeOutAnimation =
+            ObjectAnimator.ofFloat(backgroundView, "alpha", backgroundView.alpha, 0f)
+        fadeOutAnimation.duration = 200
+        fadeOutAnimation.start()
     }
 
     private fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
-        setBackgroundShadow()
+        showBackgroundShadow()
 
         val customLayout = View.inflate(context, R.layout.rename_track_dialog, null)
         val editText = customLayout.findViewById<EditText>(R.id.description_edit_text)
@@ -254,7 +290,7 @@ class TracksDialogFragment(
         )
         alertDialog.show()
         alertDialog.setOnDismissListener {
-            setBackgroundShadowToNormal()
+            hideBackgroundShadow()
         }
     }
 
