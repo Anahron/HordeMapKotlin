@@ -132,13 +132,13 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         yourLinearLayout.translationY = 1000f
 
         val animator = ObjectAnimator.ofFloat(yourLinearLayout, "translationY", 0f)
-        animator.duration = 900
+        animator.duration = 500
         animator.start()
         val animator2 = ObjectAnimator.ofFloat(closeButton, "translationY", 0f)
-        animator2.duration = 900
+        animator2.duration = 500
         animator2.start()
         val animator3 = ObjectAnimator.ofFloat(downButton, "translationY", 0f)
-        animator3.duration = 900
+        animator3.duration = 500
         animator3.start()
     }
 

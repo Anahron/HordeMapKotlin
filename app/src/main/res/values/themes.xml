@@ -10,16 +10,11 @@
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/main_green</item>
         <item name="colorSecondaryVariant">@color/main_green_dark</item>
-        <item name="colorOnSecondary">@color/black</item>
+<!--        <item name="colorOnSecondary">@color/black</item>-->
         <!-- Status bar color. -->
         <item name="android:windowBackground">?attr/colorPrimary</item>
         <item name="android:statusBarColor">?attr/colorPrimary</item>
         <!-- Customize your theme here. -->
-    </style>
-
-    <style name="ThemeOverlay.HordeMap.FullscreenContainer" parent="">
-        <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
-        <item name="fullscreenTextColor">@color/light_blue_A200</item>
     </style>
 
     <!--Floating label text style-->
