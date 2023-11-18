@@ -17,6 +17,11 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="SlideLeftAnimation" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/slide_in_left</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_right</item>
+    </style>
+
     <!--Floating label text style-->
     <style name="MyHintText" parent="TextAppearance.AppCompat.Small">
         <item name="android:textColor">@color/main_green_dark</item>

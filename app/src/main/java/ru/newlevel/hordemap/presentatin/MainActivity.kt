@@ -1,16 +1,17 @@
 package ru.newlevel.hordemap.presentatin
 
 import android.Manifest
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -32,6 +33,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     private lateinit var tracksDialogFragment: TracksDialogFragment
     private lateinit var currentFragment: Fragment
     private lateinit var navView: BottomNavigationView
+    private lateinit var navOptions: NavOptions
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         UserEntityProvider.sessionId = System.currentTimeMillis()
@@ -45,6 +48,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (!applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) requestPermission()
         else loginCheck()
 
+        navOptions = NavOptions.Builder()
+            .setEnterAnim(R.anim.slide_in_left)
+            .setExitAnim(R.anim.slide_out_right)
+            .setPopEnterAnim(R.anim.slide_in_right)
+            .setPopExitAnim(R.anim.slide_out_left)
+            .build()
+
         mainFragment = MapFragment()
         currentFragment = mainFragment
         tracksDialogFragment = TracksDialogFragment()
@@ -53,30 +63,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             when (it.itemId) {
                 R.id.messengerFragment -> {
                     if (tracksDialogFragment.isAdded)
-                        supportFragmentManager.beginTransaction()
-                            .remove(tracksDialogFragment)
-                            .commit()
-                    findNavController(R.id.container).navigate(R.id.messengerFragment)
-
-                    val distance = 1000f
-                    val animator1 = ObjectAnimator.ofFloat(navView, "translationY", distance)
-                    animator1.duration = 900
-                    val animator2 = ObjectAnimator.ofFloat(navView, "translationY", 0f)
-                    animator2.duration = 900
-                    val animatorSet = AnimatorSet()
-                    animatorSet.playSequentially(animator1, animator2)
-                    animatorSet.start()
+                        removeTrackDialog()
+                    findNavController(R.id.container).navigate(
+                        R.id.messengerFragment,
+                        null,
+                        navOptions
+                    )
                     false
                 }
 
                 R.id.tracksFragment -> {
                     showFragment(tracksDialogFragment)
-                    navView.visibility = ViewGroup.VISIBLE
                     true
                 }
 
                 else -> {
-                    navView.visibility = ViewGroup.VISIBLE
                     showFragment(mainFragment)
                     true
                 }
@@ -91,21 +92,41 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         this.onBackPressedDispatcher.addCallback(this, callback)
     }
 
+    private val handler = Handler(Looper.getMainLooper())
+
+    private fun removeTrackDialog() {
+        supportFragmentManager.clearBackStack("Track")
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in_left,
+                R.anim.slide_out_right,
+                R.anim.slide_in_right,
+                R.anim.slide_out_left
+            ).hide(tracksDialogFragment).commit()
+        handler.postDelayed({
+            supportFragmentManager.beginTransaction().remove(tracksDialogFragment)
+                .commit()
+        }, 300)
+    }
+
     private fun showFragment(fragment: Fragment) {
         if (fragment == mainFragment && mainFragment != currentFragment) {
-            supportFragmentManager.beginTransaction().remove(tracksDialogFragment).commit()
             currentFragment = fragment
+            removeTrackDialog()
         } else if (fragment == tracksDialogFragment && currentFragment != tracksDialogFragment) {
-            supportFragmentManager.beginTransaction().add(R.id.container, tracksDialogFragment)
-                .addToBackStack("Track").commit()
-            supportFragmentManager.beginTransaction().show(tracksDialogFragment).commit()
+            supportFragmentManager.beginTransaction().setCustomAnimations(
+                R.anim.slide_in_left,
+                R.anim.slide_out_right,
+                R.anim.slide_in_right,
+                R.anim.slide_out_left
+            ).add(R.id.container, tracksDialogFragment).addToBackStack("Track").show(tracksDialogFragment).commit()
             currentFragment = fragment
         }
     }
 
     private fun loginCheck() {
         //TODO удалить ресет (тест первого запуска)
-      //  loginViewModel.reset()
+        //  loginViewModel.reset()
         loginViewModel.checkLogin()
         loginViewModel.loginResultData.observe(this) {
             if (it.name.isNotEmpty()) {

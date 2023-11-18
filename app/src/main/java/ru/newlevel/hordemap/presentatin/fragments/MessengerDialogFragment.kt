@@ -10,6 +10,8 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.OpenableColumns
 import android.util.Log
 import android.view.KeyEvent
@@ -37,6 +39,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jsibbold.zoomage.ZoomageView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
@@ -71,7 +74,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private lateinit var activityLauncher: ActivityResultLauncher<String>
     private lateinit var pickImage: ActivityResultLauncher<String>
     private lateinit var takePicture: ActivityResultLauncher<Uri>
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,7 +119,8 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         super.onViewCreated(view, savedInstanceState)
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog?.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT )
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+        )
         requestWriteExternalStoragePermission()
         setupRecyclerView()
         setupUIComponents()
@@ -126,19 +129,25 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         val yourLinearLayout = binding.inputLayout
         val closeButton = binding.closeMassager
         val downButton = binding.goDown
+        val root = binding.root
 
         closeButton.translationY = -1000f
         downButton.translationY = -1000f
-        yourLinearLayout.translationY = 1000f
+        yourLinearLayout.translationY = 500f
+        root.translationX = -resources.displayMetrics.widthPixels.toFloat()
+        val animator5 = ObjectAnimator.ofFloat(root, "translationX", 0f)
+        animator5.duration = 350
+        animator5.start()
+
 
         val animator = ObjectAnimator.ofFloat(yourLinearLayout, "translationY", 0f)
-        animator.duration = 500
+        animator.duration = 700
         animator.start()
         val animator2 = ObjectAnimator.ofFloat(closeButton, "translationY", 0f)
-        animator2.duration = 500
+        animator2.duration = 700
         animator2.start()
         val animator3 = ObjectAnimator.ofFloat(downButton, "translationY", 0f)
-        animator3.duration = 500
+        animator3.duration = 700
         animator3.start()
     }
 
@@ -186,6 +195,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                delay(350)
                 messengerViewModel.startMessageUpdate()
                 messengerViewModel.messagesLiveData.observe(this@MessengerDialogFragment) { messages ->
                     handleNewMessages(messages)
@@ -341,11 +351,24 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         }
     }
 
+    private val handler = Handler(Looper.getMainLooper())
     private fun setupCloseMessengerButton() {
-        binding.closeMassager.setOnClickListener { dialog?.dismiss() }
-        dialog?.setOnDismissListener { requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView).selectedItemId = R.id.mapFragment }
-    }
+        binding.closeMassager.setOnClickListener {
+            val root = binding.root
+            root.translationX = 0F
+            val animator5 = ObjectAnimator.ofFloat(root, "translationX",  resources.displayMetrics.widthPixels.toFloat())
+            animator5.duration = 450
+            animator5.start()
 
+            handler.postDelayed({
+                dialog?.dismiss()
+            }, 450)
+        }
+        dialog?.setOnDismissListener {
+            requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView).selectedItemId =
+                R.id.mapFragment
+        }
+    }
     private fun setupProgressBar() {
         binding.progressText.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.INVISIBLE
