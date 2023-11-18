@@ -36,23 +36,20 @@ import ru.newlevel.hordemap.presentatin.fragments.dialogs.LoadMapDialogFragment
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialog
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialogResult
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.SettingsFragment
-import ru.newlevel.hordemap.presentatin.fragments.dialogs.TracksDialogFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.MapState
 import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.TrackTransferViewModel
 import kotlin.math.roundToInt
 
-class MapFragment(private val settingsViewModel: SettingsViewModel) :
-    Fragment(R.layout.fragment_maps), OnMapReadyCallback, TracksDialogFragment.OnTrackItemClick {
+class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
 
+    private val tracksTransferViewModel by viewModel<TrackTransferViewModel>()
     private val binding: FragmentMapsBinding by viewBinding()
     private val mapViewModel by viewModel<MapViewModel>()
     private lateinit var googleMap: GoogleMap
     private lateinit var markerManager: MarkerManager
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
-    private var messengerDialog: MessengerDialogFragment? = null
-    private var tracksDialog: TracksDialogFragment? = null
 
     private fun init() {
         setupMap()
@@ -62,6 +59,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         staticMarkerCollection = markerManager.newCollection()
         markerStateObserver()
         overlayObserver()
+        tracksObserver()
         compassObserver()
         mapListenersSetup()
         startBackgroundWork()
@@ -85,13 +83,12 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         mapViewModel.state.observe(this) { state ->
             when (state) {
                 is MapState.LoadingState -> {
-
                 }
 
                 is MapState.DefaultState -> {
                     startMarkerObservers()
                     binding.drawableSettings.closeDrawer(GravityCompat.END)
-                    binding.ibMarkers.setBackgroundResource(R.drawable.btn_map_show_markers)
+                    binding.ibMarkers.setBackgroundResource(R.drawable.img_map_show_markers)
                     mapViewModel.userMarkersLiveData.observe(this) {
                         userMarkerCollection.markers.forEach { marker -> marker.remove() }
                         mapViewModel.createUsersMarkers(
@@ -110,7 +107,7 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
                     stopMarkerObservers()
                     staticMarkerCollection.hideAll()
                     userMarkerCollection.hideAll()
-                    binding.ibMarkers.setBackgroundResource(R.drawable.btn_map_show_markers)
+                    binding.ibMarkers.setBackgroundResource(R.drawable.img_map_hide_markers)
                 }
 
                 else -> {}
@@ -126,6 +123,30 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
             binding.imgCompass.rotation = -angle
             binding.tvCompass.text =
                 Math.round(if (angle > 0) angle else angle + 360).toString() + "\u00B0 "
+        }
+    }
+
+
+    private fun tracksObserver() {
+        tracksTransferViewModel.trackToShowOnMap.observe(this) { listLatLng ->
+            if (listLatLng.isNotEmpty()) {
+                mapViewModel.setRoutePolyline(
+                    googleMap.addPolyline(
+                        mapViewModel.createRoute(
+                            listLatLng
+                        )
+                    )
+                )
+                val update = CameraUpdateFactory.newLatLngZoom(
+                    LatLng(
+                        listLatLng[0].latitude,
+                        listLatLng[0].longitude
+                    ), 15F
+                )
+                googleMap.animateCamera(update)
+            } else {
+                mapViewModel.removeRoute()
+            }
         }
     }
 
@@ -272,10 +293,9 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     private fun menuListenersSetup() {
         val fragmentTrans = childFragmentManager.beginTransaction()
         val loadMapFragment = LoadMapDialogFragment(
-            mapViewModel = mapViewModel, settingsViewModel = settingsViewModel
+            mapViewModel = mapViewModel
         )
-        val settingsFragment =
-            SettingsFragment(mapViewModel = mapViewModel, settingsViewModel = settingsViewModel)
+        val settingsFragment = SettingsFragment(mapViewModel = mapViewModel)
         fragmentTrans.add(R.id.fragment_container, settingsFragment)
         fragmentTrans.add(R.id.fragment_container, loadMapFragment)
         fragmentTrans.commit()
@@ -284,10 +304,10 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
         binding.ibMapType.setOnClickListener {
             if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {
                 googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
-                it.setBackgroundResource(R.drawable.map_type_normal)
+                it.setBackgroundResource(R.drawable.img_btn_map_type_normal)
             } else if (googleMap.mapType == GoogleMap.MAP_TYPE_HYBRID) {
                 googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-                it.setBackgroundResource(R.drawable.map_type_hybrid)
+                it.setBackgroundResource(R.drawable.img_btn_map_type_hybrid)
             }
         }
         binding.ibMarkers.setOnClickListener {
@@ -310,25 +330,6 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
                 fragmentTransaction.commit()
             }
             binding.drawableSettings.openDrawer(GravityCompat.END)
-        }
-        binding.ibMessenger.setOnClickListener {
-            if (messengerDialog == null) {
-                messengerDialog = MessengerDialogFragment()
-            }
-
-            if (!messengerDialog!!.isAdded) {
-                messengerDialog!!.show(this.childFragmentManager, "messengerDialog")
-            }
-        }
-        binding.ibTracks.setOnClickListener {
-            if (tracksDialog == null) {
-                tracksDialog =
-                    TracksDialogFragment( this)
-            }
-
-            if (!tracksDialog!!.isAdded) {
-                tracksDialog!!.show(this.childFragmentManager, "messengerDialog")
-            }
         }
     }
 
@@ -396,17 +397,5 @@ class MapFragment(private val settingsViewModel: SettingsViewModel) :
     private fun convertDpToPx(dp: Int): Int {
         val density: Float = resources.displayMetrics.density
         return (dp.toFloat() * density).roundToInt()
-    }
-
-    override fun onTrackItemClick(listLatLng: List<LatLng>) {
-        //TODO
-        mapViewModel.setRoutePolyline(googleMap.addPolyline(mapViewModel.createRoute(listLatLng)))
-        val update = CameraUpdateFactory.newLatLngZoom(
-            LatLng(
-                listLatLng[0].latitude,
-                listLatLng[0].longitude
-            ), 15F
-        )
-        googleMap.animateCamera(update)
     }
 }

@@ -1,0 +1,9 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="0"
+        android:endColor="#F2FFFFFF"
+        android:startColor="#D7E8FD"
+        android:type="linear"
+        android:useLevel="false" />
+    <corners android:radius="8dp" /> <!-- Радиус скругления краев -->
+</shape>

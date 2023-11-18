@@ -1,6 +1,7 @@
 package ru.newlevel.hordemap.presentatin.viewmodels
 
 import android.content.Context
+import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -88,7 +89,10 @@ class MapViewModel(
 
    fun createRoute(listLatLng: List<LatLng>): PolylineOptions{
        removeRoute()
-       return PolylineOptions().addAll(listLatLng)
+       return PolylineOptions().apply {
+           color(Color.RED)
+           width(15f)
+       }.addAll(listLatLng)
    }
 
     fun removeRoute() {

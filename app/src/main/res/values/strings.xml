@@ -107,4 +107,7 @@
     <string name="distance">Distance</string>
     <string name="duration">Duration</string>
     <string name="date">Date</string>
+    <string name="map">Map</string>
+    <string name="tracks">Tracks</string>
+    <string name="chat">Chat</string>
 </resources>

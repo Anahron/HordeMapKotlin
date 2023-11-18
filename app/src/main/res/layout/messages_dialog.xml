@@ -49,10 +49,10 @@
         app:layout_constraintTop_toTopOf="@+id/progressBar" />
 
     <LinearLayout
-        android:background="@color/main_green_dark"
+        android:background="@color/white"
         android:id="@+id/inputLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="55dp"
         android:layout_marginTop="12dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"

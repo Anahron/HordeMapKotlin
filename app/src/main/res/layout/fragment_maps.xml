@@ -17,7 +17,9 @@
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".presentatin.MainActivity">
+            android:layout_marginBottom="50dp"
+            tools:context=".presentatin.MainActivity"
+            android:tag="@string/todo">
 
             <TextView
                 android:id="@+id/distance_text_view"
@@ -57,46 +59,52 @@
 
             <ImageButton
                 android:id="@+id/ibMyLocation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
                 android:layout_marginTop="15dp"
                 android:layout_marginEnd="8dp"
                 android:layout_gravity="end|top"
-                android:background="@drawable/btn_map_my_locations"
+                android:background="@drawable/img_map_location"
                 android:contentDescription="@string/todo" />
 
             <ImageButton
                 android:id="@+id/ib_markers"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="85dp"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
+                android:layout_marginTop="75dp"
                 android:layout_marginEnd="8dp"
                 android:layout_gravity="end|top"
-                android:background="@drawable/btn_map_show_markers"
+                android:background="@drawable/img_map_show_markers"
                 android:contentDescription="@string/todo" />
 
             <ImageButton
                 android:id="@+id/ib_map_type"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
                 android:layout_gravity="end|top"
-                android:layout_marginTop="120dp"
+                android:layout_marginTop="135dp"
                 android:layout_marginEnd="8dp"
-                android:alpha="0.6"
-                android:background="@drawable/map_type_hybrid"
-                android:contentDescription="@string/todo"
-                android:padding="15dp" />
+                android:background="@drawable/img_btn_map_type_hybrid"
+                android:contentDescription="@string/todo" />
 
             <ImageButton
                 android:id="@+id/ib_settings"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
                 android:layout_gravity="end|top"
-                android:layout_marginTop="175dp"
+                android:layout_marginTop="195dp"
                 android:layout_marginEnd="8dp"
-                android:alpha="0.6"
-                android:background="@drawable/img_settings"
-                android:padding="15dp"
+                android:background="@drawable/img_map_settings"
+                android:contentDescription="@string/todo" />
+
+            <ImageButton
+                android:id="@+id/ib_load_map"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="255dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/img_map_loadmap"
                 android:contentDescription="@string/todo" />
 
             <ImageView
@@ -108,45 +116,6 @@
                 android:layout_marginTop="50dp"
                 app:srcCompat="@drawable/compas"
                 android:contentDescription="@string/todo" />
-
-
-            <ImageButton
-                android:id="@+id/ib_load_map"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="end|top"
-                android:layout_marginTop="230dp"
-                android:layout_marginEnd="8dp"
-                android:alpha="0.6"
-                android:background="@drawable/img_map_download"
-                android:padding="15dp"
-                android:contentDescription="@string/todo" />
-
-            <ImageButton
-                android:id="@+id/ibTracks"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="285dp"
-                android:padding="15dp"
-                android:alpha="0.6"
-                android:background="@drawable/img_path"
-                android:layout_gravity="end|top"
-                android:contentDescription="@string/todo"
-                />
-
-            <ImageButton
-                android:id="@+id/ibMessenger"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="345dp"
-                android:padding="15dp"
-                android:alpha="0.6"
-                android:background="@drawable/img_message_no"
-                android:layout_gravity="end|top"
-                android:contentDescription="@string/todo"
-                />
 
         </fragment>
 

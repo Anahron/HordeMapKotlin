@@ -1,6 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.HordeMap" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.HordeMap" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge">
         <item name="android:popupMenuStyle">@style/MyPopupMenu</item>
         <item name="android:fontFamily">@font/inter</item>
         <!-- Primary brand color. -->
@@ -16,10 +16,12 @@
         <item name="android:statusBarColor">?attr/colorPrimary</item>
         <!-- Customize your theme here. -->
     </style>
+
     <style name="ThemeOverlay.HordeMap.FullscreenContainer" parent="">
         <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
         <item name="fullscreenTextColor">@color/light_blue_A200</item>
     </style>
+
     <!--Floating label text style-->
     <style name="MyHintText" parent="TextAppearance.AppCompat.Small">
         <item name="android:textColor">@color/main_green_dark</item>

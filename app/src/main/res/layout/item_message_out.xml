@@ -12,7 +12,7 @@
             android:minWidth="165dp"
             android:layout_margin="4dp"
             android:layout_gravity="end"
-            android:background="@drawable/rounded_background_white"
+            android:background="@drawable/rounded_background_lightblue"
             android:orientation="vertical"
             android:paddingTop="3dp">
 
@@ -28,7 +28,7 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="10dp"
                     android:layout_weight="1"
-                    android:textColor="@color/main_green_dark"
+                    android:textColor="@color/slate_800"
                     android:textSize="16sp"
                     tools:text="Username" />
 
@@ -46,7 +46,6 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="2dp"
                 android:alpha="0.50"
                 android:background="@drawable/horizontal_gradient" />
 

@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.makeLongToast
@@ -16,9 +17,10 @@ import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
 
 class LoadMapDialogFragment(
-    private val mapViewModel: MapViewModel, private val settingsViewModel: SettingsViewModel,
+    private val mapViewModel: MapViewModel,
 ) : Fragment(R.layout.load_map_dialog) {
 
+    private val settingsViewModel: SettingsViewModel by viewModel()
     private val binding: LoadMapDialogBinding by viewBinding()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) = with(binding) {

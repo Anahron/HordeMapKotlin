@@ -2,7 +2,13 @@ package ru.newlevel.hordemap.di
 
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
-import ru.newlevel.hordemap.presentatin.viewmodels.*
+import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.MessengerViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.PermissionViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.TrackTransferViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.TracksViewModel
+
 
 val presentationModule = module {
     viewModel<SettingsViewModel> {
@@ -39,6 +45,11 @@ val presentationModule = module {
     viewModel<PermissionViewModel> {
         PermissionViewModel(getSettingsUseCase = get(), saveSettingsUseCase = get())
     }
+
+    single<TrackTransferViewModel>{
+        TrackTransferViewModel()
+    }
+
     viewModel<MessengerViewModel> {
         MessengerViewModel(
             startMessageUpdateUseCase = get(),

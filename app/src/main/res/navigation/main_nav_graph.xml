@@ -3,15 +3,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_nav_graph"
-    app:startDestination="@id/mapFragment">
+    app:startDestination="@id/splashSreenFragment">
 
     <fragment
         android:id="@+id/mapFragment"
         android:name="ru.newlevel.hordemap.presentatin.fragments.MapFragment"
-        android:label="MapFragment" >
+        android:label="MapFragment"
+        >
         <action
-            android:id="@+id/action_mapFragment_to_messengerDialogFragment"
-            app:destination="@id/messengerDialogFragment" />
+            android:id="@+id/action_mapFragment_to_messengerFragment"
+            app:destination="@id/messengerFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_tracksFragment"
+            app:destination="@id/tracksFragment"
+            app:launchSingleTop="true"/>
+        <action
+            android:id="@+id/action_mapFragment_to_permissionRequestFragment"
+            app:destination="@id/permissionRequestFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/messengerFragment"
+        android:name="ru.newlevel.hordemap.presentatin.fragments.MessengerDialogFragment"
+        android:label="MessengerDialogFragment" >
+        <action
+            android:id="@+id/action_messengerFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_messengerFragment_to_tracksFragment"
+            app:destination="@id/tracksFragment" />
+    </dialog>
+    <fragment
+        android:id="@+id/tracksFragment"
+        android:name="ru.newlevel.hordemap.presentatin.fragments.dialogs.TracksDialogFragment"
+        android:label="TracksFragment" >
+        <action
+            android:id="@+id/action_tracksFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_tracksFragment_to_messengerFragment"
+            app:destination="@id/messengerFragment" />
     </fragment>
     <fragment
         android:id="@+id/permissionRequestFragment"
@@ -21,18 +51,17 @@
             android:id="@+id/action_permissionRequestFragment_to_mapFragment"
             app:destination="@id/mapFragment" />
     </fragment>
-    <activity
-        android:id="@+id/mainActivity"
-        android:name="ru.newlevel.hordemap.presentatin.MainActivity"
-        android:label="activity_main"
-        tools:layout="@layout/activity_main" />
-    <dialog
-        android:id="@+id/messengerDialogFragment"
-        android:name="ru.newlevel.hordemap.presentatin.fragments.MessengerDialogFragment"
-        android:label="MessengerDialogFragment" >
+    <fragment
+        android:id="@+id/splashSreenFragment"
+        android:name="ru.newlevel.hordemap.splashSreenFragment"
+        android:label="fragment_splash_sreen"
+        tools:layout="@layout/fragment_splash_sreen" >
         <action
-            android:id="@+id/action_messengerDialogFragment_to_mapFragment"
+            android:id="@+id/action_splashSreenFragment_to_mapFragment"
             app:destination="@id/mapFragment" />
-    </dialog>
+        <action
+            android:id="@+id/action_splashSreenFragment_to_permissionRequestFragment"
+            app:destination="@id/permissionRequestFragment" />
+    </fragment>
 
 </navigation>

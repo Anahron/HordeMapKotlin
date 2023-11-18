@@ -3,7 +3,6 @@ package ru.newlevel.hordemap.presentatin.fragments.dialogs
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import androidx.core.view.iterator
-import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
@@ -30,15 +29,14 @@ import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentTracksDialogBinding
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.presentatin.adapters.TracksAdapter
-import ru.newlevel.hordemap.presentatin.viewmodels.TracksViewModel
 import ru.newlevel.hordemap.presentatin.viewmodels.SortState
+import ru.newlevel.hordemap.presentatin.viewmodels.TrackTransferViewModel
+import ru.newlevel.hordemap.presentatin.viewmodels.TracksViewModel
 import kotlin.math.roundToInt
 
-class TracksDialogFragment(
-    private val onTrackItemClick: OnTrackItemClick
-) :
-    DialogFragment(R.layout.fragment_tracks_dialog) {
+class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
 
+    private val trackTransferViewModel by viewModel<TrackTransferViewModel>()
     private val tracksViewModel by viewModel<TracksViewModel>()
     private val binding: FragmentTracksDialogBinding by viewBinding()
     private lateinit var currentTrack: TrackItemDomainModel
@@ -55,10 +53,6 @@ class TracksDialogFragment(
     }
 
     private fun setupUIComponents() {
-        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        dialog?.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-        )
         trackAdapter = TracksAdapter()
         recyclerView = binding.rvTracks.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -66,13 +60,11 @@ class TracksDialogFragment(
         }
         backgroundView = View(requireContext())
         backgroundView.setBackgroundColor(Color.BLACK)
-        backgroundView.alpha = 0.0F
-        dialog?.window?.addContentView(
-            backgroundView, ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-        )
+        backgroundView.layoutParams.apply {
+            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT
+        }
+        backgroundView.alpha = 0.4F
     }
 
     private fun setupClickListeners() = with(binding) {
@@ -81,12 +73,12 @@ class TracksDialogFragment(
         }
 
         btnGoBack.setOnClickListener {
-            dialog?.dismiss()
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
         itemCurrentTrack.setOnClickListener {
-            dialog?.dismiss()
-            onTrackItemClick.onTrackItemClick(currentTrack.locations)
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+            trackTransferViewModel.setTrack(currentTrack.locations)
         }
 
         toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
@@ -102,11 +94,11 @@ class TracksDialogFragment(
         initDefault()
         setupClickListeners()
 
-        tracksViewModel.trackSortState.observe(this@TracksDialogFragment) {
+        tracksViewModel.trackSortState.observe(viewLifecycleOwner) {
             sortTracks(it)
         }
 
-        tracksViewModel.trackItemCurrent.observe(this@TracksDialogFragment) {
+        tracksViewModel.trackItemCurrent.observe(viewLifecycleOwner) {
             if (it != null) {
                 currentTrack = it
                 tvTrackDate.text = it.date
@@ -115,7 +107,7 @@ class TracksDialogFragment(
             }
         }
 
-        tracksViewModel.trackItemAll.observe(this@TracksDialogFragment) {
+        tracksViewModel.trackItemAll.observe(viewLifecycleOwner) {
             if (it != null) {
                 trackAdapter.setMessages(it)
                 recyclerView.scrollToPosition(0)
@@ -124,8 +116,8 @@ class TracksDialogFragment(
 
         trackAdapter.attachCallback(object : TracksAdapter.TracksAdapterCallback {
             override fun onTrackItemClick(listLatLng: List<LatLng>) {
-                onTrackItemClick.onTrackItemClick(listLatLng)
-                dialog?.dismiss()
+                trackTransferViewModel.setTrack(listLatLng)
+                requireActivity().onBackPressedDispatcher.onBackPressed()
             }
 
             override fun onShowMenuClick(v: View, sessionId: String) {
@@ -187,7 +179,7 @@ class TracksDialogFragment(
                 R.drawable.round_white
             )
         )
-        popupItemWindow?.elevation = 8f
+        popupItemWindow?.elevation = 18f
         popupItemWindow?.isFocusable = true
         popupItemWindow?.setOnDismissListener {
             hideBackgroundShadow()
@@ -213,6 +205,7 @@ class TracksDialogFragment(
                 popupItemWindow?.dismiss()
                 tracksViewModel.deleteSessionLocations(sessionId = sessionId)
             }
+
         popupItemWindow?.showAsDropDown(
             itemDotsView,
             -convertDpToPx(requireContext(), 104),
@@ -309,9 +302,5 @@ class TracksDialogFragment(
                 binding.root.findViewById<MaterialButton>(button.id).setTextColor(defaultColor)
             }
         }
-    }
-
-    interface OnTrackItemClick {
-        fun onTrackItemClick(listLatLng: List<LatLng>)
     }
 }

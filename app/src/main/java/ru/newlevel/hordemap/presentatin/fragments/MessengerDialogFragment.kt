@@ -1,6 +1,7 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -32,6 +33,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jsibbold.zoomage.ZoomageView
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +50,8 @@ import ru.newlevel.hordemap.presentatin.viewmodels.MessengerViewModel
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     MessagesAdapter.OnButtonSaveClickListener,
@@ -56,7 +59,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
 
     private val binding: MessagesDialogBinding by viewBinding()
-
     private val messengerViewModel by viewModel<MessengerViewModel>()
 
     private lateinit var recyclerView: RecyclerView
@@ -69,6 +71,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private lateinit var activityLauncher: ActivityResultLauncher<String>
     private lateinit var pickImage: ActivityResultLauncher<String>
     private lateinit var takePicture: ActivityResultLauncher<Uri>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,13 +117,29 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         super.onViewCreated(view, savedInstanceState)
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog?.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-        )
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT )
         requestWriteExternalStoragePermission()
-
         setupRecyclerView()
         setupUIComponents()
         setupMessagesUpdates()
+
+        val yourLinearLayout = binding.inputLayout
+        val closeButton = binding.closeMassager
+        val downButton = binding.goDown
+
+        closeButton.translationY = -1000f
+        downButton.translationY = -1000f
+        yourLinearLayout.translationY = 1000f
+
+        val animator = ObjectAnimator.ofFloat(yourLinearLayout, "translationY", 0f)
+        animator.duration = 900
+        animator.start()
+        val animator2 = ObjectAnimator.ofFloat(closeButton, "translationY", 0f)
+        animator2.duration = 900
+        animator2.start()
+        val animator3 = ObjectAnimator.ofFloat(downButton, "translationY", 0f)
+        animator3.duration = 900
+        animator3.start()
     }
 
     private fun requestWriteExternalStoragePermission() {
@@ -324,6 +343,7 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     private fun setupCloseMessengerButton() {
         binding.closeMassager.setOnClickListener { dialog?.dismiss() }
+        dialog?.setOnDismissListener { requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView).selectedItemId = R.id.mapFragment }
     }
 
     private fun setupProgressBar() {

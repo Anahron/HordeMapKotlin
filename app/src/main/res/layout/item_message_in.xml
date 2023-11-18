@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootFrame"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    >
+    android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/rootLinear"
@@ -28,7 +27,7 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="10dp"
                     android:layout_weight="1"
-                    android:textColor="@color/main_green_dark"
+                    android:textColor="@color/slate_800"
                     android:textSize="16sp"
                     tools:text="Username" />
 
@@ -46,7 +45,6 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="2dp"
                 android:alpha="0.50"
                 android:background="@drawable/horizontal_gradient" />
 

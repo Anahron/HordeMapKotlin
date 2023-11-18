@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/mapFragment"
+        android:title="@string/map"
+        android:icon="@drawable/vector_map" />
+    <item
+        android:id="@+id/tracksFragment"
+        android:title="@string/tracks"
+        android:icon="@drawable/vector_track" />
+    <item
+        android:id="@+id/messengerFragment"
+        android:title="@string/chat"
+        android:icon="@drawable/vector_chat" />
+</menu>

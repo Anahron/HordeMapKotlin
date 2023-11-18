@@ -8,7 +8,7 @@
     <color name="middle_transparent">#81BA9D9D</color>
     <color name="transparent">#00FFFFFF</color>
     <color name="main_green_middle_transparent">#C3A4AAA5</color>
-    <color name="green">#E41F9A22</color>
+    <color name="green">#0A851A</color>
     <color name="gray_blue">#C3314F70</color>
     <color name="yellow">#B0BC00</color>
     <color name="main_green">#B3C1B5</color>
@@ -22,7 +22,4 @@
     <color name="black_overlay">#66FFFFFF</color>
     <color name="slate_500">#64748B</color>
     <color name="slate_800">#1E293B</color>
-
-
-
 </resources>

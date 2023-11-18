@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.slider.Slider
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.app.mapUserDataToDomain
@@ -27,9 +28,9 @@ import kotlin.properties.Delegates
 
 class SettingsFragment(
     private val mapViewModel: MapViewModel,
-    private val settingsViewModel: SettingsViewModel
 ) : Fragment(R.layout.fragment_settings) {
 
+    private val settingsViewModel: SettingsViewModel by viewModel()
     private val binding: FragmentSettingsBinding by viewBinding()
     private var checkedRadioButton by Delegates.notNull<Int>()
     private var user: UserDomainModel =
