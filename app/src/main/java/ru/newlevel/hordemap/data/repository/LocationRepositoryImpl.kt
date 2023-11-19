@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.data.repository
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.MainThread
+import androidx.lifecycle.LiveData
 import ru.newlevel.hordemap.data.db.MyLocationDao
 import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.device.MyLocationManager
@@ -38,8 +39,11 @@ class LocationRepositoryImpl(private val context: Context, private val myLocatio
             })
     }
 
-    override fun getLocationsSortedByUpdateTime(sessionId: String): List<MyLocationEntity> =
-        myLocationDao.getLocationsSortedByUpdateTime(sessionId = sessionId)
+    override fun getCurrentLocationsLiveData(sessionId: String): LiveData<List<MyLocationEntity>> =
+        myLocationDao.getCurrentLocationsLiveData(sessionId = sessionId)
+
+    override fun getLocationsBySessionId(sessionId: String): List<MyLocationEntity> =
+        myLocationDao.getLocationsBySessionId(sessionId)
 
     override suspend fun getAllLocationsGroupedBySessionId(): List<String> {
         return myLocationDao.getUniqueSessionIds()

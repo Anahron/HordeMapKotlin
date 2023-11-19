@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.data.db
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -10,7 +11,10 @@ import java.util.*
 interface MyLocationDao {
 
     @Query("SELECT * FROM my_location_table WHERE sessionId =(:sessionId) ORDER BY date DESC")
-    fun getLocationsSortedByUpdateTime(sessionId: String): List<MyLocationEntity>
+    fun getCurrentLocationsLiveData(sessionId: String): LiveData<List<MyLocationEntity>>
+
+    @Query("SELECT * FROM my_location_table WHERE sessionId =(:sessionId) ORDER BY date DESC")
+    fun getLocationsBySessionId(sessionId: String): List<MyLocationEntity>
 
     @Query("DELETE FROM my_location_table WHERE sessionId = :sessionId")
     fun deleteLocationsBySessionId(sessionId: String)

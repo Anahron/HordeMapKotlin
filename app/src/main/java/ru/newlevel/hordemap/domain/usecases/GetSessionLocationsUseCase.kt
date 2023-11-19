@@ -1,7 +1,10 @@
 package ru.newlevel.hordemap.domain.usecases
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.SphericalUtil
+import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.domain.repository.LocationRepository
@@ -12,35 +15,46 @@ import kotlin.math.roundToInt
 
 class GetSessionLocationsUseCase(private val locationRepository: LocationRepository) {
 
-    fun getCurrentSessionLocations(sessionId: String): TrackItemDomainModel? {
-        val locationEntity = locationRepository.getLocationsSortedByUpdateTime(sessionId)
-        val locationsList = locationEntity.map {
-            LatLng(it.latitude, it.longitude)
-        }
-        val distance = SphericalUtil.computeLength(locationsList)
-        return if (locationEntity.isNotEmpty()) TrackItemDomainModel(
-            locationEntity[0].date.time,
-            locationEntity[0].trackName,
-            sessionId,
-            convertTimestampToDate(locationEntity[0].date.time),
-            calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
-            locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time,
-            distanceToString(distance),
-            distance.toInt(),
-            locationsList
-        ) else TrackItemDomainModel(
-            timestamp = System.currentTimeMillis(),
-            sessionId =  sessionId,
-            date = convertTimestampToDate(System.currentTimeMillis()),
-            locations =  locationsList)
+    fun getCurrentSessionLocationsLiveData(sessionId: String): LiveData<TrackItemDomainModel> {
+        val myLocationEntityLiveData: LiveData<List<MyLocationEntity>> =
+            locationRepository.getCurrentLocationsLiveData(sessionId = sessionId)
+        val trackItemLiveData: LiveData<TrackItemDomainModel> =
+            myLocationEntityLiveData.map { locationEntity ->
+                val locationsList = locationEntity.map {
+                    LatLng(it.latitude, it.longitude)
+                }
+                return@map if (locationEntity.isNotEmpty()) {
+                    val distance = SphericalUtil.computeLength(locationsList)
+                    TrackItemDomainModel(
+                        locationEntity[0].date.time,
+                        locationEntity[0].trackName,
+                        UserEntityProvider.sessionId.toString(),
+                        convertTimestampToDate(locationEntity[0].date.time),
+                        calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
+                        locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time,
+                        distanceToString(distance),
+                        distance.toInt(),
+                        locationsList
+                    )
+                } else {
+                    TrackItemDomainModel(
+                        timestamp = System.currentTimeMillis(),
+                        sessionId = UserEntityProvider.sessionId.toString(),
+                        date = convertTimestampToDate(System.currentTimeMillis()),
+                        locations = locationsList
+                    )
+                }
+            }
+        return trackItemLiveData
     }
+
 
     suspend fun getAllSessionLocations(): List<TrackItemDomainModel> {
         val uniqueSessionIds = locationRepository.getAllLocationsGroupedBySessionId()
         val allLocations = mutableListOf<TrackItemDomainModel>()
 
         for (sessionId in uniqueSessionIds) {
-            val locationEntity = locationRepository.getLocationsSortedByUpdateTime(sessionId)
+            val locationEntity = locationRepository.getLocationsBySessionId(sessionId)
             val locationsList = locationEntity.map {
                 LatLng(it.latitude, it.longitude)
             }
@@ -50,27 +64,24 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
             }
             if (locationEntity[0].sessionId != UserEntityProvider.sessionId.toString()) {
                 val distance = SphericalUtil.computeLength(locationsList)
-                if (distance < 300)
-                    locationRepository.deleteLocationsBySessionId(sessionId = sessionId)
-                else
-                    allLocations.add(
-                        TrackItemDomainModel(
-                            locationEntity[0].date.time,
-                            locationEntity[0].trackName,
-                            sessionId,
-                            convertTimestampToDate(locationEntity[0].date.time),
-                            calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
-                            locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time,
-                            distanceToString(distance),
-                            distance.toInt(),
-                            locationsList,
-                            locationEntity[0].favourite
-                        )
+                if (distance < 300) locationRepository.deleteLocationsBySessionId(sessionId = sessionId)
+                else allLocations.add(
+                    TrackItemDomainModel(
+                        locationEntity[0].date.time,
+                        locationEntity[0].trackName,
+                        sessionId,
+                        convertTimestampToDate(locationEntity[0].date.time),
+                        calculateDurations(locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time),
+                        locationEntity[0].date.time - locationEntity[locationEntity.lastIndex].date.time,
+                        distanceToString(distance),
+                        distance.toInt(),
+                        locationsList,
+                        locationEntity[0].favourite
                     )
+                )
             }
         }
-        return allLocations.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
-            .thenByDescending { it.timestamp })
+        return allLocations.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }.thenByDescending { it.timestamp })
     }
 
     private fun distanceToString(resultDistance: Double): String {
@@ -95,8 +106,7 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
         }
         if (minutes > 0) {
             formattedString.append("$minutes" + "m")
-        } else
-            formattedString.append("0m")
+        } else formattedString.append("0m")
         return formattedString.toString()
     }
 

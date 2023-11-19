@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.domain.repository
 
+import androidx.lifecycle.LiveData
 import ru.newlevel.hordemap.data.db.MyLocationEntity
 
 interface LocationRepository {
@@ -9,8 +10,9 @@ interface LocationRepository {
 
     fun stopLocationUpdates()
     suspend fun getAllLocationsGroupedBySessionId(): List<String>
-    fun getLocationsSortedByUpdateTime(sessionId: String): List<MyLocationEntity>
+    fun getCurrentLocationsLiveData(sessionId: String): LiveData<List<MyLocationEntity>>
 
+    fun getLocationsBySessionId(sessionId: String): List<MyLocationEntity>
     fun updateLocation(myLocationEntity: MyLocationEntity)
 
     fun addLocation(myLocationEntity: MyLocationEntity)

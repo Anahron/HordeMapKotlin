@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -16,7 +15,7 @@ import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 
 class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
 
-    private var tracksData: List<TrackItemDomainModel> = ArrayList()
+    private var tracksData: ArrayList<TrackItemDomainModel> = ArrayList()
     private var mCallback: TracksAdapterCallback? = null
 
     fun attachCallback(callback: TracksAdapterCallback) {
@@ -27,14 +26,25 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
         parent: ViewGroup,
         viewType: Int
     ): TracksViewHolder {
-        return TracksViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_track, parent, false),
-            mCallback
-        )
+        val view = when (viewType) {
+            ITEM_CURRENT -> LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_track_current, parent, false)
+
+            else -> LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_track, parent, false)
+        }
+        return TracksViewHolder(view, mCallback)
+    }
+
+    fun setCurrentTrack(track: TrackItemDomainModel) {
+        if (tracksData.isNotEmpty()) {
+            tracksData[0] = track
+            notifyItemChanged(0)
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setMessages(newList: List<TrackItemDomainModel>) {
+    fun setTracks(newList: ArrayList<TrackItemDomainModel>) {
         val diffCallback = TracksDiffCallback(tracksData, newList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         tracksData = newList
@@ -49,7 +59,11 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
         holder.itemView.setOnClickListener {
             mCallback?.onTrackItemClick(tracksData[position].locations)
         }
-        holder.bind(tracksData[position])
+        holder.bind(tracksData[position], position)
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) ITEM_CURRENT else ITEM_ALL
     }
 
     class TracksViewHolder(view: View, private var callback: TracksAdapterCallback?) :
@@ -57,7 +71,7 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
 
         private val binding = ItemTrackBinding.bind(view)
 
-        fun bind(trackItemDomainModel: TrackItemDomainModel) = with(binding) {
+        fun bind(trackItemDomainModel: TrackItemDomainModel, position: Int) = with(binding) {
             tvTrackDate.text = trackItemDomainModel.date
             tvTrackDistance.text = trackItemDomainModel.distance
             tvTrackDuration.text = trackItemDomainModel.duration
@@ -82,6 +96,10 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
                         R.drawable.vector_favourite_off
                     )
                 )
+            if (position == 0) {
+                ibFavourite.visibility = View.GONE
+                tvTrackTitle.text = itemView.context.resources.getText(R.string.my_current_track)
+            }
             ibPopup.setOnClickListener {
                 callback?.onShowMenuClick(it, trackItemDomainModel.sessionId)
             }
@@ -109,6 +127,11 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             return (oldList[oldItemPosition].isFavourite == newList[newItemPosition].isFavourite && oldList[oldItemPosition].title == newList[newItemPosition].title)
         }
+    }
+
+    companion object {
+        private const val ITEM_CURRENT = 1
+        private const val ITEM_ALL = 2
     }
 
     interface TracksAdapterCallback {

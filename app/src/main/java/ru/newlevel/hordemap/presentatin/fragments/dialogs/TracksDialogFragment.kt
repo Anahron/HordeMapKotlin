@@ -1,11 +1,10 @@
 package ru.newlevel.hordemap.presentatin.fragments.dialogs
 
-import android.animation.ObjectAnimator
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -29,7 +28,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentTracksDialogBinding
-import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.presentatin.adapters.TracksAdapter
 import ru.newlevel.hordemap.presentatin.viewmodels.SortState
 import ru.newlevel.hordemap.presentatin.viewmodels.TrackTransferViewModel
@@ -41,7 +39,6 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
     private val trackTransferViewModel by viewModel<TrackTransferViewModel>()
     private val tracksViewModel by viewModel<TracksViewModel>()
     private val binding: FragmentTracksDialogBinding by viewBinding()
-    private lateinit var currentTrack: TrackItemDomainModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var trackAdapter: TracksAdapter
     private lateinit var alertDialog: AlertDialog
@@ -49,7 +46,7 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
     private val handler = Handler(Looper.getMainLooper())
 
     private fun initDefault() {
-        tracksViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
+      //  tracksViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
         tracksViewModel.getAllSessionsLocations()
     }
 
@@ -58,6 +55,11 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
         recyclerView = binding.rvTracks.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = trackAdapter
+            itemAnimator?.apply {
+                addDuration = 200
+                moveDuration = 250
+                changeDuration = 1
+            }
         }
     }
 
@@ -65,17 +67,9 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
         ibPopupMain.setOnClickListener {
             showMainPopupMenu(it)
         }
-        ibPopupCurrentItem.setOnClickListener {
-            showCurrentItemPopupMenu(it)
-        }
 
         btnGoBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
-
-        itemCurrentTrack.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-            trackTransferViewModel.setTrack(currentTrack.locations)
         }
 
         toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
@@ -96,24 +90,22 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
                 sortTracks(it)
             }
         }
-        tracksViewModel.trackItemCurrent.observe(viewLifecycleOwner) {
+
+        tracksViewModel.currentTrack.observe(viewLifecycleOwner){
+            Log.e("AAA", "currentTrack.observe " +  tracksViewModel.currentTrack.value.toString())
+            trackAdapter.setCurrentTrack(it)
+        }
+        tracksViewModel.trackItemAll.observe(viewLifecycleOwner) {
+            Log.e("AAA", "trackItemAll.observe " +  tracksViewModel.currentTrack.value.toString())
             if (it != null) {
-                currentTrack = it
-                tvTrackDate.text = it.date
-                tvTrackDuration.text = it.duration
-                tvTrackDistance.text = it.distance
+                val newlist = it.toMutableList()
+                tracksViewModel.currentTrack.value?.let { it1 -> newlist.add(0, it1) }
+                trackAdapter.setTracks(newlist as ArrayList)
+//                handler.postDelayed({
+//                    recyclerView.scrollToPosition(0)
+//                }, 500)
             }
         }
-
-        tracksViewModel.trackItemAll.observe(viewLifecycleOwner) { it ->
-            if (it != null) {
-                trackAdapter.setMessages(it)
-                handler.postDelayed({
-                    recyclerView.scrollToPosition(0)
-                }, 500)
-            }
-        }
-
 
         trackAdapter.attachCallback(
             object : TracksAdapter.TracksAdapterCallback {
@@ -123,7 +115,10 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
                 }
 
                 override fun onShowMenuClick(v: View, sessionId: String) {
-                    this@TracksDialogFragment.showItemMenu(v, sessionId)
+                    if (sessionId == UserEntityProvider.sessionId.toString())
+                        showCurrentItemPopupMenu(v)
+                    else
+                        showItemMenu(v, sessionId)
                 }
 
                 override fun onFavouriteClick(isFavourite: Boolean, sessionId: String) {
@@ -230,20 +225,22 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
             ?.setOnClickListener {
                 currentItemPopupMenu.dismiss()
                 tracksViewModel.deleteSessionLocations(sessionId = UserEntityProvider.sessionId.toString())
-                initDefault()
             }
         currentItemPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnSaveCurrentTrack)
             ?.setOnClickListener {
-                if (tracksViewModel.trackItemCurrent.value?.distanceMeters!! > 300) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        tracksViewModel.saveCurrentTrack(UserEntityProvider.sessionId.toString())
-                    }
-                } else
-                    Toast.makeText(
-                        requireContext(),
-                        "Минимальная дистанция должна быть больше 300 метров",
-                        Toast.LENGTH_LONG
-                    ).show()
+                val currentDistance = tracksViewModel.currentTrack.value?.distanceMeters
+                if (currentDistance != null) {
+                    if (currentDistance > 300) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            tracksViewModel.saveCurrentTrack(UserEntityProvider.sessionId.toString())
+                        }
+                    } else
+                        Toast.makeText(
+                            requireContext(),
+                            "Минимальная дистанция должна быть больше 300 метров",
+                            Toast.LENGTH_LONG
+                        ).show()
+                }
                 currentItemPopupMenu.dismiss()
             }
         currentItemPopupMenu.showAsDropDown(
@@ -322,5 +319,8 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
                 binding.root.findViewById<MaterialButton>(button.id).setTextColor(defaultColor)
             }
         }
+        handler.postDelayed({
+            recyclerView.scrollToPosition(0)
+        }, 500)
     }
 }

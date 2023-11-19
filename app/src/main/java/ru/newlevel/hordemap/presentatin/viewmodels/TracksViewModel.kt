@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.R
@@ -32,8 +31,7 @@ class TracksViewModel(
     private val deleteAllTracksUseCase: DeleteAllTracksUseCase
 ) : ViewModel() {
 
-    private val _trackItemCurrent = MutableLiveData<TrackItemDomainModel>()
-    val trackItemCurrent: LiveData<TrackItemDomainModel> = _trackItemCurrent
+   val currentTrack: LiveData<TrackItemDomainModel> = getSessionLocationsUseCase.getCurrentSessionLocationsLiveData(UserEntityProvider.sessionId.toString())
 
     private val _trackItemAll = MutableLiveData<List<TrackItemDomainModel>?>()
     val trackItemAll: LiveData<List<TrackItemDomainModel>?> = _trackItemAll
@@ -47,7 +45,6 @@ class TracksViewModel(
         }.join()
         deleteSessionLocations(sessionId)
         getAllSessionsLocations()
-        getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
     }
 
     suspend fun deleteAllTracks() {
@@ -55,16 +52,6 @@ class TracksViewModel(
             deleteAllTracksUseCase.execute()
         }.join()
         getAllSessionsLocations()
-    }
-
-    fun getCurrentSessionLocations(sessionId: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            _trackItemCurrent.postValue(
-                getSessionLocationsUseCase.getCurrentSessionLocations(
-                    sessionId
-                )
-            )
-        }
     }
 
     fun setCheckedSortButton(checkedId: Int) {
