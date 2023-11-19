@@ -31,7 +31,7 @@ val domainModule = module {
         SaveSettingsUseCase(settingsRepository = get())
     }
     factory<ResetSettingsUseCase> {
-         ResetSettingsUseCase(settingsRepository = get())
+        ResetSettingsUseCase(settingsRepository = get())
     }
     factory<DeleteMarkerUseCase> {
         DeleteMarkerUseCase(geoDataRepository = get())
@@ -41,7 +41,7 @@ val domainModule = module {
     }
 
     factory<LoadLastGameMapUseCase> {
-       LoadLastGameMapUseCase(gameMapRepository = get())
+        LoadLastGameMapUseCase(gameMapRepository = get())
     }
 
     factory<DownloadFileUseCase> {
@@ -85,5 +85,11 @@ val domainModule = module {
     }
     factory<SetFavouriteTrackForSessionUseCase> {
         SetFavouriteTrackForSessionUseCase(locationRepository = get())
+    }
+    factory<SaveCurrentTrackUseCase> {
+        SaveCurrentTrackUseCase(locationRepository = get())
+    }
+    factory<DeleteAllTracksUseCase> {
+        DeleteAllTracksUseCase(locationRepository = get())
     }
 }

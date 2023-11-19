@@ -14,7 +14,7 @@
     <string name="hide_path">Скрыть путь</string>
     <string name="save_path">Сохранить путь</string>
     <string name="load_path">Загрузить путь</string>
-    <string name="delete_all_path">Удалить все пути</string>
+    <string name="delete_all">Удалить всё</string>
     <string name="self_marker_change">Выбор своего маркера</string>
     <string name="time_to_send_data">Частота отправки данных</string>
     <string name="marker_size">Размер меток</string>
@@ -111,4 +111,5 @@
     <string name="tracks">Tracks</string>
     <string name="chat">Chat</string>
     <string name="horde_chat">Horde Chat</string>
+    <string name="clean">Очистить</string>
 </resources>

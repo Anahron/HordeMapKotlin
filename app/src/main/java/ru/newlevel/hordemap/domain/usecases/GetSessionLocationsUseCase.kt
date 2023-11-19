@@ -28,7 +28,11 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
             distanceToString(distance),
             distance.toInt(),
             locationsList
-        ) else null
+        ) else TrackItemDomainModel(
+            timestamp = System.currentTimeMillis(),
+            sessionId =  sessionId,
+            date = convertTimestampToDate(System.currentTimeMillis()),
+            locations =  locationsList)
     }
 
     suspend fun getAllSessionLocations(): List<TrackItemDomainModel> {
@@ -39,6 +43,10 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
             val locationEntity = locationRepository.getLocationsSortedByUpdateTime(sessionId)
             val locationsList = locationEntity.map {
                 LatLng(it.latitude, it.longitude)
+            }
+            if (locationEntity.isEmpty()) {
+                locationRepository.deleteLocationsBySessionId(sessionId = sessionId)
+                continue
             }
             if (locationEntity[0].sessionId != UserEntityProvider.sessionId.toString()) {
                 val distance = SphericalUtil.computeLength(locationsList)

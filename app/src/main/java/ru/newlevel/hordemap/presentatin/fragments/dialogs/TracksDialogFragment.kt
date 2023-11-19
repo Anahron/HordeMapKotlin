@@ -4,10 +4,13 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.PopupWindow
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
@@ -20,7 +23,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -42,14 +44,13 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
     private lateinit var currentTrack: TrackItemDomainModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var trackAdapter: TracksAdapter
-    private lateinit var backgroundView: View
     private lateinit var alertDialog: AlertDialog
     private var popupItemWindow: PopupWindow? = null
+    private val handler = Handler(Looper.getMainLooper())
 
     private fun initDefault() {
         tracksViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
-        if (tracksViewModel.trackItemAll.value == null)
-            tracksViewModel.getAllSessionsLocations()
+        tracksViewModel.getAllSessionsLocations()
     }
 
     private fun setupUIComponents() {
@@ -58,18 +59,14 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = trackAdapter
         }
-        backgroundView = View(requireContext())
-        backgroundView.setBackgroundColor(Color.BLACK)
-        backgroundView.layoutParams.apply {
-            ViewGroup.LayoutParams.MATCH_PARENT
-            ViewGroup.LayoutParams.MATCH_PARENT
-        }
-        backgroundView.alpha = 0.4F
     }
 
     private fun setupClickListeners() = with(binding) {
-        ibPopup.setOnClickListener {
-            showCurrentItemMenu(it)
+        ibPopupMain.setOnClickListener {
+            showMainPopupMenu(it)
+        }
+        ibPopupCurrentItem.setOnClickListener {
+            showCurrentItemPopupMenu(it)
         }
 
         btnGoBack.setOnClickListener {
@@ -95,9 +92,10 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
         setupClickListeners()
 
         tracksViewModel.trackSortState.observe(viewLifecycleOwner) {
-            sortTracks(it)
+            CoroutineScope(Dispatchers.IO).launch {
+                sortTracks(it)
+            }
         }
-
         tracksViewModel.trackItemCurrent.observe(viewLifecycleOwner) {
             if (it != null) {
                 currentTrack = it
@@ -107,61 +105,62 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
             }
         }
 
-        tracksViewModel.trackItemAll.observe(viewLifecycleOwner) {
+        tracksViewModel.trackItemAll.observe(viewLifecycleOwner) { it ->
             if (it != null) {
                 trackAdapter.setMessages(it)
-                recyclerView.scrollToPosition(0)
+                handler.postDelayed({
+                    recyclerView.scrollToPosition(0)
+                }, 500)
             }
         }
 
-        trackAdapter.attachCallback(object : TracksAdapter.TracksAdapterCallback {
-            override fun onTrackItemClick(listLatLng: List<LatLng>) {
-                trackTransferViewModel.setTrack(listLatLng)
-                requireActivity().onBackPressedDispatcher.onBackPressed()
-            }
 
-            override fun onShowMenuClick(v: View, sessionId: String) {
-                this@TracksDialogFragment.showItemMenu(v, sessionId)
-            }
-
-            override fun onFavouriteClick(isFavourite: Boolean, sessionId: String) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    setFavouriteItem(isFavourite, sessionId)
+        trackAdapter.attachCallback(
+            object : TracksAdapter.TracksAdapterCallback {
+                override fun onTrackItemClick(listLatLng: List<LatLng>) {
+                    trackTransferViewModel.setTrack(listLatLng)
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
-            }
-        })
+
+                override fun onShowMenuClick(v: View, sessionId: String) {
+                    this@TracksDialogFragment.showItemMenu(v, sessionId)
+                }
+
+                override fun onFavouriteClick(isFavourite: Boolean, sessionId: String) {
+                    setFavouriteItem(isFavourite, sessionId)
+
+                }
+            })
     }
 
-    private suspend fun setFavouriteItem(isFavourite: Boolean, sessionId: String) {
-        coroutineScope {
+
+    private fun setFavouriteItem(isFavourite: Boolean, sessionId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
             val job = launch {
-                tracksViewModel.setFavouriteTrackForSession(
-                    sessionId,
-                    isFavourite
-                )
+                tracksViewModel.setFavouriteTrackForSession(sessionId, isFavourite)
             }
             job.join()
-            withContext(Dispatchers.Main) {
-                tracksViewModel.trackSortState.value?.let { sortTracks(it) }
-            }
+            sortTracks(tracksViewModel.trackSortState.value ?: SortState.DATA_SORT)
         }
     }
 
-    private fun sortTracks(sortState: SortState) {
-        when (sortState) {
-            SortState.DISTANCE_SORT -> {
-                setupSegmentButtons(R.id.btnDistance)
-                tracksViewModel.sortByDistance()
-            }
+    private suspend fun sortTracks(sortState: SortState?) {
+        withContext(Dispatchers.Main) {
+            when (sortState) {
+                SortState.DISTANCE_SORT -> {
+                    tracksViewModel.sortByDistance()
+                    setupSegmentButtons(R.id.btnDistance)
+                }
 
-            SortState.DURATION_SORT -> {
-                setupSegmentButtons(R.id.btnDuration)
-                tracksViewModel.sortByDuration()
-            }
+                SortState.DURATION_SORT -> {
+                    tracksViewModel.sortByDuration()
+                    setupSegmentButtons(R.id.btnDuration)
+                }
 
-            else -> {
-                setupSegmentButtons(R.id.btnDate)
-                tracksViewModel.sortByDate()
+                else -> {
+                    tracksViewModel.sortByDate()
+                    setupSegmentButtons(R.id.btnDate)
+                }
             }
         }
     }
@@ -169,7 +168,7 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
     private fun setupItemMenu(viewGroup: ViewGroup) {
         popupItemWindow = PopupWindow(requireContext())
         popupItemWindow?.contentView = layoutInflater.inflate(
-            R.layout.list_popup_window_item,
+            R.layout.popup_track_item,
             viewGroup,
             false
         )
@@ -181,10 +180,79 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
         )
         popupItemWindow?.elevation = 18f
         popupItemWindow?.isFocusable = true
-        popupItemWindow?.setOnDismissListener {
-            hideBackgroundShadow()
-        }
     }
+
+    private fun showMainPopupMenu(itemDotsView: View) {
+        val mainPopupMenu = PopupWindow(requireContext())
+        mainPopupMenu.contentView = layoutInflater.inflate(
+            R.layout.popup_track_main,
+            itemDotsView.rootView as ViewGroup,
+            false
+        )
+        mainPopupMenu.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
+            )
+        )
+        mainPopupMenu.elevation = 18f
+        mainPopupMenu.isFocusable = true
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteAllTracks)
+            ?.setOnClickListener {
+                mainPopupMenu.dismiss()
+                CoroutineScope(Dispatchers.IO).launch {
+                    tracksViewModel.deleteAllTracks()
+                }
+            }
+        mainPopupMenu.showAsDropDown(
+            itemDotsView,
+            -convertDpToPx(requireContext(), 135),
+            -convertDpToPx(requireContext(), 40)
+        )
+    }
+
+    private fun showCurrentItemPopupMenu(itemDotsView: View) {
+        val currentItemPopupMenu = PopupWindow(requireContext())
+        currentItemPopupMenu.contentView = layoutInflater.inflate(
+            R.layout.popup_track_current,
+            itemDotsView.rootView as ViewGroup,
+            false
+        )
+        currentItemPopupMenu.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
+            )
+        )
+        currentItemPopupMenu.elevation = 18f
+        currentItemPopupMenu.isFocusable = true
+        currentItemPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnCleanCurrentTrack)
+            ?.setOnClickListener {
+                currentItemPopupMenu.dismiss()
+                tracksViewModel.deleteSessionLocations(sessionId = UserEntityProvider.sessionId.toString())
+                initDefault()
+            }
+        currentItemPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnSaveCurrentTrack)
+            ?.setOnClickListener {
+                if (tracksViewModel.trackItemCurrent.value?.distanceMeters!! > 300) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        tracksViewModel.saveCurrentTrack(UserEntityProvider.sessionId.toString())
+                    }
+                } else
+                    Toast.makeText(
+                        requireContext(),
+                        "Минимальная дистанция должна быть больше 300 метров",
+                        Toast.LENGTH_LONG
+                    ).show()
+                currentItemPopupMenu.dismiss()
+            }
+        currentItemPopupMenu.showAsDropDown(
+            itemDotsView,
+            -convertDpToPx(requireContext(), 104),
+            -convertDpToPx(requireContext(), 36)
+        )
+    }
+
 
     private fun showItemMenu(itemDotsView: View, sessionId: String) {
         if (popupItemWindow == null) {
@@ -211,59 +279,14 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
             -convertDpToPx(requireContext(), 104),
             -convertDpToPx(requireContext(), 36)
         )
-        showBackgroundShadow()
     }
-
-    private fun showCurrentItemMenu(itemDotsView: View) {
-        if (popupItemWindow == null) {
-            setupItemMenu(itemDotsView.rootView as ViewGroup)
-        }
-        popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnRename)
-            ?.setOnClickListener {
-                popupItemWindow?.dismiss()
-                showInputDialog(requireContext(), onConfirm = { enteredText ->
-                    tracksViewModel.renameTrackNameForSession(
-                        sessionId = UserEntityProvider.sessionId.toString(),
-                        newTrackName = enteredText
-                    )
-                })
-            }
-        popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnDelete)
-            ?.setOnClickListener {
-                popupItemWindow?.dismiss()
-                tracksViewModel.deleteSessionLocations(sessionId = UserEntityProvider.sessionId.toString())
-                tracksViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
-            }
-        popupItemWindow?.showAsDropDown(
-            itemDotsView,
-            -convertDpToPx(requireContext(), 104),
-            -convertDpToPx(requireContext(), 36)
-        )
-        showBackgroundShadow()
-    }
-
 
     private fun convertDpToPx(context: Context, dp: Int): Int {
         val density: Float = context.resources.displayMetrics.density
         return (dp.toFloat() * density).roundToInt()
     }
 
-    private fun showBackgroundShadow() {
-        val fadeInAnimation = ObjectAnimator.ofFloat(backgroundView, "alpha", 0f, 0.15f)
-        fadeInAnimation.duration = 200
-        fadeInAnimation.start()
-    }
-
-    private fun hideBackgroundShadow() {
-        val fadeOutAnimation =
-            ObjectAnimator.ofFloat(backgroundView, "alpha", backgroundView.alpha, 0f)
-        fadeOutAnimation.duration = 200
-        fadeOutAnimation.start()
-    }
-
     private fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
-        showBackgroundShadow()
-
         val customLayout = View.inflate(context, R.layout.rename_track_dialog, null)
         val editText = customLayout.findViewById<EditText>(R.id.description_edit_text)
         alertDialog = AlertDialog.Builder(context)
@@ -283,9 +306,6 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
             )
         )
         alertDialog.show()
-        alertDialog.setOnDismissListener {
-            hideBackgroundShadow()
-        }
     }
 
     private fun setupSegmentButtons(checkedId: Int) {

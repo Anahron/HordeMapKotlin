@@ -45,6 +45,9 @@ class LocationRepositoryImpl(private val context: Context, private val myLocatio
         return myLocationDao.getUniqueSessionIds()
     }
 
+    override fun saveCurrentTrackSession(sessionId: String, newSessionId: String) {
+        myLocationDao.updateSessionId(sessionId,newSessionId)
+    }
     override fun updateLocation(myLocationEntity: MyLocationEntity) {
         myLocationDao.updateLocation(myLocationEntity)
     }

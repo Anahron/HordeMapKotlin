@@ -20,6 +20,8 @@ interface MyLocationDao {
     @Query("UPDATE my_location_table SET favourite = :isFavourite WHERE sessionId = :sessionId")
     fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean)
 
+    @Query("UPDATE my_location_table SET sessionId = :newSessionId WHERE sessionId = :oldSessionId")
+    fun updateSessionId(oldSessionId: String, newSessionId: String)
     @Update
     fun updateLocation(myLocationEntity: MyLocationEntity)
 

@@ -3,14 +3,14 @@ package ru.newlevel.hordemap.domain.models
 import com.google.android.gms.maps.model.LatLng
 
 data class TrackItemDomainModel(
-    val timestamp: Long,
+    val timestamp: Long = 0,
     var title: String = "My track",
     val sessionId: String,
     val date: String,
-    val duration: String = "1m",
-    val durationLong: Long,
+    val duration: String = "0m",
+    val durationLong: Long = 0,
     val distance: String = "0m",
-    val distanceMeters: Int,
+    val distanceMeters: Int = 0,
     val locations: List<LatLng>,
     val isFavourite: Boolean = false
 )

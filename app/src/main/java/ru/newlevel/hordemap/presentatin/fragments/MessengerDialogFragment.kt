@@ -125,7 +125,6 @@ class MessengerDialogFragment : Fragment(R.layout.messages_dialog),
         val animator = ObjectAnimator.ofFloat(inputLayout, "translationY", 0f)
         animator.duration = 500
         animator.start()
-
     }
 
     private fun requestWriteExternalStoragePermission() {

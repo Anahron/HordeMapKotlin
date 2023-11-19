@@ -1,6 +1,7 @@
 package ru.newlevel.hordemap.presentatin.fragments
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -143,10 +144,28 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
                         listLatLng[0].longitude
                     ), 15F
                 )
-                googleMap.animateCamera(update)
+                googleMap.moveCamera(update)
+                showOrHideTrackBtn(true)
             } else {
                 mapViewModel.removeRoute()
+                showOrHideTrackBtn(false)
             }
+        }
+    }
+
+    private fun showOrHideTrackBtn(isNeedToShow: Boolean) {
+        if (isNeedToShow) {
+            val inputLayout = binding.ibTrackHide
+            inputLayout.translationX = 500f
+            val animator = ObjectAnimator.ofFloat(inputLayout, "translationX", 0f)
+            animator.duration = 500
+            animator.start()
+        } else {
+            val inputLayout = binding.ibTrackHide
+            inputLayout.translationX = 0f
+            val animator = ObjectAnimator.ofFloat(inputLayout, "translationX", 500f)
+            animator.duration = 500
+            animator.start()
         }
     }
 
@@ -219,8 +238,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
                 )
             )
         )
-        mapViewModel.distanceText.observe(viewLifecycleOwner)
-        {
+        mapViewModel.distanceText.observe(viewLifecycleOwner) {
             lifecycleScope.launch(Dispatchers.Main) {
                 binding.distanceTextView.visibility = View.VISIBLE
                 binding.distanceTextView.text = it
@@ -257,20 +275,16 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Выберите действие").setItems(
                 arrayOf<CharSequence>(
-                    "Построить маршрут", "Очистить маршрут", "Поставить маркер"
+                    "Построить маршрут", "Поставить маркер"
                 )
             ) { _: DialogInterface?, which: Int ->
                 when (which) {
                     0 -> {
+                        if (!mapViewModel.isRoutePolylineNotNull())
+                            showOrHideTrackBtn(true)
                         buildRoute(latLng)
                     }
-
                     1 -> {
-                        mapViewModel.removeRoute()
-                        binding.distanceTextView.visibility = View.GONE
-                    }
-
-                    2 -> {
                         createStaticMarkerDialog(latLng)
                     }
                 }
@@ -310,6 +324,12 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
                 it.setBackgroundResource(R.drawable.img_btn_map_type_hybrid)
             }
         }
+        binding.ibTrackHide.setOnClickListener {
+            mapViewModel.removeRoute()
+            tracksTransferViewModel.clearTrack()
+            showOrHideTrackBtn(false)
+        }
+
         binding.ibMarkers.setOnClickListener {
             mapViewModel.showOrHideMarkers()
         }

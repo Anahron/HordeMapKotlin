@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -26,7 +27,6 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
         parent: ViewGroup,
         viewType: Int
     ): TracksViewHolder {
-
         return TracksViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.item_track, parent, false),
             mCallback
@@ -52,7 +52,7 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
         holder.bind(tracksData[position])
     }
 
-    class TracksViewHolder(view: View, private val callback: TracksAdapterCallback?) :
+    class TracksViewHolder(view: View, private var callback: TracksAdapterCallback?) :
         RecyclerView.ViewHolder(view) {
 
         private val binding = ItemTrackBinding.bind(view)

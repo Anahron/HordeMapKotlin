@@ -108,6 +108,18 @@
                 android:background="@drawable/img_map_loadmap"
                 android:contentDescription="@string/todo" />
 
+            <ImageButton
+                android:id="@+id/ibTrackHide"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
+                android:layout_gravity="end|top"
+                android:translationX="55dp"
+                android:layout_marginTop="355dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/img_track_hide"
+                android:contentDescription="@string/todo" />
+
+
             <ImageView
                 android:visibility="gone"
                 android:id="@+id/imgCompass"

@@ -80,7 +80,9 @@ class MapViewModel(
     fun setRoutePolyline(polyline: Polyline) {
         routePolyline = polyline
     }
-
+    fun isRoutePolylineNotNull(): Boolean{
+        return routePolyline != null
+    }
     fun createRoute(currentLatLng: LatLng, destination: LatLng, context: Context): PolylineOptions {
         removeRoute()
         setDistanceText(currentLatLng, destination)

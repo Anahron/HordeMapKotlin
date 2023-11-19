@@ -5,13 +5,18 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.default
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
+import ru.newlevel.hordemap.domain.usecases.DeleteAllTracksUseCase
 import ru.newlevel.hordemap.domain.usecases.DeleteSessionLocationUseCase
 import ru.newlevel.hordemap.domain.usecases.GetSessionLocationsUseCase
 import ru.newlevel.hordemap.domain.usecases.RenameTrackNameForSessionUseCase
+import ru.newlevel.hordemap.domain.usecases.SaveCurrentTrackUseCase
 import ru.newlevel.hordemap.domain.usecases.SetFavouriteTrackForSessionUseCase
 
 enum class SortState {
@@ -22,7 +27,9 @@ class TracksViewModel(
     private val getSessionLocationsUseCase: GetSessionLocationsUseCase,
     private val deleteSessionLocationUseCase: DeleteSessionLocationUseCase,
     private val renameTrackNameForSessionUseCase: RenameTrackNameForSessionUseCase,
-    private val setFavouriteTrackForSessionUseCase: SetFavouriteTrackForSessionUseCase
+    private val setFavouriteTrackForSessionUseCase: SetFavouriteTrackForSessionUseCase,
+    private val saveCurrentTrackUseCase: SaveCurrentTrackUseCase,
+    private val deleteAllTracksUseCase: DeleteAllTracksUseCase
 ) : ViewModel() {
 
     private val _trackItemCurrent = MutableLiveData<TrackItemDomainModel>()
@@ -33,6 +40,22 @@ class TracksViewModel(
 
     private val _trackSortState = MutableLiveData<SortState>().default(SortState.DATA_SORT)
     val trackSortState: LiveData<SortState> = _trackSortState
+
+    suspend fun saveCurrentTrack(sessionId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            saveCurrentTrackUseCase.execute(sessionId)
+        }.join()
+        deleteSessionLocations(sessionId)
+        getAllSessionsLocations()
+        getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
+    }
+
+    suspend fun deleteAllTracks() {
+        CoroutineScope(Dispatchers.IO).launch {
+            deleteAllTracksUseCase.execute()
+        }.join()
+        getAllSessionsLocations()
+    }
 
     fun getCurrentSessionLocations(sessionId: String) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -87,28 +110,34 @@ class TracksViewModel(
 
     fun getAllSessionsLocations() {
         CoroutineScope(Dispatchers.IO).launch {
-            _trackItemAll.postValue(getSessionLocationsUseCase.getAllSessionLocations())
+            val allSessionLocationsList = getSessionLocationsUseCase.getAllSessionLocations()
+            withContext(Dispatchers.Main) {
+                _trackItemAll.value = allSessionLocationsList
+            }
         }
     }
 
     fun sortByDate() {
-        CoroutineScope(Dispatchers.IO).launch {
-            _trackItemAll.postValue(trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
-                .thenByDescending { it.timestamp }))
+        CoroutineScope(Dispatchers.Main).launch {
+            _trackItemAll.value =
+                trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                    .thenByDescending { it.timestamp })
         }
     }
 
     fun sortByDistance() {
-        CoroutineScope(Dispatchers.IO).launch {
-            _trackItemAll.postValue(trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
-                .thenByDescending { it.distanceMeters }))
+        CoroutineScope(Dispatchers.Main).launch {
+            _trackItemAll.value =
+                trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                    .thenByDescending { it.distanceMeters })
         }
     }
 
     fun sortByDuration() {
-        CoroutineScope(Dispatchers.IO).launch {
-            _trackItemAll.postValue(trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
-                .thenByDescending { it.durationLong }))
+        CoroutineScope(Dispatchers.Main).launch {
+            _trackItemAll.value =
+                trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
+                    .thenByDescending { it.durationLong })
         }
     }
 }
