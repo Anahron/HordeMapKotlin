@@ -17,6 +17,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.TextView
@@ -117,10 +118,14 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        dialog?.window?.setLayout(
+        val dialogs = this
+        dialogs.setStyle(STYLE_NORMAL, R.style.DialogStyle)
+     //   requireDialog().window?.attributes?.windowAnimations = R.style.DialogAnimation
+        requireDialog().window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        requireDialog().window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
+        requireDialog().window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_PANEL)
         requestWriteExternalStoragePermission()
         setupRecyclerView()
         setupUIComponents()
@@ -361,14 +366,15 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             animator5.start()
 
             handler.postDelayed({
-                dialog?.dismiss()
+                requireDialog().dismiss()
             }, 450)
         }
-        dialog?.setOnDismissListener {
+        requireDialog().setOnDismissListener {
             requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView).selectedItemId =
                 R.id.mapFragment
         }
     }
+
     private fun setupProgressBar() {
         binding.progressText.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.INVISIBLE
