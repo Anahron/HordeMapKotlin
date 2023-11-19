@@ -11,9 +11,9 @@
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_marginTop="8dp"
             android:orientation="horizontal"
             android:paddingStart="12dp"
+            android:background="@color/main_green_dark"
             android:paddingEnd="60dp">
 
             <ImageButton
@@ -34,7 +34,7 @@
                 android:fontFamily="@font/inter_semibold"
                 android:gravity="center_horizontal"
                 android:text="@string/my_tracks"
-                android:textColor="@color/slate_800"
+                android:textColor="@color/main_green_dialog"
                 android:textSize="20sp" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>

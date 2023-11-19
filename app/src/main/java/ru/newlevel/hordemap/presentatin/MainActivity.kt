@@ -1,17 +1,18 @@
 package ru.newlevel.hordemap.presentatin
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.ViewGroup
+import android.view.animation.AccelerateInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -19,6 +20,7 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.presentatin.fragments.MapFragment
+import ru.newlevel.hordemap.presentatin.fragments.MessengerDialogFragment
 import ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment
 import ru.newlevel.hordemap.presentatin.fragments.dialogs.TracksDialogFragment
 import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
@@ -29,11 +31,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     PermissionRequestFragment.Callbacks {
 
     private val loginViewModel by viewModel<SettingsViewModel>()
-    private lateinit var mainFragment: Fragment
-    private lateinit var tracksDialogFragment: TracksDialogFragment
+    private var mainFragment: Fragment = MapFragment()
+    private var tracksDialogFragment: TracksDialogFragment = TracksDialogFragment()
+    private var messengerDialogFragment: MessengerDialogFragment = MessengerDialogFragment()
     private lateinit var currentFragment: Fragment
+    private val handler = Handler(Looper.getMainLooper())
     private lateinit var navView: BottomNavigationView
-    private lateinit var navOptions: NavOptions
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,28 +51,14 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (!applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) requestPermission()
         else loginCheck()
 
-        navOptions = NavOptions.Builder()
-            .setEnterAnim(R.anim.slide_in_left)
-            .setExitAnim(R.anim.slide_out_right)
-            .setPopEnterAnim(R.anim.slide_in_right)
-            .setPopExitAnim(R.anim.slide_out_left)
-            .build()
-
-        mainFragment = MapFragment()
         currentFragment = mainFragment
-        tracksDialogFragment = TracksDialogFragment()
         navView = findViewById(R.id.bottomNavigationView)
         navView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.messengerFragment -> {
-                    if (tracksDialogFragment.isAdded)
-                        removeTrackDialog()
-                    findNavController(R.id.container).navigate(
-                        R.id.messengerFragment,
-                        null,
-                        navOptions
-                    )
-                    false
+                    showFragment(messengerDialogFragment)
+                    hideNavView()
+                    true
                 }
 
                 R.id.tracksFragment -> {
@@ -85,41 +74,67 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         }
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (currentFragment == tracksDialogFragment)
+                if (currentFragment != mainFragment)
                     navView.selectedItemId = R.id.mapFragment
             }
         }
         this.onBackPressedDispatcher.addCallback(this, callback)
     }
 
-    private val handler = Handler(Looper.getMainLooper())
+    private fun hideNavView() {
+        navView.translationY = 0f
+        val animator = ObjectAnimator.ofFloat(navView, "translationY", 500f)
+        animator.duration = 500
+        animator.interpolator = AccelerateInterpolator()
+        animator.start()
+    }
 
-    private fun removeTrackDialog() {
-        supportFragmentManager.clearBackStack("Track")
-        supportFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.slide_in_left,
-                R.anim.slide_out_right,
-                R.anim.slide_in_right,
-                R.anim.slide_out_left
-            ).hide(tracksDialogFragment).commit()
-        handler.postDelayed({
-            supportFragmentManager.beginTransaction().remove(tracksDialogFragment)
-                .commit()
-        }, 300)
+    private fun showNavView() {
+        navView.translationY = 500f
+        val animator = ObjectAnimator.ofFloat(navView, "translationY", 0f)
+        animator.duration = 500
+        animator.start()
+    }
+
+    private fun removeFragment(fragment: Fragment) {
+        if (fragment != mainFragment) {
+            supportFragmentManager.clearBackStack("${fragment.id}")
+            supportFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.slide_in_bottom,
+                    R.anim.slide_out_bottom,
+                    R.anim.slide_in_bottom,
+                    R.anim.slide_out_bottom,
+                ).hide(fragment).commit()
+            handler.postDelayed({
+                supportFragmentManager.beginTransaction().remove(fragment)
+                    .commit()
+            }, 300)
+        }
+    }
+
+    private fun addAndShowFragment(fragment: Fragment) {
+        if (fragment != mainFragment || !mainFragment.isAdded) {
+            supportFragmentManager.beginTransaction().setCustomAnimations(
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+            ).add(R.id.container, fragment).addToBackStack("${fragment.id}").show(fragment).commit()
+        }
     }
 
     private fun showFragment(fragment: Fragment) {
-        if (fragment == mainFragment && mainFragment != currentFragment) {
-            currentFragment = fragment
-            removeTrackDialog()
-        } else if (fragment == tracksDialogFragment && currentFragment != tracksDialogFragment) {
-            supportFragmentManager.beginTransaction().setCustomAnimations(
-                R.anim.slide_in_left,
-                R.anim.slide_out_right,
-                R.anim.slide_in_right,
-                R.anim.slide_out_left
-            ).add(R.id.container, tracksDialogFragment).addToBackStack("Track").show(tracksDialogFragment).commit()
+        if (navView.translationY != 0F)
+            showNavView()
+        if (currentFragment != fragment) {
+            if (currentFragment == tracksDialogFragment)
+                handler.postDelayed({
+                    addAndShowFragment(fragment)
+                }, 150)
+            else
+                addAndShowFragment(fragment)
+            removeFragment(currentFragment)
             currentFragment = fragment
         }
     }
@@ -130,7 +145,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         loginViewModel.checkLogin()
         loginViewModel.loginResultData.observe(this) {
             if (it.name.isNotEmpty()) {
-                findNavController(R.id.container).navigate(R.id.mapFragment)
+                addAndShowFragment(mainFragment)
                 loginViewModel.loginResultData.removeObservers(this)
                 navView.visibility = ViewGroup.VISIBLE
                 Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()

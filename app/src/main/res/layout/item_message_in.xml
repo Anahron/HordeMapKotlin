@@ -11,7 +11,7 @@
             android:layout_height="wrap_content"
             android:minWidth="165dp"
             android:layout_margin="4dp"
-            android:background="@drawable/rounded_background_white"
+            android:background="@drawable/rounded_background_white_item"
             android:orientation="vertical"
             android:paddingTop="3dp">
 
@@ -27,6 +27,7 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="10dp"
                     android:layout_weight="1"
+                    android:fontFamily="@font/inter_semibold"
                     android:textColor="@color/slate_800"
                     android:textSize="16sp"
                     tools:text="Username" />

@@ -21,7 +21,7 @@
             android:id="@+id/action_mapFragment_to_permissionRequestFragment"
             app:destination="@id/permissionRequestFragment" />
     </fragment>
-    <dialog
+    <fragment
         android:id="@+id/messengerFragment"
         android:name="ru.newlevel.hordemap.presentatin.fragments.MessengerDialogFragment"
         android:label="MessengerDialogFragment" >
@@ -31,7 +31,7 @@
         <action
             android:id="@+id/action_messengerFragment_to_tracksFragment"
             app:destination="@id/tracksFragment" />
-    </dialog>
+    </fragment>
     <fragment
         android:id="@+id/tracksFragment"
         android:name="ru.newlevel.hordemap.presentatin.fragments.dialogs.TracksDialogFragment"

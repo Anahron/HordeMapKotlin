@@ -6,28 +6,23 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.OpenableColumns
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.View.GONE
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
+import android.widget.TextView.VISIBLE
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -36,7 +31,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jsibbold.zoomage.ZoomageView
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +51,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
+class MessengerDialogFragment : Fragment(R.layout.messages_dialog),
     MessagesAdapter.OnButtonSaveClickListener,
     MessagesAdapter.OnImageClickListener,
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
@@ -118,42 +112,20 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val dialogs = this
-        dialogs.setStyle(STYLE_NORMAL, R.style.DialogStyle)
-     //   requireDialog().window?.attributes?.windowAnimations = R.style.DialogAnimation
-        requireDialog().window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        requireDialog().window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        requireDialog().window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_PANEL)
         requestWriteExternalStoragePermission()
         setupRecyclerView()
         setupUIComponents()
         setupMessagesUpdates()
+        showAnimation()
+    }
 
-        val yourLinearLayout = binding.inputLayout
-        val closeButton = binding.closeMassager
-        val downButton = binding.goDown
-        val root = binding.root
-
-        closeButton.translationY = -1000f
-        downButton.translationY = -1000f
-        yourLinearLayout.translationY = 500f
-        root.translationX = -resources.displayMetrics.widthPixels.toFloat()
-        val animator5 = ObjectAnimator.ofFloat(root, "translationX", 0f)
-        animator5.duration = 350
-        animator5.start()
-
-
-        val animator = ObjectAnimator.ofFloat(yourLinearLayout, "translationY", 0f)
-        animator.duration = 700
+    private fun showAnimation() {
+        val inputLayout = binding.inputLayout
+        inputLayout.translationY = 500f
+        val animator = ObjectAnimator.ofFloat(inputLayout, "translationY", 0f)
+        animator.duration = 500
         animator.start()
-        val animator2 = ObjectAnimator.ofFloat(closeButton, "translationY", 0f)
-        animator2.duration = 700
-        animator2.start()
-        val animator3 = ObjectAnimator.ofFloat(downButton, "translationY", 0f)
-        animator3.duration = 700
-        animator3.start()
+
     }
 
     private fun requestWriteExternalStoragePermission() {
@@ -170,14 +142,11 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     }
 
     private fun handleNewMessages(messages: List<MessageDataModel>) {
-        Log.e("AAA", "  messengerViewModel.messagesLiveData.observe получил данные" + this)
         if (messageAdapter.itemCount < messages.size) {
             val onDown =
                 recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
             messageAdapter.setMessages(messages as ArrayList<MessageDataModel>)
-            if (onDown) {
-                binding.newMessage.visibility = View.VISIBLE
-            } else {
+            if (!onDown) {
                 recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
             }
         }
@@ -186,13 +155,13 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
     private fun handleProgressUpdate(progress: Int) {
         if (progress < 1000) {
             isDownloadingState = true
-            binding.progressBar.visibility = View.VISIBLE
+            binding.progressBar.visibility = VISIBLE
             binding.progressBar.setProgress(progress, true)
-            binding.progressText.visibility = View.VISIBLE
+            binding.progressText.visibility = VISIBLE
         } else {
             isDownloadingState = false
-            binding.progressBar.visibility = View.GONE
-            binding.progressText.visibility = View.GONE
+            binding.progressBar.visibility = GONE
+            binding.progressText.visibility = GONE
         }
     }
 
@@ -200,12 +169,13 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                delay(350)
+                if (messageAdapter.itemCount < 1)
+                    delay(250)
                 messengerViewModel.startMessageUpdate()
-                messengerViewModel.messagesLiveData.observe(this@MessengerDialogFragment) { messages ->
+                messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
                     handleNewMessages(messages)
                 }
-                messengerViewModel.progressLiveData.observe(this@MessengerDialogFragment) { progress ->
+                messengerViewModel.progressLiveData.observe(viewLifecycleOwner) { progress ->
                     handleProgressUpdate(progress)
                 }
             }
@@ -219,7 +189,6 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         setupUploadFileButton()
         setupOpenCameraButton()
         setupCloseMessengerButton()
-        setupNewMessageAnnounces()
         setupProgressBar()
         setupScrollDownButton()
     }
@@ -295,14 +264,15 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
             setHasFixedSize(false)
             setOnScrollChangeListener { _, _, _, _, _ ->
                 if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
-                    binding.newMessage.visibility = View.GONE
-                }
+                    binding.btnGoDown.visibility = GONE
+                }else
+                    binding.btnGoDown.visibility = VISIBLE
             }
         }
     }
 
     private fun setupScrollDownButton() {
-        binding.goDown.setOnClickListener {
+        binding.btnGoDown.setOnClickListener {
             recyclerView.smoothScrollToPosition(
                 messageAdapter.itemCount.minus(1)
             )
@@ -356,35 +326,15 @@ class MessengerDialogFragment : DialogFragment(R.layout.messages_dialog),
         }
     }
 
-    private val handler = Handler(Looper.getMainLooper())
     private fun setupCloseMessengerButton() {
-        binding.closeMassager.setOnClickListener {
-            val root = binding.root
-            root.translationX = 0F
-            val animator5 = ObjectAnimator.ofFloat(root, "translationX",  resources.displayMetrics.widthPixels.toFloat())
-            animator5.duration = 450
-            animator5.start()
-
-            handler.postDelayed({
-                requireDialog().dismiss()
-            }, 450)
-        }
-        requireDialog().setOnDismissListener {
-            requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView).selectedItemId =
-                R.id.mapFragment
+        binding.btnGoBack.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
     }
 
     private fun setupProgressBar() {
         binding.progressText.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.INVISIBLE
-    }
-
-    private fun setupNewMessageAnnounces() {
-        binding.newMessage.setOnClickListener {
-            recyclerView.smoothScrollToPosition(messageAdapter.itemCount - 1)
-            binding.newMessage.visibility = View.GONE
-        }
     }
 
     override fun onButtonSaveClick(uri: String, fileName: String) {
