@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.viewmodels
+package ru.newlevel.hordemap.presentation.permissions
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -19,7 +19,9 @@ class PermissionViewModel(
     private val saveSettingsUseCase: SaveSettingsUseCase
 ) : ViewModel() {
 
-    private val _state = MutableLiveData<PermissionState>().apply { value = PermissionState.InfoState }
+    private val _state = MutableLiveData<PermissionState>().apply { value =
+        PermissionState.InfoState
+    }
     val state: LiveData<PermissionState> get() = _state
 
     fun checkUserName(): Boolean {

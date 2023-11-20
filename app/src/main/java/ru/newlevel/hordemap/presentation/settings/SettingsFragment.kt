@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.fragments.dialogs
+package ru.newlevel.hordemap.presentation.settings
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -21,8 +21,7 @@ import ru.newlevel.hordemap.app.mapUserDataToDomain
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentSettingsBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
+import ru.newlevel.hordemap.presentation.map.MapViewModel
 import kotlin.properties.Delegates
 
 

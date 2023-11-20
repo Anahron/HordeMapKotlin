@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mapFragment"
-        android:name="ru.newlevel.hordemap.presentatin.fragments.MapFragment"
+        android:name="ru.newlevel.hordemap.presentation.map.MapFragment"
         android:label="MapFragment"
         >
         <action
@@ -23,7 +23,7 @@
     </fragment>
     <fragment
         android:id="@+id/messengerFragment"
-        android:name="ru.newlevel.hordemap.presentatin.fragments.MessengerDialogFragment"
+        android:name="ru.newlevel.hordemap.presentation.messenger.MessengerFragment"
         android:label="MessengerDialogFragment" >
         <action
             android:id="@+id/action_messengerFragment_to_mapFragment"
@@ -34,7 +34,7 @@
     </fragment>
     <fragment
         android:id="@+id/tracksFragment"
-        android:name="ru.newlevel.hordemap.presentatin.fragments.dialogs.TracksDialogFragment"
+        android:name="ru.newlevel.hordemap.presentation.tracks.TracksFragment"
         android:label="TracksFragment" >
         <action
             android:id="@+id/action_tracksFragment_to_mapFragment"
@@ -45,7 +45,7 @@
     </fragment>
     <fragment
         android:id="@+id/permissionRequestFragment"
-        android:name="ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment"
+        android:name="ru.newlevel.hordemap.presentation.permissions.PermissionRequestFragment"
         android:label="PermissionRequestFragment" >
         <action
             android:id="@+id/action_permissionRequestFragment_to_mapFragment"
@@ -53,7 +53,7 @@
     </fragment>
     <fragment
         android:id="@+id/splashSreenFragment"
-        android:name="ru.newlevel.hordemap.splashSreenFragment"
+        android:name="ru.newlevel.hordemap.presentation.splashSreenFragment"
         android:label="fragment_splash_sreen"
         tools:layout="@layout/fragment_splash_sreen" >
         <action

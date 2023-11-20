@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.viewmodels
+package ru.newlevel.hordemap.presentation.messenger
 
 import android.content.Context
 import android.net.Uri

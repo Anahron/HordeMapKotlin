@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap
+package ru.newlevel.hordemap.presentation
 
 import androidx.fragment.app.Fragment
 

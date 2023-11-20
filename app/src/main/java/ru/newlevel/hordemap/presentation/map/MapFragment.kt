@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.fragments
+package ru.newlevel.hordemap.presentation.map
 
 import android.Manifest
 import android.animation.ObjectAnimator
@@ -32,14 +32,9 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.MyAlarmReceiver
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
-import ru.newlevel.hordemap.presentatin.MainActivity
-import ru.newlevel.hordemap.presentatin.fragments.dialogs.LoadMapDialogFragment
-import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialog
-import ru.newlevel.hordemap.presentatin.fragments.dialogs.OnMapClickInfoDialogResult
-import ru.newlevel.hordemap.presentatin.fragments.dialogs.SettingsFragment
-import ru.newlevel.hordemap.presentatin.viewmodels.MapState
-import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.TrackTransferViewModel
+import ru.newlevel.hordemap.presentation.MainActivity
+import ru.newlevel.hordemap.presentation.settings.SettingsFragment
+import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
 import kotlin.math.roundToInt
 
 class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {

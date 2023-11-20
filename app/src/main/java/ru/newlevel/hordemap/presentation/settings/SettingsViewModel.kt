@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.viewmodels
+package ru.newlevel.hordemap.presentation.settings
 
 import android.util.Log
 import androidx.lifecycle.LiveData

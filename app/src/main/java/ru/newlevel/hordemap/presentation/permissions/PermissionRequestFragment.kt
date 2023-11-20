@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.fragments
+package ru.newlevel.hordemap.presentation.permissions
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -24,8 +24,6 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.databinding.FragmentPermissionRequestBinding
-import ru.newlevel.hordemap.presentatin.viewmodels.PermissionState
-import ru.newlevel.hordemap.presentatin.viewmodels.PermissionViewModel
 
 
 class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request) {

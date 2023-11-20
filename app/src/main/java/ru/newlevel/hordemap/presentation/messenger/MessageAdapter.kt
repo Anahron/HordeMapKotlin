@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.adapters
+package ru.newlevel.hordemap.presentation.messenger
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

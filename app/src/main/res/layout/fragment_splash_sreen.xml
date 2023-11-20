@@ -6,4 +6,4 @@
     android:layout_height="match_parent"
     android:background="@color/main_green"
     android:theme="@style/ThemeOverlay.HordeMap.FullscreenContainer"
-    tools:context=".splashSreenFragment"/>
+    tools:context=".presentation.splashSreenFragment"/>

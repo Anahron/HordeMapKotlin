@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.viewmodels
+package ru.newlevel.hordemap.presentation.tracks
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

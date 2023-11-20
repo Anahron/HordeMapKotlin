@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.fragments.dialogs
+package ru.newlevel.hordemap.presentation.tracks
 
 import android.content.Context
 import android.os.Bundle
@@ -28,13 +28,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentTracksDialogBinding
-import ru.newlevel.hordemap.presentatin.adapters.TracksAdapter
-import ru.newlevel.hordemap.presentatin.viewmodels.SortState
-import ru.newlevel.hordemap.presentatin.viewmodels.TrackTransferViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.TracksViewModel
 import kotlin.math.roundToInt
 
-class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
+class TracksFragment : Fragment(R.layout.fragment_tracks_dialog) {
 
     private val trackTransferViewModel by viewModel<TrackTransferViewModel>()
     private val tracksViewModel by viewModel<TracksViewModel>()

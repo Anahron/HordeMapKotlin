@@ -2,12 +2,12 @@ package ru.newlevel.hordemap.di
 
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
-import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.MessengerViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.PermissionViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.TrackTransferViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.TracksViewModel
+import ru.newlevel.hordemap.presentation.map.MapViewModel
+import ru.newlevel.hordemap.presentation.messenger.MessengerViewModel
+import ru.newlevel.hordemap.presentation.permissions.PermissionViewModel
+import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
+import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
+import ru.newlevel.hordemap.presentation.tracks.TracksViewModel
 
 
 val presentationModule = module {

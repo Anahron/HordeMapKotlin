@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.fragments.dialogs
+package ru.newlevel.hordemap.presentation.map
 
 import android.os.Bundle
 import android.view.View
@@ -13,8 +13,7 @@ import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.LoadMapDialogBinding
-import ru.newlevel.hordemap.presentatin.viewmodels.MapViewModel
-import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
+import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
 
 class LoadMapDialogFragment(
     private val mapViewModel: MapViewModel,

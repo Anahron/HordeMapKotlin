@@ -58,7 +58,7 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity
-            android:name=".presentatin.MainActivity"
+            android:name=".presentation.MainActivity"
             android:theme="@style/Theme.HordeMap"
             android:exported="true"
             android:label="Horde Map"

@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin
+package ru.newlevel.hordemap.presentation
 
 import android.Manifest
 import android.animation.ObjectAnimator
@@ -19,11 +19,11 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.presentatin.fragments.MapFragment
-import ru.newlevel.hordemap.presentatin.fragments.MessengerDialogFragment
-import ru.newlevel.hordemap.presentatin.fragments.PermissionRequestFragment
-import ru.newlevel.hordemap.presentatin.fragments.dialogs.TracksDialogFragment
-import ru.newlevel.hordemap.presentatin.viewmodels.SettingsViewModel
+import ru.newlevel.hordemap.presentation.map.MapFragment
+import ru.newlevel.hordemap.presentation.messenger.MessengerFragment
+import ru.newlevel.hordemap.presentation.permissions.PermissionRequestFragment
+import ru.newlevel.hordemap.presentation.tracks.TracksFragment
+import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
 
 const val MY_PERMISSIONS_REQUEST_SENSOR = 506
 
@@ -32,8 +32,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     private val loginViewModel by viewModel<SettingsViewModel>()
     private var mainFragment: Fragment = MapFragment()
-    private var tracksDialogFragment: TracksDialogFragment = TracksDialogFragment()
-    private var messengerDialogFragment: MessengerDialogFragment = MessengerDialogFragment()
+    private var tracksFragment: TracksFragment = TracksFragment()
+    private var messengerFragment: MessengerFragment = MessengerFragment()
     private lateinit var currentFragment: Fragment
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var navView: BottomNavigationView
@@ -56,13 +56,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         navView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.messengerFragment -> {
-                    showFragment(messengerDialogFragment)
+                    showFragment(messengerFragment)
                     hideNavView()
                     true
                 }
 
                 R.id.tracksFragment -> {
-                    showFragment(tracksDialogFragment)
+                    showFragment(tracksFragment)
                     true
                 }
 
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         if (navView.translationY != 0F)
             showNavView()
         if (currentFragment != fragment) {
-            if (currentFragment == tracksDialogFragment)
+            if (currentFragment == tracksFragment)
                 handler.postDelayed({
                     addAndShowFragment(fragment)
                 }, 150)

@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentatin.fragments
+package ru.newlevel.hordemap.presentation.messenger
 
 import android.Manifest
 import android.animation.ObjectAnimator
@@ -42,16 +42,13 @@ import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.makeShortToast
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.MessagesDialogBinding
-import ru.newlevel.hordemap.presentatin.adapters.MessagesAdapter
-import ru.newlevel.hordemap.presentatin.fragments.dialogs.SendFileDescriptionDialogFragment
-import ru.newlevel.hordemap.presentatin.viewmodels.MessengerViewModel
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MessengerDialogFragment : Fragment(R.layout.messages_dialog),
+class MessengerFragment : Fragment(R.layout.messages_dialog),
     MessagesAdapter.OnButtonSaveClickListener,
     MessagesAdapter.OnImageClickListener,
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
