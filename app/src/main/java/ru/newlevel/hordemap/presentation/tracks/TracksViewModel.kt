@@ -11,12 +11,12 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.default
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
-import ru.newlevel.hordemap.domain.usecases.DeleteAllTracksUseCase
-import ru.newlevel.hordemap.domain.usecases.DeleteSessionLocationUseCase
-import ru.newlevel.hordemap.domain.usecases.GetSessionLocationsUseCase
-import ru.newlevel.hordemap.domain.usecases.RenameTrackNameForSessionUseCase
-import ru.newlevel.hordemap.domain.usecases.SaveCurrentTrackUseCase
-import ru.newlevel.hordemap.domain.usecases.SetFavouriteTrackForSessionUseCase
+import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteAllTracksUseCase
+import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteSessionLocationUseCase
+import ru.newlevel.hordemap.domain.usecases.tracksCases.GetSessionLocationsUseCase
+import ru.newlevel.hordemap.domain.usecases.tracksCases.RenameTrackNameForSessionUseCase
+import ru.newlevel.hordemap.domain.usecases.tracksCases.SaveCurrentTrackUseCase
+import ru.newlevel.hordemap.domain.usecases.tracksCases.SetFavouriteTrackForSessionUseCase
 
 enum class SortState {
     DATA_SORT, DURATION_SORT, DISTANCE_SORT

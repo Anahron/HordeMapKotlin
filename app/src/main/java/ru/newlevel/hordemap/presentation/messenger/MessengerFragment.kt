@@ -189,11 +189,16 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         setupCloseMessengerButton()
         setupProgressBar()
         setupScrollDownButton()
+        setupBottomSheetBehavior()
+        setupBottomBehaviorListeners()
+    }
+
+    private fun setupBottomSheetBehavior() {
         viewBehavior = binding.root.findViewById(R.id.bottom_sheet)
         mBottomSheetBehavior = BottomSheetBehavior.from(viewBehavior)
         mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         viewBehavior.setOnClickListener {
-            if ( mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+            if (mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
                 mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             }
         }
@@ -243,22 +248,40 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         messageAdapter = MessagesAdapter(this, this)
         messageLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = true
-            initialPrefetchItemCount = 30
+            initialPrefetchItemCount = 15
         }
         recyclerView = binding.recyclerViewMessages.apply {
             layoutManager = messageLayoutManager
             adapter = messageAdapter
             setHasFixedSize(false)
+            isNestedScrollingEnabled = false
             setOnScrollChangeListener { _, _, _, _, _ ->
                 if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
-                    binding.btnGoDown.visibility = GONE
-                } else
+                    showOrHideDownBtn(false)
+                } else if (binding.btnGoDown.translationX == 500F){
+                    showOrHideDownBtn(true)
                     binding.btnGoDown.visibility = VISIBLE
+                }
             }
         }
     }
 
+    private fun showOrHideDownBtn(isNeedToShow: Boolean) {
+        val btnGoDown = binding.btnGoDown
+        if (isNeedToShow) {
+            btnGoDown.translationX = 500f
+            val animator = ObjectAnimator.ofFloat(btnGoDown, "translationX", 0f)
+            animator.duration = 500
+            animator.start()
+        } else {
+            btnGoDown.translationX = 0f
+            val animator = ObjectAnimator.ofFloat(btnGoDown, "translationX", 500f)
+            animator.duration = 500
+            animator.start()
+        }
+    }
     private fun setupScrollDownButton() {
+        binding.btnGoDown.translationX = 500f
         binding.btnGoDown.setOnClickListener {
             recyclerView.smoothScrollToPosition(
                 messageAdapter.itemCount.minus(1)
@@ -267,12 +290,12 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupEditTextMessage() {
-        binding.editTextMessage.addTextChangedListener{
+        binding.editTextMessage.addTextChangedListener {
             val string = binding.editTextMessage.text.toString()
-            if (string.isEmpty()){
+            if (string.isEmpty()) {
                 binding.buttonSendFile.visibility = VISIBLE
                 binding.buttonSend.visibility = GONE
-            } else{
+            } else {
                 binding.buttonSendFile.visibility = GONE
                 binding.buttonSend.visibility = VISIBLE
             }
@@ -312,18 +335,20 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 )
             } else {
                 mBottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                attach()
             }
         }
     }
-    private fun attach(){
+
+    private fun setupBottomBehaviorListeners() {
         viewBehavior.findViewById<ImageButton>(R.id.btn_bottom_photo).setOnClickListener {
             file = createTempImageFile(requireContext())
-            file?.let { photoUri = FileProvider.getUriForFile(
-                requireContext(),
-                "ru.newlevel.hordemap.app",
-                it
-            ) }
+            file?.let {
+                photoUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "ru.newlevel.hordemap.app",
+                    it
+                )
+            }
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             takePicture.launch(photoUri) // Фотографирование с камеры
         }

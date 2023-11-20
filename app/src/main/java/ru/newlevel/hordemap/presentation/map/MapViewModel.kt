@@ -16,7 +16,17 @@ import com.google.maps.android.collections.MarkerManager
 import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.domain.usecases.*
+import ru.newlevel.hordemap.domain.usecases.mapCases.CompassUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.LoadGameMapFromServerUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.LoadLastGameMapUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.LocationUpdatesUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.SaveGameMapToFileUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.CreateMarkersUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateUseCase
 import java.io.InputStream
 import kotlin.math.roundToInt
 

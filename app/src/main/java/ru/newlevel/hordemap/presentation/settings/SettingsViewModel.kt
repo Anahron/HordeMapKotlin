@@ -5,10 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.domain.usecases.GetSettingsUseCase
-import ru.newlevel.hordemap.domain.usecases.ResetSettingsUseCase
-import ru.newlevel.hordemap.domain.usecases.SaveAutoLoadUseCase
-import ru.newlevel.hordemap.domain.usecases.SaveSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.ResetSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.SaveAutoLoadUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.SaveSettingsUseCase
 
 class SettingsViewModel(
     private val getSettingsUseCase: GetSettingsUseCase,
@@ -41,13 +41,4 @@ class SettingsViewModel(
         loginResultLiveDataMutable.value = user
         return user
     }
-
-    fun getUser() {
-        resultLiveDataMutable.value = getSettingsUseCase.execute()
-    }
-
-    fun reset() {
-        resetSettingsUseCase.execute()
-    }
-
 }

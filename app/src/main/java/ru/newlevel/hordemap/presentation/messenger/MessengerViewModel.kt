@@ -9,7 +9,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
-import ru.newlevel.hordemap.domain.usecases.*
+import ru.newlevel.hordemap.domain.usecases.messengerCases.DownloadFileUseCase
+import ru.newlevel.hordemap.domain.usecases.messengerCases.SendFileUseCase
+import ru.newlevel.hordemap.domain.usecases.messengerCases.SendMessageUseCase
+import ru.newlevel.hordemap.domain.usecases.messengerCases.StartMessageUpdateUseCase
+import ru.newlevel.hordemap.domain.usecases.messengerCases.StopMessageUpdateUseCase
 
 class MessengerViewModel(
     private val stopMessageUpdateUseCase: StopMessageUpdateUseCase,

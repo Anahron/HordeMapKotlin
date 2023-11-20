@@ -149,16 +149,15 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
     }
 
     private fun showOrHideTrackBtn(isNeedToShow: Boolean) {
+        val ibTrackHide = binding.ibTrackHide
         if (isNeedToShow) {
-            val inputLayout = binding.ibTrackHide
-            inputLayout.translationX = 500f
-            val animator = ObjectAnimator.ofFloat(inputLayout, "translationX", 0f)
+            ibTrackHide.translationX = 500f
+            val animator = ObjectAnimator.ofFloat(ibTrackHide, "translationX", 0f)
             animator.duration = 500
             animator.start()
         } else {
-            val inputLayout = binding.ibTrackHide
-            inputLayout.translationX = 0f
-            val animator = ObjectAnimator.ofFloat(inputLayout, "translationX", 500f)
+            ibTrackHide.translationX = 0f
+            val animator = ObjectAnimator.ofFloat(ibTrackHide, "translationX", 500f)
             animator.duration = 500
             animator.start()
         }

@@ -22,7 +22,8 @@
             android:paddingEnd="60dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="TextSizeCheck">
 
             <ImageButton
                 android:id="@+id/btnGoBack"
@@ -31,7 +32,8 @@
                 android:layout_gravity="center_vertical"
                 android:background="@color/transparent"
                 android:contentDescription="@string/todo"
-                app:srcCompat="@drawable/vector_back" />
+                app:srcCompat="@drawable/vector_back"
+                tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck,DuplicateSpeakableTextCheck" />
 
             <TextView
                 android:id="@+id/tvTitleLoadPath"
@@ -105,12 +107,13 @@
                 android:layout_height="match_parent"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:ems="10"
                 android:hint="@string/entry_message"
                 android:inputType="textLongMessage"
                 android:textSize="18sp"
                 tools:layout_editor_absoluteY="294dp"
-                android:autofillHints="" />
+                tools:ignore="VisualLintTextFieldSize" />
 
 
             <ImageButton
@@ -120,9 +123,10 @@
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="5dp"
                 android:background="@color/white"
-                android:src="@drawable/vector_messenger_attach"
+                android:contentDescription="@string/todo"
                 android:scaleType="fitCenter"
-                android:contentDescription="@string/todo"/>
+                android:src="@drawable/vector_messenger_attach"
+                tools:ignore="TouchTargetSizeCheck" />
 
             <ImageButton
                 android:id="@+id/buttonSend"
@@ -131,29 +135,29 @@
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="5dp"
                 android:background="@drawable/vector_send"
-                android:visibility="gone"
                 android:contentDescription="@string/todo"
-                />
+                android:visibility="gone"
+                tools:ignore="TouchTargetSizeCheck" />
 
         </LinearLayout>
 
-
         <ImageButton
             android:id="@+id/btnGoDown"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="50dp"
+            android:layout_height="57dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="108dp"
-            android:background="@drawable/img_btn_godown"
-            android:scaleType="fitCenter"
+            android:layout_marginBottom="70dp"
+            android:background="@drawable/img_messenger_down"
+            android:contentDescription="@string/todo"
+            android:elevation="5dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:visibility="visible"
-            android:contentDescription="@string/todo"/>
+            tools:ignore="TouchTargetSizeCheck,ImageContrastCheck,DuplicateSpeakableTextCheck"
+            tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <include layout="@layout/messenger_choise_upload"/>
+    <include layout="@layout/messenger_choise_upload" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

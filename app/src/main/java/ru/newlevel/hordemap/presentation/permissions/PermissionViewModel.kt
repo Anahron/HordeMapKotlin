@@ -3,8 +3,8 @@ package ru.newlevel.hordemap.presentation.permissions
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import ru.newlevel.hordemap.domain.usecases.GetSettingsUseCase
-import ru.newlevel.hordemap.domain.usecases.SaveSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.SaveSettingsUseCase
 
 sealed class PermissionState {
     object AddLocationPermState : PermissionState()
