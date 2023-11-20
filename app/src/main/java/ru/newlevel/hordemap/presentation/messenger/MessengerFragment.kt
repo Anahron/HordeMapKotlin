@@ -13,6 +13,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.inputmethod.EditorInfo
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
@@ -22,6 +23,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
@@ -31,7 +33,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jsibbold.zoomage.ZoomageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -41,31 +43,32 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.makeShortToast
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
-import ru.newlevel.hordemap.databinding.MessagesDialogBinding
+import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MessengerFragment : Fragment(R.layout.messages_dialog),
+class MessengerFragment : Fragment(R.layout.fragment_messenger),
     MessagesAdapter.OnButtonSaveClickListener,
     MessagesAdapter.OnImageClickListener,
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
 
-    private val binding: MessagesDialogBinding by viewBinding()
+    private val binding: FragmentMessengerBinding by viewBinding()
     private val messengerViewModel by viewModel<MessengerViewModel>()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var messageAdapter: MessagesAdapter
     private lateinit var messageLayoutManager: LinearLayoutManager
-    private lateinit var file: File
+    private var file: File? = null
     private lateinit var photoUri: Uri
     private var isDownloadingState = false
-
+    private lateinit var mBottomSheetBehavior: BottomSheetBehavior<*>
     private lateinit var activityLauncher: ActivityResultLauncher<String>
     private lateinit var pickImage: ActivityResultLauncher<String>
     private lateinit var takePicture: ActivityResultLauncher<Uri>
+    private lateinit var viewBehavior: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -182,11 +185,18 @@ class MessengerFragment : Fragment(R.layout.messages_dialog),
     private fun setupUIComponents() {
         setupEditTextMessage()
         setupSendMessageButton()
-        setupUploadFileButton()
-        setupOpenCameraButton()
+        setupAttackBtn()
         setupCloseMessengerButton()
         setupProgressBar()
         setupScrollDownButton()
+        viewBehavior = binding.root.findViewById(R.id.bottom_sheet)
+        mBottomSheetBehavior = BottomSheetBehavior.from(viewBehavior)
+        mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        viewBehavior.setOnClickListener {
+            if ( mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+                mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            }
+        }
     }
 
     private fun getFileNameFromUri(uri: Uri): String {
@@ -217,25 +227,6 @@ class MessengerFragment : Fragment(R.layout.messages_dialog),
         } ?: 0
     }
 
-    private fun openPhotoButtonClick(context: Context) {
-        file = createTempImageFile(context)!!
-        photoUri = FileProvider.getUriForFile(
-            requireContext(),
-            "ru.newlevel.hordemap.app",
-            file
-        )
-        val items = arrayOf("Выбрать из галереи", "Сделать фото")
-        MaterialAlertDialogBuilder(context)
-            .setTitle("Выберите действие")
-            .setItems(items) { _, which ->
-                when (which) {
-                    0 -> pickImage.launch("image/*") // Выбор из галереи
-                    1 -> takePicture.launch(photoUri) // Фотографирование с камеры
-                }
-            }
-            .show()
-    }
-
     private fun createTempImageFile(context: Context): File? {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val imageFileName = "JPEG_" + timeStamp + "_"
@@ -261,7 +252,7 @@ class MessengerFragment : Fragment(R.layout.messages_dialog),
             setOnScrollChangeListener { _, _, _, _, _ ->
                 if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
                     binding.btnGoDown.visibility = GONE
-                }else
+                } else
                     binding.btnGoDown.visibility = VISIBLE
             }
         }
@@ -276,6 +267,16 @@ class MessengerFragment : Fragment(R.layout.messages_dialog),
     }
 
     private fun setupEditTextMessage() {
+        binding.editTextMessage.addTextChangedListener{
+            val string = binding.editTextMessage.text.toString()
+            if (string.isEmpty()){
+                binding.buttonSendFile.visibility = VISIBLE
+                binding.buttonSend.visibility = GONE
+            } else{
+                binding.buttonSendFile.visibility = GONE
+                binding.buttonSend.visibility = VISIBLE
+            }
+        }
         binding.editTextMessage.setOnEditorActionListener(OnEditorActionListener { _: TextView?, actionId: Int, _: KeyEvent? ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val text = binding.editTextMessage.text.toString()
@@ -298,15 +299,8 @@ class MessengerFragment : Fragment(R.layout.messages_dialog),
         }
     }
 
-    private fun setupUploadFileButton() {
+    private fun setupAttackBtn() {
         binding.buttonSendFile.setOnClickListener {
-            activityLauncher.launch("*/*")
-            binding.editTextMessage.requestFocus()
-        }
-    }
-
-    private fun setupOpenCameraButton() {
-        binding.buttonPhoto.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
                     requireContext(), Manifest.permission.CAMERA
                 ) != PackageManager.PERMISSION_GRANTED
@@ -317,9 +311,31 @@ class MessengerFragment : Fragment(R.layout.messages_dialog),
                     REQUEST_CODE_CAMERA_PERMISSION
                 )
             } else {
-                openPhotoButtonClick(requireContext())
+                mBottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                attach()
             }
         }
+    }
+    private fun attach(){
+        viewBehavior.findViewById<ImageButton>(R.id.btn_bottom_photo).setOnClickListener {
+            file = createTempImageFile(requireContext())
+            file?.let { photoUri = FileProvider.getUriForFile(
+                requireContext(),
+                "ru.newlevel.hordemap.app",
+                it
+            ) }
+            mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            takePicture.launch(photoUri) // Фотографирование с камеры
+        }
+        viewBehavior.findViewById<ImageButton>(R.id.btn_bottom_gallery).setOnClickListener {
+            mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            pickImage.launch("image/*") // Выбор из галереи
+        }
+        viewBehavior.findViewById<ImageButton>(R.id.btn_bottom_file).setOnClickListener {
+            mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            activityLauncher.launch("*/*")
+        }
+
     }
 
     private fun setupCloseMessengerButton() {

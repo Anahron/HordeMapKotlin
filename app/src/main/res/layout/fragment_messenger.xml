@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/activityRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/topPanel"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@color/main_green_dark"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="60dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/btnGoBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center_vertical"
+                android:background="@color/transparent"
+                android:contentDescription="@string/todo"
+                app:srcCompat="@drawable/vector_back" />
+
+            <TextView
+                android:id="@+id/tvTitleLoadPath"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:fontFamily="@font/inter_semibold"
+                android:gravity="center_horizontal"
+                android:text="@string/horde_chat"
+                android:textColor="@color/main_green_dialog"
+                android:textSize="20sp" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewMessages"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/main_green_middle_transparent"
+            android:paddingHorizontal="8dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="15dp"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/inputLayout"
+            app:layout_constraintTop_toBottomOf="@+id/topPanel" />
+
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/progressBar"
+            style="@style/CustomProgressBar"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:max="100"
+            android:progress="0"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/inputLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="MissingConstraints"
+            tools:progress="50"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/progressText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/wait_download"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toBottomOf="@+id/progressBar"
+            app:layout_constraintEnd_toEndOf="@+id/progressBar"
+            app:layout_constraintStart_toStartOf="@+id/progressBar"
+            app:layout_constraintTop_toTopOf="@+id/progressBar" />
+
+        <LinearLayout
+            android:id="@+id/inputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/white"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+
+            <EditText
+                android:id="@+id/editTextMessage"
+                style="@style/MyEditText"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="@string/entry_message"
+                android:inputType="textLongMessage"
+                android:textSize="18sp"
+                tools:layout_editor_absoluteY="294dp"
+                android:autofillHints="" />
+
+
+            <ImageButton
+                android:id="@+id/buttonSendFile"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="5dp"
+                android:background="@color/white"
+                android:src="@drawable/vector_messenger_attach"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/todo"/>
+
+            <ImageButton
+                android:id="@+id/buttonSend"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="5dp"
+                android:background="@drawable/vector_send"
+                android:visibility="gone"
+                android:contentDescription="@string/todo"
+                />
+
+        </LinearLayout>
+
+
+        <ImageButton
+            android:id="@+id/btnGoDown"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="108dp"
+            android:background="@drawable/img_btn_godown"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible"
+            android:contentDescription="@string/todo"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <include layout="@layout/messenger_choise_upload"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

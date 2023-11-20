@@ -112,4 +112,7 @@
     <string name="chat">Chat</string>
     <string name="horde_chat">Horde Chat</string>
     <string name="clean">Очистить</string>
+    <string name="camera">Камера</string>
+    <string name="gallery">Галерея</string>
+    <string name="file">Файл</string>
 </resources>
