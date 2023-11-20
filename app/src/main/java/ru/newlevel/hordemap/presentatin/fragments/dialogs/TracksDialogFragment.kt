@@ -46,7 +46,6 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
     private val handler = Handler(Looper.getMainLooper())
 
     private fun initDefault() {
-      //  tracksViewModel.getCurrentSessionLocations(UserEntityProvider.sessionId.toString())
         tracksViewModel.getAllSessionsLocations()
     }
 
@@ -92,18 +91,15 @@ class TracksDialogFragment : Fragment(R.layout.fragment_tracks_dialog) {
         }
 
         tracksViewModel.currentTrack.observe(viewLifecycleOwner){
-            Log.e("AAA", "currentTrack.observe " +  tracksViewModel.currentTrack.value.toString())
+            Log.e("AAA", "currentTrack.observe " +  this)
             trackAdapter.setCurrentTrack(it)
         }
         tracksViewModel.trackItemAll.observe(viewLifecycleOwner) {
-            Log.e("AAA", "trackItemAll.observe " +  tracksViewModel.currentTrack.value.toString())
+            Log.e("AAA", "trackItemAll.observe " +  this)
             if (it != null) {
                 val newlist = it.toMutableList()
                 tracksViewModel.currentTrack.value?.let { it1 -> newlist.add(0, it1) }
                 trackAdapter.setTracks(newlist as ArrayList)
-//                handler.postDelayed({
-//                    recyclerView.scrollToPosition(0)
-//                }, 500)
             }
         }
 

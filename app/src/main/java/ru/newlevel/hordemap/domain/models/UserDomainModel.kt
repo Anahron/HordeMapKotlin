@@ -1,12 +1,11 @@
 package ru.newlevel.hordemap.domain.models
 
-class UserDomainModel(
-    var name: String,
-    var timeToSendData: Int,
-    var usersMarkerSize: Int,
-    var staticMarkerSize: Int,
-    var selectedMarker: Int,
-    val deviceID: String,
-    var autoLoad: Boolean
-) {
-}
+data class UserDomainModel(
+    override var name: String,
+    override var timeToSendData: Int,
+    override var usersMarkerSize: Int,
+    override var staticMarkerSize: Int,
+    override var selectedMarker: Int,
+    override val deviceID: String,
+    override var autoLoad: Boolean
+) : UserModel

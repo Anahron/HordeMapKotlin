@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.app
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
@@ -10,9 +11,13 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.domain.models.UserModel
 import java.io.InputStream
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 fun makeLongToast(text: String, context: Context) {
@@ -22,6 +27,7 @@ fun makeLongToast(text: String, context: Context) {
         Toast.LENGTH_LONG
     ).show()
 }
+
 fun makeShortToast(text: String, context: Context) {
     Toast.makeText(
         context,
@@ -60,7 +66,24 @@ fun getDeviceId(context: Context): String {
     return androidId ?: UUID.randomUUID().toString()
 }
 
-fun <T : Any?> MutableLiveData<T>.default(initialValue:T) = apply{ setValue(initialValue)}
+fun <T : Any?> MutableLiveData<T>.default(initialValue: T) = apply { setValue(initialValue) }
+
+fun Location.toMarker(userModel: UserModel): MarkerDataModel {
+    val marker = MarkerDataModel()
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+    val currentTime = LocalTime.now()
+    val formattedTime = currentTime.format(timeFormatter)
+
+    marker.latitude = this.latitude
+    marker.longitude = this.longitude
+    marker.userName = userModel.name
+    marker.deviceId = userModel.deviceID
+    marker.timestamp = System.currentTimeMillis()
+    marker.item = userModel.selectedMarker
+    marker.title = formattedTime
+
+    return marker
+}
 
 fun Context.hasPermission(permission: String): Boolean {
     return ContextCompat.checkSelfPermission(

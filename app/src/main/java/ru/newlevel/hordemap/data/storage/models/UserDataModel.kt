@@ -1,10 +1,12 @@
 package ru.newlevel.hordemap.data.storage.models
 
-class UserDataModel(
-    val name: String,
-    val timeToSendData: Int,
-    val usersMarkerSize: Int,
-    val staticMarkerSize: Int,
-    val selectedMarker: Int,
-    val deviceID: String,
-    var autoLoad: Boolean)
+import ru.newlevel.hordemap.domain.models.UserModel
+
+data class UserDataModel(
+    override var name: String,
+    override var timeToSendData: Int,
+    override var usersMarkerSize: Int,
+    override var staticMarkerSize: Int,
+    override var selectedMarker: Int,
+    override val deviceID: String,
+    override var autoLoad: Boolean): UserModel

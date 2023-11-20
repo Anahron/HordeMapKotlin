@@ -15,11 +15,7 @@ import ru.newlevel.hordemap.data.db.MyLocationDatabase
 import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.data.storage.models.UserDataModel
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Date
 
 private const val TAG = "AAA"
 
@@ -47,41 +43,25 @@ class LocationUpdatesBroadcastReceiver : BroadcastReceiver(), KoinComponent {
         val userEntity = UserEntityProvider.userEntity
         val location = locations[locations.lastIndex]
         Log.e(TAG, "Location result = $location")
+        Log.e(TAG, "Location size = ${locations.size}")
         CoroutineScope(Dispatchers.IO).launch {
             val locationDao = getKoin().get<MyLocationDatabase>().locationDao()
             locations.forEach { location ->
-                locationDao.addLocation(
-                    MyLocationEntity(
-                        latitude = location.latitude,
-                        longitude = location.longitude,
-                        date = Date(location.time),
-                        sessionId = UserEntityProvider.sessionId.toString()
+                if (location.accuracy < 25)
+                    locationDao.addLocation(
+                        MyLocationEntity(
+                            latitude = location.latitude,
+                            longitude = location.longitude,
+                            date = Date(location.time),
+                            sessionId = UserEntityProvider.sessionId.toString()
+                        )
                     )
-                )
             }
             userEntity?.let {
                 getKoin().get<MarkersRemoteStorage>()
-                    .sendUserMarker(mapLocationToMarker(location, it))
+                    .sendUserMarker(location.toMarker(it))
             }
         }
-    }
-
-    private fun mapLocationToMarker(
-        location: Location,
-        userDomainModel: UserDataModel
-    ): MarkerDataModel {
-        val marker = MarkerDataModel()
-        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-        val currentTime = LocalTime.now()
-        val formattedTime = currentTime.format(timeFormatter)
-        marker.latitude = location.latitude
-        marker.longitude = location.longitude
-        marker.userName = userDomainModel.name
-        marker.deviceId = userDomainModel.deviceID
-        marker.timestamp = System.currentTimeMillis()
-        marker.item = userDomainModel.selectedMarker
-        marker.title = formattedTime
-        return marker
     }
 
     companion object {

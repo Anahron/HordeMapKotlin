@@ -5,7 +5,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.os.SystemClock
 import android.util.Log
 import androidx.legacy.content.WakefulBroadcastReceiver
@@ -17,10 +16,6 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
 import com.google.firebase.database.FirebaseDatabase
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.data.storage.models.UserDataModel
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.*
 
 private const val TAG = "AAA"
@@ -62,26 +57,8 @@ class MyAlarmReceiver : WakefulBroadcastReceiver() {
                     val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
                     Log.e(TAG, "SuccessListener в аларм менеджер " + it.toString())
                     userDatabaseReference.child(userEntity.deviceID)
-                        .setValue(mapLocationToMarker(it, userEntity))
+                        .setValue(it.toMarker(userEntity))
                 }
             }
-    }
-
-    @SuppressLint("SimpleDateFormat")
-    private fun mapLocationToMarker(
-        location: Location,
-        userDomainModel: UserDataModel
-    ): MarkerDataModel {
-        val marker = MarkerDataModel()
-        val dateFormat: DateFormat = SimpleDateFormat("HH:mm:ss")
-        val date = dateFormat.format(Date(System.currentTimeMillis()))
-        marker.latitude = location.latitude
-        marker.longitude = location.longitude
-        marker.userName = userDomainModel.name
-        marker.deviceId = userDomainModel.deviceID
-        marker.timestamp = System.currentTimeMillis()
-        marker.item = userDomainModel.selectedMarker
-        marker.title = date
-        return marker
     }
 }

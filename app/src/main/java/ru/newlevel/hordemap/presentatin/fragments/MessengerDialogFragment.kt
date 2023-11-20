@@ -169,7 +169,7 @@ class MessengerDialogFragment : Fragment(R.layout.messages_dialog),
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 if (messageAdapter.itemCount < 1)
-                    delay(250)
+                    delay(350)
                 messengerViewModel.startMessageUpdate()
                 messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
                     handleNewMessages(messages)

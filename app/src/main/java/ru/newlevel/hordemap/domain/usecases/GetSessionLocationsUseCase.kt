@@ -81,7 +81,7 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
                 )
             }
         }
-        return allLocations.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }.thenByDescending { it.timestamp })
+       return allLocations.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }.thenByDescending { it.timestamp })
     }
 
     private fun distanceToString(resultDistance: Double): String {
