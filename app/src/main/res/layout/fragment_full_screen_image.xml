@@ -20,12 +20,13 @@
         app:zoomage_zoomable="true" />
 
     <ImageButton
-        android:background="@drawable/img_btn_close"
         android:id="@+id/close_massager"
-        android:layout_height="35dp"
+        android:layout_width="55dp"
+        android:layout_height="65dp"
+        android:layout_gravity="start"
         android:layout_margin="15dp"
-        android:layout_width="35dp"
-        android:layout_gravity="end"
+        android:elevation="5dp"
+        android:background="@drawable/img_btn_close"
         android:scaleType="fitCenter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
