@@ -11,8 +11,10 @@ import ru.newlevel.hordemap.domain.usecases.mapCases.ResetSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveAutoLoadUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveGameMapToFileUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.CreateGarminMarkersUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.CreateMarkersUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.GarminGPXParser
 import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateUseCase
@@ -116,5 +118,11 @@ val domainModule = module {
     }
     factory<DeleteAllTracksUseCase> {
         DeleteAllTracksUseCase(locationRepository = get())
+    }
+    factory<CreateGarminMarkersUseCase> {
+        CreateGarminMarkersUseCase()
+    }
+    factory<GarminGPXParser> {
+        GarminGPXParser()
     }
 }

@@ -11,19 +11,18 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.RadioButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.slider.Slider
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.app.mapUserDataToDomain
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentSettingsBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.presentation.map.MapViewModel
 import kotlin.properties.Delegates
-
 
 class SettingsFragment(
     private val mapViewModel: MapViewModel,
@@ -42,6 +41,11 @@ class SettingsFragment(
         setupEditNameListener()
         setupSeekBarListeners()
         setupEditTextListener()
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        binding.editName.setText(user.name)
     }
 
     private fun setLayoutParams(user: UserDomainModel) {
@@ -79,7 +83,7 @@ class SettingsFragment(
 
         settingsViewModel.resultData.observe(viewLifecycleOwner) { user ->
             setLayoutParams(user)
-            tvTimeToSendData.text =" ${user.timeToSendData}${getString(R.string.sec)}"
+            tvTimeToSendData.text = " ${user.timeToSendData}${getString(R.string.sec)}"
         }
     }
 
@@ -98,6 +102,15 @@ class SettingsFragment(
     }
 
     private fun setupEditNameListener() {
+        binding.editName.setOnFocusChangeListener { v, hasFocus ->
+            if (!hasFocus) {
+                val textSize = binding.editName.text?.length
+                textSize?.let {
+                    if (it < 3)
+                        binding.editName.setText(user.name)
+                }
+            }
+        }
         binding.editName.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(
                 s: CharSequence,
@@ -116,8 +129,8 @@ class SettingsFragment(
                     user.name = inputText
                     settingsViewModel.saveUser(user)
                 } else {
-                    makeLongToast("Имя должно быть длиннее 3х символов", requireContext())
-                    binding.editName.setText(user.name)
+                    Toast.makeText(requireContext(), R.string.name_must_be_3, Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         })
@@ -164,9 +177,9 @@ class SettingsFragment(
         editName.setOnEditorActionListener(object : TextView.OnEditorActionListener {
             override fun onEditorAction(v: TextView, actionId: Int, event: KeyEvent?): Boolean {
                 if (actionId == EditorInfo.IME_ACTION_DONE || (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    val imm =
-                        requireContext().applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    val imm = requireContext().applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.hideSoftInputFromWindow(editName.windowToken, 0)
+                    binding.editName.clearFocus()
                     return true
                 }
                 return false

@@ -75,7 +75,11 @@ class TracksAdapter : RecyclerView.Adapter<TracksAdapter.TracksViewHolder>() {
             tvTrackDate.text = trackItemDomainModel.date
             tvTrackDistance.text = trackItemDomainModel.distance
             tvTrackDuration.text = trackItemDomainModel.duration
-            tvTrackTitle.text = trackItemDomainModel.title
+            if (trackItemDomainModel.title.isEmpty()) {
+                trackItemDomainModel.title = itemView.context.getString(R.string.my_track)
+                tvTrackTitle.text = itemView.context.getString(R.string.my_track)
+            } else
+                tvTrackTitle.text = trackItemDomainModel.title
             ibFavourite.setImageDrawable(
                 AppCompatResources.getDrawable(
                     itemView.context,

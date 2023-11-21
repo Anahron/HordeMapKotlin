@@ -6,12 +6,15 @@ import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
+import android.view.Gravity
 import android.view.View
-import androidx.appcompat.app.AlertDialog
+import android.view.ViewGroup
+import android.widget.PopupWindow
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -23,6 +26,8 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import com.google.android.material.button.MaterialButton
+import com.google.maps.android.PolyUtil
 import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.data.kml.KmlLayer
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +35,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.MyAlarmReceiver
+import ru.newlevel.hordemap.app.getMimeType
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
@@ -46,6 +52,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
     private lateinit var markerManager: MarkerManager
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
+    private lateinit var garminMarkerCollection: MarkerManager.Collection
+    private var kmlLayer: KmlLayer? = null
 
     private fun init() {
         setupMap()
@@ -53,6 +61,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
         markerManager = MarkerManager(googleMap)
         userMarkerCollection = markerManager.newCollection()
         staticMarkerCollection = markerManager.newCollection()
+        garminMarkerCollection = markerManager.newCollection()
         markerStateObserver()
         overlayObserver()
         tracksObserver()
@@ -122,24 +131,20 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
         }
     }
 
-
     private fun tracksObserver() {
         tracksTransferViewModel.trackToShowOnMap.observe(this) { listLatLng ->
             if (listLatLng.isNotEmpty()) {
                 mapViewModel.setRoutePolyline(
                     googleMap.addPolyline(
                         mapViewModel.createRoute(
-                            listLatLng
+                            PolyUtil.simplify(listLatLng, 22.0)
                         )
                     )
                 )
-                val update = CameraUpdateFactory.newLatLngZoom(
-                    LatLng(
-                        listLatLng[0].latitude,
-                        listLatLng[0].longitude
-                    ), 15F
+                cameraUpdate(
+                    listLatLng[0].latitude,
+                    listLatLng[0].longitude
                 )
-                googleMap.moveCamera(update)
                 showOrHideTrackBtn(true)
             } else {
                 mapViewModel.removeRoute()
@@ -164,51 +169,88 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
     }
 
     private fun overlayObserver() {
-        var kmlLayer: KmlLayer? = null
         mapViewModel.isAutoLoadMap.observe(this) {
             if (it) lifecycleScope.launch {
                 mapViewModel.loadLastGameMap()
             }
         }
-        mapViewModel.kmzUri.observe(this) { kmzUri ->
-            if (kmzUri != null) {
-                kmlLayer?.removeLayerFromMap()
-                lifecycleScope.launch {
-                    kmzUri.let { mapViewModel.getInputSteam(kmzUri, requireContext()) }
-                        .let { stream ->
-                            stream?.let {
-                                kmlLayer = KmlLayer(
-                                    googleMap,
-                                    it,
-                                    requireContext(),
-                                    markerManager,
-                                    null,
-                                    null,
-                                    null,
-                                    null
-                                )
-                            }
+        mapViewModel.mapUri.observe(this) { uri ->
+            if (uri != null) {
+                val mimeType = requireContext().getMimeType(uri)
+                Log.e("AAA", mimeType.toString())
+                when {
+                    mimeType?.endsWith("kmz") == true -> {
+                        kmlLayer?.removeLayerFromMap()
+                        garminMarkerCollection.markers.forEach { marker -> marker.remove() }
+                        mapViewModel.polygon.value?.remove()
+                        lifecycleScope.launch {
+                            uri.let { mapViewModel.getInputSteam(uri, requireContext()) }
+                                .let { stream ->
+                                    stream?.let {
+                                        kmlLayer = KmlLayer(
+                                            googleMap,
+                                            it,
+                                            requireContext(),
+                                            markerManager,
+                                            null,
+                                            null,
+                                            null,
+                                            null
+                                        )
+                                    }
 
-                            kmlLayer?.addLayerToMap()
-                            kmlLayer?.groundOverlays?.first()?.let { overlay ->
-                                val center = overlay.latLngBox.center
-                                val update = CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(
-                                        center.latitude,
-                                        center.longitude
-                                    ), 12F
-                                )
-                                googleMap.animateCamera(update)
-                            }
+                                    kmlLayer?.addLayerToMap()
+                                    kmlLayer?.groundOverlays?.first()?.let { overlay ->
+                                        val center = overlay.latLngBox.center
+                                        cameraUpdate(center.latitude, center.longitude)
+                                    }
+                                }
                         }
+                    }
+
+                   else -> {
+                        try {
+                            kmlLayer?.removeLayerFromMap()
+                            lifecycleScope.launch {
+                                mapViewModel.getInputSteam(uri, requireContext())
+                                    ?.let {
+                                        mapViewModel.parseGpx(
+                                            it,
+                                            garminMarkerCollection,
+                                            requireContext(), googleMap
+                                        )
+                                    }
+                                garminMarkerCollection.markers.any {
+                                    cameraUpdate(it.position.latitude, it.position.longitude)
+                                    true
+                                }
+
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
                 }
-            } else kmlLayer?.removeLayerFromMap()
+            } else {
+                kmlLayer?.removeLayerFromMap()
+                garminMarkerCollection.markers.forEach { marker -> marker.remove() }
+                mapViewModel.polygon.value?.remove()
+            }
         }
     }
 
-
     private fun stopMarkerObservers() {
         mapViewModel.stopMarkerUpdates()
+    }
+
+    private fun cameraUpdate(latitude: Double, longitude: Double) {
+        val update = CameraUpdateFactory.newLatLngZoom(
+            LatLng(
+                latitude,
+                longitude
+            ), 12F
+        )
+        googleMap.animateCamera(update)
     }
 
     private fun startMarkerObservers() {
@@ -247,13 +289,10 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
         }
         binding.ibMyLocation.setOnClickListener {
             val myLocation = googleMap.myLocation
-            val update = CameraUpdateFactory.newLatLngZoom(
-                LatLng(
-                    myLocation.latitude,
-                    myLocation.longitude
-                ), 15F
+            cameraUpdate(
+                myLocation.latitude,
+                myLocation.longitude
             )
-            googleMap.animateCamera(update)
         }
         staticMarkerCollection.setOnInfoWindowClickListener {
             it.hideInfoWindow()
@@ -265,26 +304,45 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
         staticMarkerCollection.setOnInfoWindowLongClickListener {
             mapViewModel.deleteStaticMarker(it)
         }
-        googleMap.setOnMapLongClickListener { latLng: LatLng ->
-            val builder = AlertDialog.Builder(requireContext())
-            builder.setTitle("Выберите действие").setItems(
-                arrayOf<CharSequence>(
-                    "Построить маршрут", "Поставить маркер"
+
+        googleMap.setOnMapLongClickListener { latLng ->
+            // Преобразуем географические координаты в пиксели на экране
+            val projection = googleMap.projection
+            val point = projection.toScreenLocation(latLng)
+            val mainPopupMenu = PopupWindow(requireContext())
+            mainPopupMenu.contentView = layoutInflater.inflate(
+                R.layout.popup_map_long_click,
+                binding.fragmentContainer as ViewGroup,
+                false
+            )
+            mainPopupMenu.setBackgroundDrawable(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.round_white
                 )
-            ) { _: DialogInterface?, which: Int ->
-                when (which) {
-                    0 -> {
-                        if (!mapViewModel.isRoutePolylineNotNull())
-                            showOrHideTrackBtn(true)
-                        buildRoute(latLng)
-                    }
-                    1 -> {
-                        createStaticMarkerDialog(latLng)
-                    }
+            )
+            mainPopupMenu.elevation = 18f
+            mainPopupMenu.isFocusable = true
+            mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMapPutMarker)
+                ?.setOnClickListener {
+                    mainPopupMenu.dismiss()
+                    createStaticMarkerDialog(latLng)
                 }
-            }
-            builder.show()
+            mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMapShowDistance)
+                ?.setOnClickListener {
+                    mainPopupMenu.dismiss()
+                    if (!mapViewModel.isRoutePolylineNotNull())
+                        showOrHideTrackBtn(true)
+                    buildRoute(latLng)
+                }
+            requireContext().resources.displayMetrics.widthPixels
+            mainPopupMenu.showAtLocation(
+                binding.fragmentContainer, Gravity.NO_GRAVITY,
+                point.x,
+                point.y
+            )
         }
+
         binding.imgCompass.setOnClickListener {
             binding.imgCompass.layoutParams.height =
                 if (binding.imgCompass.layoutParams.width != convertDpToPx(50)) convertDpToPx(50) else convertDpToPx(
@@ -300,7 +358,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
 
     private fun menuListenersSetup() {
         val fragmentTrans = childFragmentManager.beginTransaction()
-        val loadMapFragment = LoadMapDialogFragment(
+        val loadMapFragment = LoadMapFragment(
             mapViewModel = mapViewModel
         )
         val settingsFragment = SettingsFragment(mapViewModel = mapViewModel)

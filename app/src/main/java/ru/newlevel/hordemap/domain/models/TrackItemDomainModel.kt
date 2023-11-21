@@ -4,7 +4,7 @@ import com.google.android.gms.maps.model.LatLng
 
 data class TrackItemDomainModel(
     val timestamp: Long = 0,
-    var title: String = "My track",
+    var title: String = "",
     val sessionId: String,
     val date: String,
     val duration: String = "0m",

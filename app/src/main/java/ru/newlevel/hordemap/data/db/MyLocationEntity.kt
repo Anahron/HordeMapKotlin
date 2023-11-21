@@ -10,7 +10,7 @@ import java.util.UUID
 data class MyLocationEntity(
     @PrimaryKey val id: UUID = UUID.randomUUID(),
     val sessionId: String,
-    val trackName: String = "My track",
+    val trackName: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
     val date: Date = Date(),

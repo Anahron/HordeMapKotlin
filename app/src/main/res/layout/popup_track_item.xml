@@ -2,13 +2,13 @@
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="140dp"
-        android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
         android:background="@drawable/round_white"
         android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="140dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
 
@@ -24,13 +24,13 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRename"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/transparent"
                 android:insetTop="4dp"
                 android:insetBottom="4dp"
-                android:text="Rename"
+                android:text="@string/rename"
                 android:textSize="16sp"
                 android:fontFamily="@font/inter_medium"
                 android:textColor="@color/slate_800"
@@ -40,7 +40,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="140dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
 
@@ -56,14 +56,14 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/transparent"
                 android:fontFamily="@font/inter_medium"
                 android:insetTop="4dp"
                 android:insetBottom="4dp"
-                android:text="Delete"
+                android:text="@string/delete"
                 android:textColor="@color/slate_800"
                 android:textSize="16sp"
                 app:elevation="0dp"
@@ -72,8 +72,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/btnShare"
-            android:layout_width="140dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
 
@@ -88,13 +87,14 @@
                 app:srcCompat="@drawable/vector_share" />
 
             <com.google.android.material.button.MaterialButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:id="@+id/btnShare"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/transparent"
                 android:insetTop="4dp"
                 android:insetBottom="4dp"
-                android:text="Share"
+                android:text="@string/share"
                 android:textSize="16sp"
                 android:fontFamily="@font/inter_medium"
                 android:textColor="@color/slate_800"

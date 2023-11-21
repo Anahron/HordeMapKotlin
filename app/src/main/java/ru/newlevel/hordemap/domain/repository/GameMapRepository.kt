@@ -9,5 +9,5 @@ interface GameMapRepository {
 
     suspend fun loadLastGameMap(): Uri?
 
-    suspend fun saveGameMapToFile(uri: Uri)
+    suspend fun saveGameMapToFile(uri: Uri, suffix: String)
 }

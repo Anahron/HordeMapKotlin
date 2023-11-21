@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.widget.Toast
@@ -13,7 +14,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
@@ -22,8 +22,8 @@ import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.presentation.map.MapFragment
 import ru.newlevel.hordemap.presentation.messenger.MessengerFragment
 import ru.newlevel.hordemap.presentation.permissions.PermissionRequestFragment
-import ru.newlevel.hordemap.presentation.tracks.TracksFragment
 import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
+import ru.newlevel.hordemap.presentation.tracks.TracksFragment
 
 const val MY_PERMISSIONS_REQUEST_SENSOR = 506
 
@@ -40,6 +40,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //TODO удалить ресет (тест первого запуска)
+      //   loginViewModel.reset()
         UserEntityProvider.sessionId = System.currentTimeMillis()
         windowSettings()
         if (!applicationContext.hasPermission(Manifest.permission_group.SENSORS)) {
@@ -140,16 +142,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     private fun loginCheck() {
-        //TODO удалить ресет (тест первого запуска)
-        //  loginViewModel.reset()
         loginViewModel.checkLogin()
         loginViewModel.loginResultData.observe(this) {
+            Log.e("AAA",  "loginViewModel.loginResultData.observe"  + this )
             if (it.name.isNotEmpty()) {
                 addAndShowFragment(mainFragment)
                 loginViewModel.loginResultData.removeObservers(this)
                 navView.visibility = ViewGroup.VISIBLE
-                Toast.makeText(this, "Привет ${it.name}", Toast.LENGTH_LONG).show()
+                val string: String = this.getString(R.string.hello)
+                Toast.makeText(this, (string +" "+ it.name), Toast.LENGTH_LONG).show()
             } else {
+                loginViewModel.loginResultData.removeObservers(this)
                 navView.visibility = ViewGroup.GONE
                 requestPermission()
             }
@@ -166,6 +169,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
     }
 
     fun requestPermission() {
-        findNavController(R.id.container).navigate(R.id.action_splashSreenFragment_to_permissionRequestFragment)
+        val permissionRequestFragment = PermissionRequestFragment()
+        supportFragmentManager.beginTransaction().setCustomAnimations(
+            R.anim.slide_in_bottom,
+            R.anim.slide_out_bottom,
+            R.anim.slide_in_bottom,
+            R.anim.slide_out_bottom,
+        ).replace(R.id.container, permissionRequestFragment).addToBackStack(null).commit()
     }
 }

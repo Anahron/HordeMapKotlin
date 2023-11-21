@@ -116,8 +116,6 @@
                 android:layout_weight="1"
                 android:textColor="@color/slate_500"
                 android:textSize="12sp" />
-
-
         </LinearLayout>
 
 

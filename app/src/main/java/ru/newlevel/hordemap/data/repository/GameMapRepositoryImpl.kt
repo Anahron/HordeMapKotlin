@@ -16,7 +16,7 @@ class GameMapRepositoryImpl(private val gameMapLocalStorage: GameMapLocalStorage
        return gameMapLocalStorage.loadLastMapFromFile()
     }
 
-    override suspend fun saveGameMapToFile(uri: Uri) {
-       gameMapLocalStorage.saveGameMapToFile(uri)
+    override suspend fun saveGameMapToFile(uri: Uri, suffix: String) {
+       gameMapLocalStorage.saveGameMapToFile(uri, suffix)
     }
 }

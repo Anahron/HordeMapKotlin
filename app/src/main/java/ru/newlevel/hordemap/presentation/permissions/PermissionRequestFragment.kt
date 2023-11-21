@@ -11,6 +11,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityOptionsCompat
@@ -22,7 +23,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.BuildConfig
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.databinding.FragmentPermissionRequestBinding
 
 
@@ -45,6 +45,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                 granted -> {
                     permissionViewModel.turnToAddUserNameState()
                 }
+
                 else -> {
                     permissionDenied(REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE)
                 }
@@ -87,6 +88,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                         }
                     }
                 }
+
                 is PermissionState.AddBackWorking -> {
                     if (!isBatteryOptimizationIgnored()) {
                         binding.btnBackWorking.setOnClickListener {
@@ -107,6 +109,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                         permissionBackgroundRequestButton.isGone = true
                     }
                 }
+
                 is PermissionState.AddLocationPermState -> {
                     if (context?.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) == false) {
                         binding.permissionRequestButton.setOnClickListener {
@@ -128,6 +131,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                         permissionBackgroundRequestButton.isGone = true
                     }
                 }
+
                 is PermissionState.AddBackLocationState -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && context?.hasPermission(
                             Manifest.permission.ACCESS_BACKGROUND_LOCATION
@@ -152,6 +156,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                         permissionBackgroundRequestButton.isGone = false
                     }
                 }
+
                 is PermissionState.AddUserNameState -> {
                     binding.apply {
                         titleTextView.text =
@@ -164,18 +169,21 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                         permissionRequestButton.isGone = true
                         permissionBackgroundRequestButton.isGone = true
                     }
-                    if (permissionViewModel.checkUserName())
-                        activityListener?.displayLocationUI()
                     binding.btnUserNameRequest.setOnClickListener {
                         if (binding.editName.text.toString().length > 2) {
                             binding.editName.isActivated = false
                             permissionViewModel.saveUserName(binding.editName.text.toString())
                             activityListener?.displayLocationUI()
                         } else {
-                            makeLongToast("Имя должно быть длиннее 3х символов", requireContext())
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.name_must_be_3,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
+
                 else -> {}
             }
         }

@@ -7,8 +7,10 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.SphericalUtil
@@ -22,8 +24,10 @@ import ru.newlevel.hordemap.domain.usecases.mapCases.LoadGameMapFromServerUseCas
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadLastGameMapUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.LocationUpdatesUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveGameMapToFileUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.CreateGarminMarkersUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.CreateMarkersUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
+import ru.newlevel.hordemap.domain.usecases.markersCases.GarminGPXParser
 import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateUseCase
@@ -47,7 +51,9 @@ class MapViewModel(
     private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase,
     private val compassUseCase: CompassUseCase,
     private val createRouteUseCase: CreateRouteUseCase,
-    private val locationUpdatesUseCase: LocationUpdatesUseCase
+    private val locationUpdatesUseCase: LocationUpdatesUseCase,
+    private val createGarminMarkersUseCase: CreateGarminMarkersUseCase,
+    private val garminGPXParser: GarminGPXParser
 ) : ViewModel() {
 
     val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState }
@@ -62,14 +68,27 @@ class MapViewModel(
     private val _distanceText = MutableLiveData<String>()
     val distanceText: LiveData<String> = _distanceText
 
-    private val _kmzUri = MutableLiveData<Uri?>()
-    val kmzUri: LiveData<Uri?> = _kmzUri
+    private val _mapUri = MutableLiveData<Uri?>()
+    val mapUri: LiveData<Uri?> = _mapUri
 
     private var _isAutoLoadMap = MutableLiveData<Boolean>()
     val isAutoLoadMap: LiveData<Boolean> = _isAutoLoadMap
 
+    val polygon: MutableLiveData<Polygon> = MutableLiveData<Polygon>()
     init {
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
+    }
+
+    fun parseGpx(
+        inputStream: InputStream,
+        markerCollection: MarkerManager.Collection,
+        context: Context,
+        googleMap: GoogleMap
+    ) {
+        val parse = garminGPXParser.parseGPX(inputStream)
+        createGarminMarkersUseCase.createGarminMarkers(parse, markerCollection, context)
+        if (parse.bounds != null)
+          polygon.value = googleMap.addPolygon(createGarminMarkersUseCase.createGarminBounds(parse))
     }
 
     fun startLocationUpdates() = locationUpdatesUseCase.startLocationUpdates()
@@ -90,22 +109,24 @@ class MapViewModel(
     fun setRoutePolyline(polyline: Polyline) {
         routePolyline = polyline
     }
-    fun isRoutePolylineNotNull(): Boolean{
+
+    fun isRoutePolylineNotNull(): Boolean {
         return routePolyline != null
     }
+
     fun createRoute(currentLatLng: LatLng, destination: LatLng, context: Context): PolylineOptions {
         removeRoute()
         setDistanceText(currentLatLng, destination)
-        return createRouteUseCase.execute(currentLatLng,destination, context)
+        return createRouteUseCase.execute(currentLatLng, destination, context)
     }
 
-   fun createRoute(listLatLng: List<LatLng>): PolylineOptions{
-       removeRoute()
-       return PolylineOptions().apply {
-           color(Color.RED)
-           width(15f)
-       }.addAll(listLatLng)
-   }
+    fun createRoute(listLatLng: List<LatLng>): PolylineOptions {
+        removeRoute()
+        return PolylineOptions().apply {
+            color(Color.RED)
+            width(15f)
+        }.addAll(listLatLng)
+    }
 
     fun removeRoute() {
         routePolyline?.remove()
@@ -114,7 +135,7 @@ class MapViewModel(
 
     fun updateRoute(currentLatLng: LatLng) {
         if (destination != null && routePolyline != null) {
-            routePolyline?.points?: listOf(currentLatLng, destination)
+            routePolyline?.points ?: listOf(currentLatLng, destination)
             setDistanceText(currentLatLng, destination)
         }
     }
@@ -132,11 +153,12 @@ class MapViewModel(
     }
 
     fun setUriForMap(uri: Uri) {
-        _kmzUri.postValue(uri)
+        _mapUri.postValue(uri)
     }
 
     fun cleanUriForMap() {
-        _kmzUri.postValue(null)
+        _mapUri.postValue(null)
+        polygon.value?.remove()
     }
 
     fun reCreateMarkers() {
@@ -148,8 +170,8 @@ class MapViewModel(
         _isAutoLoadMap.value = boolean
     }
 
-    suspend fun saveGameMapToFile(uri: Uri) {
-        saveGameMapToFileUseCase.execute(uri)
+    suspend fun saveGameMapToFile(uri: Uri, suffix: String) {
+        saveGameMapToFileUseCase.execute(uri, suffix)
     }
 
     suspend fun getInputSteam(uri: Uri, context: Context): InputStream? {
@@ -163,7 +185,7 @@ class MapViewModel(
     suspend fun loadLastGameMap(): Boolean {
         val uri = loadLastGameMapUseCase.execute()
         return if (uri != null) {
-            _kmzUri.value = uri
+            _mapUri.value = uri
             true
         } else false
     }

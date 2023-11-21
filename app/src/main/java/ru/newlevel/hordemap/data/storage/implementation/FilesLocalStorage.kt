@@ -11,8 +11,10 @@ import java.io.OutputStream
 
 class FilesLocalStorage(private val context: Context) : GameMapLocalStorage {
 
-    override suspend fun saveGameMapToFile(uri: Uri) {
-        val filename = "lastSavedMap.kmz"
+    override suspend fun saveGameMapToFile(uri: Uri, suffix: String) {
+        val filename = "lastSavedMap$suffix"
+        File(context.filesDir, "lastSavedMap.kmz").delete()
+        File(context.filesDir, "lastSavedMap.gpx").delete()
         try {
             val inputStream = context.contentResolver.openInputStream(uri)
 
@@ -27,7 +29,7 @@ class FilesLocalStorage(private val context: Context) : GameMapLocalStorage {
                     outputStream.close()
                 }
             } else {
-                Log.e("AAA", "Не удалось открыть inputStream")
+                Log.e("AAA", "Open inputStream failed")
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -35,8 +37,12 @@ class FilesLocalStorage(private val context: Context) : GameMapLocalStorage {
     }
 
     override suspend fun loadLastMapFromFile(): Uri? {
-        val filename = "lastSavedMap.kmz"
-        val file = File(context.filesDir, filename)
+        var filename = "lastSavedMap.kmz"
+        var file = File(context.filesDir, filename)
+        if (!file.exists()) {
+            filename = "lastSavedMap.gpx"
+            file = File(context.filesDir, filename)
+        }
         return Uri.fromFile(file)
     }
 }

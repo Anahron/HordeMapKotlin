@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -87,11 +86,9 @@ class TracksFragment : Fragment(R.layout.fragment_tracks_dialog) {
         }
 
         tracksViewModel.currentTrack.observe(viewLifecycleOwner){
-            Log.e("AAA", "currentTrack.observe " +  this)
             trackAdapter.setCurrentTrack(it)
         }
         tracksViewModel.trackItemAll.observe(viewLifecycleOwner) {
-            Log.e("AAA", "trackItemAll.observe " +  this)
             if (it != null) {
                 val newlist = it.toMutableList()
                 tracksViewModel.currentTrack.value?.let { it1 -> newlist.add(0, it1) }
@@ -229,7 +226,7 @@ class TracksFragment : Fragment(R.layout.fragment_tracks_dialog) {
                     } else
                         Toast.makeText(
                             requireContext(),
-                            "Минимальная дистанция должна быть больше 300 метров",
+                            R.string.minimal_distance_should_be,
                             Toast.LENGTH_LONG
                         ).show()
                 }

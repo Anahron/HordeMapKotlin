@@ -1,6 +1,7 @@
 package ru.newlevel.hordemap.presentation.map
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -10,12 +11,13 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
+import ru.newlevel.hordemap.app.getMimeType
 import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.LoadMapDialogBinding
 import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
 
-class LoadMapDialogFragment(
+class LoadMapFragment(
     private val mapViewModel: MapViewModel,
 ) : Fragment(R.layout.load_map_dialog) {
 
@@ -50,17 +52,29 @@ class LoadMapDialogFragment(
         val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
             result?.let {
                 lifecycleScope.launch {
-                    mapViewModel.saveGameMapToFile(it)
-                    mapViewModel.setUriForMap(it)
+                    val mimeType = requireContext().getMimeType(it)
+                    Log.e("AAA", mimeType.toString())
+
+                    when {
+                        mimeType?.endsWith("kmz") == true -> {
+                            mapViewModel.saveGameMapToFile(it, ".kmz")
+                        }
+
+                        else -> {
+                            mapViewModel.saveGameMapToFile(it, ".gpx")
+                        }
+                    }
                 }
+                mapViewModel.setUriForMap(it)
             }
         }
 
-        btnFromFiles.setOnClickListener {
-            activityLauncher.launch("application/vnd.google-earth.kmz")
+
+        btnFromFiles.setOnClickListener{
+            activityLauncher.launch("application/*")
         }
 
-        btnLastSaved.setOnClickListener {
+        btnLastSaved.setOnClickListener{
             lifecycleScope.launch {
                 if (!mapViewModel.loadLastGameMap())
                     Toast.makeText(
@@ -70,13 +84,12 @@ class LoadMapDialogFragment(
                     ).show()
             }
         }
-        btnCleanMap.setOnClickListener {
+        btnCleanMap.setOnClickListener{
             boolean = false
             checkBox.isChecked = false
             mapViewModel.setIsAutoLoadMap(boolean!!)
             settingsViewModel.saveAutoLoad(boolean!!)
             mapViewModel.cleanUriForMap()
-
         }
     }
 }

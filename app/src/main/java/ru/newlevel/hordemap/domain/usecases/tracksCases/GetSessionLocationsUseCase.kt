@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.domain.usecases.tracksCases
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
 import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -20,9 +21,7 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
             locationRepository.getCurrentLocationsLiveData(sessionId = sessionId)
         val trackItemLiveData: LiveData<TrackItemDomainModel> =
             myLocationEntityLiveData.map { locationEntity ->
-                val locationsList = locationEntity.map {
-                    LatLng(it.latitude, it.longitude)
-                }
+                val locationsList = getAndSimplifyLocation(locationEntity)
                 return@map if (locationEntity.isNotEmpty()) {
                     val distance = SphericalUtil.computeLength(locationsList)
                     TrackItemDomainModel(
@@ -48,16 +47,13 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
         return trackItemLiveData
     }
 
-
     suspend fun getAllSessionLocations(): List<TrackItemDomainModel> {
         val uniqueSessionIds = locationRepository.getAllLocationsGroupedBySessionId()
         val allLocations = mutableListOf<TrackItemDomainModel>()
 
         for (sessionId in uniqueSessionIds) {
             val locationEntity = locationRepository.getLocationsBySessionId(sessionId)
-            val locationsList = locationEntity.map {
-                LatLng(it.latitude, it.longitude)
-            }
+            val locationsList = getAndSimplifyLocation(locationEntity)
             if (locationEntity.isEmpty()) {
                 locationRepository.deleteLocationsBySessionId(sessionId = sessionId)
                 continue
@@ -81,9 +77,16 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
                 )
             }
         }
-       return allLocations.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }.thenByDescending { it.timestamp })
+        return allLocations.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }.thenByDescending { it.timestamp })
     }
+    private fun getAndSimplifyLocation(locationEntity: List<MyLocationEntity>): List<LatLng>{
+        val locationsList = locationEntity.map {
+            LatLng(it.latitude, it.longitude)
+        }
+        return if (locationsList.size > 3) PolyUtil.simplify(locationsList, 10.0)
+        else locationsList
 
+    }
     private fun distanceToString(resultDistance: Double): String {
         return when {
             resultDistance < 1000 -> "${resultDistance.roundToInt()}m"

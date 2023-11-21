@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.presentation.settings
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -22,10 +21,6 @@ class SettingsViewModel(
     private val loginResultLiveDataMutable = MutableLiveData<UserDomainModel>()
     val loginResultData: LiveData<UserDomainModel> = loginResultLiveDataMutable
 
-    init {
-        Log.e("AAA", "LoginVM created")
-    }
-
     fun saveUser(userDomainModel: UserDomainModel) {
         saveSettingsUseCase.execute(userDomainModel)
         resultLiveDataMutable.value = userDomainModel
@@ -41,4 +36,13 @@ class SettingsViewModel(
         loginResultLiveDataMutable.value = user
         return user
     }
+
+    fun getUser() {
+        resultLiveDataMutable.value = getSettingsUseCase.execute()
+    }
+
+    fun reset() {
+        resetSettingsUseCase.execute()
+    }
+
 }

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
 import android.provider.Settings
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -28,12 +29,14 @@ fun makeLongToast(text: String, context: Context) {
     ).show()
 }
 
-fun makeShortToast(text: String, context: Context) {
-    Toast.makeText(
-        context,
-        text,
-        Toast.LENGTH_LONG
-    ).show()
+fun Context.getMimeType(uri: Uri): String? {
+    return if (uri.scheme == "content") {
+        contentResolver.getType(uri)
+    } else {
+        // Для файлов на устройстве, используем MimeTypeMap
+        val fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+        MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.lowercase(Locale.ROOT))
+    }
 }
 
 fun mapUserDataToDomain(user: UserDataModel): UserDomainModel {

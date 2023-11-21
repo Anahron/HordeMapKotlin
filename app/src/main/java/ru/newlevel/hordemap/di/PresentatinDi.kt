@@ -31,7 +31,9 @@ val presentationModule = module {
             stopMarkerUpdateUseCase = get(),
             compassUseCase = get(),
             createRouteUseCase = get(),
-            locationUpdatesUseCase = get()
+            locationUpdatesUseCase = get(),
+            garminGPXParser = get(),
+            createGarminMarkersUseCase = get()
         )
     }
     viewModel<TracksViewModel> {

@@ -18,6 +18,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
 import android.widget.TextView.VISIBLE
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
@@ -41,7 +42,6 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
-import ru.newlevel.hordemap.app.makeShortToast
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
@@ -381,7 +381,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName)
             }
         } else {
-            makeShortToast("Дождитесь окончания загрузки", requireContext())
+            Toast.makeText(requireContext(), "${R.string.wait_download}", Toast.LENGTH_LONG).show()
             return
         }
     }
