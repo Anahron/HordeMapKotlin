@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
-import ru.newlevel.hordemap.app.getMimeType
+import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.LoadMapDialogBinding
@@ -52,17 +52,21 @@ class LoadMapFragment(
         val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
             result?.let {
                 lifecycleScope.launch {
-                    val mimeType = requireContext().getMimeType(it)
+                    val mimeType = requireContext().getFileNameFromUri(it)
                     Log.e("AAA", mimeType.toString())
-
                     when {
-                        mimeType?.endsWith("kmz") == true -> {
+                        mimeType?.endsWith(".kmz") == true -> {
                             mapViewModel.saveGameMapToFile(it, ".kmz")
                         }
 
-                        else -> {
+                        mimeType?.endsWith(".gpx") == true -> {
                             mapViewModel.saveGameMapToFile(it, ".gpx")
                         }
+                        else ->  Toast.makeText(
+                            requireContext().applicationContext,
+                            "Неверный формат файла",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
                 mapViewModel.setUriForMap(it)

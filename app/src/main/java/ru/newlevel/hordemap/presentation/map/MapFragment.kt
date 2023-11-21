@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.MyAlarmReceiver
-import ru.newlevel.hordemap.app.getMimeType
+import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
@@ -176,10 +176,10 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
         }
         mapViewModel.mapUri.observe(this) { uri ->
             if (uri != null) {
-                val mimeType = requireContext().getMimeType(uri)
+                val mimeType = requireContext().getFileNameFromUri(uri)
                 Log.e("AAA", mimeType.toString())
                 when {
-                    mimeType?.endsWith("kmz") == true -> {
+                    mimeType?.endsWith(".kmz") == true -> {
                         kmlLayer?.removeLayerFromMap()
                         garminMarkerCollection.markers.forEach { marker -> marker.remove() }
                         mapViewModel.polygon.value?.remove()
@@ -200,15 +200,20 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
                                     }
 
                                     kmlLayer?.addLayerToMap()
-                                    kmlLayer?.groundOverlays?.first()?.let { overlay ->
-                                        val center = overlay.latLngBox.center
-                                        cameraUpdate(center.latitude, center.longitude)
+                                    kmlLayer?.let { layer ->
+                                        layer.groundOverlays?.let {
+                                            it.any { overlay ->
+                                                val center = overlay.latLngBox.center
+                                                cameraUpdate(center.latitude, center.longitude)
+                                                true
+                                            }
+                                        }
                                     }
                                 }
                         }
                     }
 
-                   else -> {
+                    mimeType?.endsWith(".gpx") == true -> {
                         try {
                             kmlLayer?.removeLayerFromMap()
                             lifecycleScope.launch {

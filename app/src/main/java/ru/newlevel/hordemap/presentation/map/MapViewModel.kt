@@ -86,9 +86,12 @@ class MapViewModel(
         googleMap: GoogleMap
     ) {
         val parse = garminGPXParser.parseGPX(inputStream)
-        createGarminMarkersUseCase.createGarminMarkers(parse, markerCollection, context)
-        if (parse.bounds != null)
-          polygon.value = googleMap.addPolygon(createGarminMarkersUseCase.createGarminBounds(parse))
+        parse?.let {
+            createGarminMarkersUseCase.createGarminMarkers(parse, markerCollection, context)
+            parse.bounds?.let {
+                polygon.value = googleMap.addPolygon(createGarminMarkersUseCase.createGarminBounds(parse))
+            }
+        }
     }
 
     fun startLocationUpdates() = locationUpdatesUseCase.startLocationUpdates()

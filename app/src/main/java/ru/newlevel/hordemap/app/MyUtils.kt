@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
+import android.provider.OpenableColumns
 import android.provider.Settings
 import android.webkit.MimeTypeMap
 import android.widget.Toast
@@ -16,6 +17,7 @@ import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.models.UserModel
+import java.io.File
 import java.io.InputStream
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -29,15 +31,21 @@ fun makeLongToast(text: String, context: Context) {
     ).show()
 }
 
-fun Context.getMimeType(uri: Uri): String? {
-    return if (uri.scheme == "content") {
-        contentResolver.getType(uri)
-    } else {
-        // Для файлов на устройстве, используем MimeTypeMap
-        val fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-        MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.lowercase(Locale.ROOT))
+fun Context.getFileNameFromUri(uri: Uri): String? {
+    var fileName: String? = null
+    val cursor = contentResolver.query(uri, null, null, null, null)
+    cursor?.use {
+        val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        it.moveToFirst()
+        fileName = it.getString(nameIndex)
     }
+    if (fileName == null) {
+        val file = uri.path?.let { File(it) }
+        fileName = file?.name
+    }
+    return fileName
 }
+
 
 fun mapUserDataToDomain(user: UserDataModel): UserDomainModel {
     return UserDomainModel(
