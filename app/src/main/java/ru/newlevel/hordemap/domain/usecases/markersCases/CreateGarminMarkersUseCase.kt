@@ -27,10 +27,8 @@ class CreateGarminMarkersUseCase() {
         markerCollection: MarkerManager.Collection,
         context: Context
     ) {
-        val markerSize = 60
+        val markerSize = 70
         for (markerModel in garminGpxMarkersSet.markers) {
-            if (markerModel.name.isNotEmpty())
-                createTextMarker(markerModel, markerCollection)
             val icon = GarminMarkersItem.values()
                 .find { it.markerType == markerModel.markerType && it.color == markerModel.markerColor }
                 ?.let { createScaledBitmap(context, it.resourceId, markerSize) }
@@ -38,6 +36,8 @@ class CreateGarminMarkersUseCase() {
 
             val marker: Marker? =
                 markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon))
+            if (markerModel.name.isNotEmpty())
+                createTextMarker(markerModel, markerCollection)
             marker?.tag = GARMIN_TAG
         }
     }
@@ -90,16 +90,21 @@ class CreateGarminMarkersUseCase() {
         val textBounds = Rect()
         paint.getTextBounds(text, 0, text.length, textBounds)
         val textWidth = textBounds.width()
-
         val bitmap = Bitmap.createBitmap(textWidth + 15, 100, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawText(text, (bitmap.width - textWidth) / 2f, 25f, paint)
-
-        markerCollection.addMarker(
-            MarkerOptions()
-                .position(LatLng(marker.latLng.latitude, marker.latLng.longitude))
-                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-        ).setAnchor(0.5f, 0f)
+        if (marker.markerType == "Navaid")
+            markerCollection.addMarker(
+                MarkerOptions()
+                    .position(LatLng(marker.latLng.latitude, marker.latLng.longitude))
+                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+            ).setAnchor(0.55f, 0.5f)
+        else
+            markerCollection.addMarker(
+                MarkerOptions()
+                    .position(LatLng(marker.latLng.latitude, marker.latLng.longitude))
+                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+            ).setAnchor(0.5f, 0f)
     }
 
 
@@ -143,10 +148,10 @@ class CreateGarminMarkersUseCase() {
 
     private fun createPaint(): Paint {
         return Paint().apply {
-            textSize = 25f
-            color = Color.BLACK
+            textSize = 30f
+            color = Color.WHITE
             isFakeBoldText = true
-            setShadowLayer(8f, 0f, 0f, Color.WHITE)
+            setShadowLayer(10f, 0f, 0f, Color.BLACK)
             isAntiAlias = true
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 blendMode = BlendMode.SRC_OVER
@@ -159,7 +164,6 @@ class CreateGarminMarkersUseCase() {
         icon: BitmapDescriptor,
     ): MarkerOptions {
         return MarkerOptions()
-            .title(markerModel.name)
             .position(LatLng(markerModel.latLng.latitude, markerModel.latLng.longitude))
             .icon(icon)
     }

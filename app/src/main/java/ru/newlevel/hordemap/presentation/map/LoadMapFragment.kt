@@ -16,6 +16,12 @@ import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.LoadMapDialogBinding
 import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
+import java.io.File
+import java.io.FileOutputStream
+import java.nio.charset.Charset
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 
 class LoadMapFragment(
     private val mapViewModel: MapViewModel,
@@ -41,9 +47,9 @@ class LoadMapFragment(
             lifecycleScope.launch {
                 makeLongToast("Загрузка началась, подождите...", requireContext())
                 val uri = mapViewModel.loadMapFromServer(requireContext().applicationContext)
-                if (uri != null)
+                if (uri != null) {
                     mapViewModel.setUriForMap(uri)
-                else {
+                } else {
                     makeLongToast("Скачивание завершилось неудачно", requireContext())
                 }
             }
@@ -56,29 +62,29 @@ class LoadMapFragment(
                     Log.e("AAA", mimeType.toString())
                     when {
                         mimeType?.endsWith(".kmz") == true -> {
-                            mapViewModel.saveGameMapToFile(it, ".kmz")
+                            mapViewModel.setUriForMap(mapViewModel.saveGameMapToFile(it, ".kmz"))
                         }
 
                         mimeType?.endsWith(".gpx") == true -> {
                             mapViewModel.saveGameMapToFile(it, ".gpx")
+                            mapViewModel.setUriForMap(mapViewModel.saveGameMapToFile(it, ".kmz"))
                         }
-                        else ->  Toast.makeText(
+
+                        else -> Toast.makeText(
                             requireContext().applicationContext,
                             "Неверный формат файла",
                             Toast.LENGTH_LONG
                         ).show()
                     }
                 }
-                mapViewModel.setUriForMap(it)
             }
         }
 
-
-        btnFromFiles.setOnClickListener{
+        btnFromFiles.setOnClickListener {
             activityLauncher.launch("application/*")
         }
 
-        btnLastSaved.setOnClickListener{
+        btnLastSaved.setOnClickListener {
             lifecycleScope.launch {
                 if (!mapViewModel.loadLastGameMap())
                     Toast.makeText(
@@ -88,7 +94,7 @@ class LoadMapFragment(
                     ).show()
             }
         }
-        btnCleanMap.setOnClickListener{
+        btnCleanMap.setOnClickListener {
             boolean = false
             checkBox.isChecked = false
             mapViewModel.setIsAutoLoadMap(boolean!!)

@@ -79,7 +79,7 @@ class MapViewModel(
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
     }
 
-    fun parseGpx(
+    suspend fun parseGpx(
         inputStream: InputStream,
         markerCollection: MarkerManager.Collection,
         context: Context,
@@ -105,10 +105,6 @@ class MapViewModel(
         compassUseCase.stopSensorEventListener()
     }
 
-    fun setDestination(destination: LatLng) {
-        this.destination = destination
-    }
-
     fun setRoutePolyline(polyline: Polyline) {
         routePolyline = polyline
     }
@@ -119,6 +115,7 @@ class MapViewModel(
 
     fun createRoute(currentLatLng: LatLng, destination: LatLng, context: Context): PolylineOptions {
         removeRoute()
+        this.destination = destination
         setDistanceText(currentLatLng, destination)
         return createRouteUseCase.execute(currentLatLng, destination, context)
     }
@@ -173,9 +170,8 @@ class MapViewModel(
         _isAutoLoadMap.value = boolean
     }
 
-    suspend fun saveGameMapToFile(uri: Uri, suffix: String) {
-        saveGameMapToFileUseCase.execute(uri, suffix)
-    }
+    suspend fun saveGameMapToFile(uri: Uri, suffix: String): Uri = saveGameMapToFileUseCase.execute(uri, suffix)
+
 
     suspend fun getInputSteam(uri: Uri, context: Context): InputStream? {
         return getInputSteamFromUri(uri, context)
@@ -188,7 +184,7 @@ class MapViewModel(
     suspend fun loadLastGameMap(): Boolean {
         val uri = loadLastGameMapUseCase.execute()
         return if (uri != null) {
-            _mapUri.value = uri
+            _mapUri.postValue(uri)
             true
         } else false
     }

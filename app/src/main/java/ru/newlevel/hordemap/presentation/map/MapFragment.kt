@@ -7,6 +7,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
@@ -30,9 +31,11 @@ import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.data.kml.KmlLayer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.xmlpull.v1.XmlPullParserException
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.MyAlarmReceiver
 import ru.newlevel.hordemap.app.getFileNameFromUri
@@ -170,7 +173,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
 
     private fun overlayObserver() {
         mapViewModel.isAutoLoadMap.observe(this) {
-            if (it) lifecycleScope.launch {
+            if (it)
+             CoroutineScope(Dispatchers.IO).launch {
                 mapViewModel.loadLastGameMap()
             }
         }
@@ -180,60 +184,11 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
                 Log.e("AAA", mimeType.toString())
                 when {
                     mimeType?.endsWith(".kmz") == true -> {
-                        kmlLayer?.removeLayerFromMap()
-                        garminMarkerCollection.markers.forEach { marker -> marker.remove() }
-                        mapViewModel.polygon.value?.remove()
-                        lifecycleScope.launch {
-                            uri.let { mapViewModel.getInputSteam(uri, requireContext()) }
-                                .let { stream ->
-                                    stream?.let {
-                                        kmlLayer = KmlLayer(
-                                            googleMap,
-                                            it,
-                                            requireContext(),
-                                            markerManager,
-                                            null,
-                                            null,
-                                            null,
-                                            null
-                                        )
-                                    }
-
-                                    kmlLayer?.addLayerToMap()
-                                    kmlLayer?.let { layer ->
-                                        layer.groundOverlays?.let {
-                                            it.any { overlay ->
-                                                val center = overlay.latLngBox.center
-                                                cameraUpdate(center.latitude, center.longitude)
-                                                true
-                                            }
-                                        }
-                                    }
-                                }
-                        }
+                        loadKmlToMap(uri)
                     }
 
                     mimeType?.endsWith(".gpx") == true -> {
-                        try {
-                            kmlLayer?.removeLayerFromMap()
-                            lifecycleScope.launch {
-                                mapViewModel.getInputSteam(uri, requireContext())
-                                    ?.let {
-                                        mapViewModel.parseGpx(
-                                            it,
-                                            garminMarkerCollection,
-                                            requireContext(), googleMap
-                                        )
-                                    }
-                                garminMarkerCollection.markers.any {
-                                    cameraUpdate(it.position.latitude, it.position.longitude)
-                                    true
-                                }
-
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
+                        loadGpxToMap(uri)
                     }
                 }
             } else {
@@ -241,6 +196,68 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
                 garminMarkerCollection.markers.forEach { marker -> marker.remove() }
                 mapViewModel.polygon.value?.remove()
             }
+        }
+    }
+
+    private fun loadGpxToMap(uri: Uri) {
+        try {
+            kmlLayer?.removeLayerFromMap()
+            lifecycleScope.launch {
+                mapViewModel.getInputSteam(uri, requireContext())
+                    ?.let {
+                        mapViewModel.parseGpx(
+                            it,
+                            garminMarkerCollection,
+                            requireContext(), googleMap
+                        )
+                    }
+                garminMarkerCollection.markers.any {
+                    cameraUpdate(it.position.latitude, it.position.longitude)
+                    true
+                }
+
+            }
+        } catch (e: Exception)
+        {
+            e.printStackTrace()
+        }
+    }
+
+    private fun loadKmlToMap(uri: Uri) {
+        kmlLayer?.removeLayerFromMap()
+        garminMarkerCollection.markers.forEach { marker -> marker.remove() }
+        mapViewModel.polygon.value?.remove()
+        lifecycleScope.launch {
+            uri.let { mapViewModel.getInputSteam(uri, requireContext()) }
+                .let { stream ->
+                    stream?.let {
+                        try {
+                            kmlLayer = KmlLayer(
+                                googleMap,
+                                it,
+                                requireContext(),
+                                markerManager,
+                                null,
+                                null,
+                                null,
+                                null
+                            )
+                        }catch (e: XmlPullParserException){
+                            e.printStackTrace()
+                        }
+                    }
+
+                    kmlLayer?.addLayerToMap()
+                    kmlLayer?.let { layer ->
+                        layer.groundOverlays?.let {
+                            it.any { overlay ->
+                                val center = overlay.latLngBox.center
+                                cameraUpdate(center.latitude, center.longitude)
+                                true
+                            }
+                        }
+                    }
+                }
         }
     }
 
@@ -253,7 +270,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
             LatLng(
                 latitude,
                 longitude
-            ), 12F
+            ), 14F
         )
         googleMap.animateCamera(update)
     }
@@ -268,7 +285,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback {
     }
 
     private fun buildRoute(destination: LatLng) {
-        mapViewModel.setDestination(destination)
         mapViewModel.setRoutePolyline(
             googleMap.addPolyline(
                 mapViewModel.createRoute(

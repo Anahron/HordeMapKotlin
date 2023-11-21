@@ -3,7 +3,6 @@ package ru.newlevel.hordemap.domain.usecases.tracksCases
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
 import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -83,8 +82,9 @@ class GetSessionLocationsUseCase(private val locationRepository: LocationReposit
         val locationsList = locationEntity.map {
             LatLng(it.latitude, it.longitude)
         }
-        return if (locationsList.size > 3) PolyUtil.simplify(locationsList, 10.0)
-        else locationsList
+//        return if (locationsList.size > 3) PolyUtil.simplify(locationsList, 10.0)
+//        else locationsList
+        return locationsList
 
     }
     private fun distanceToString(resultDistance: Double): String {

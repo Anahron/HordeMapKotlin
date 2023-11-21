@@ -4,7 +4,5 @@ import android.net.Uri
 import ru.newlevel.hordemap.domain.repository.GameMapRepository
 
 class SaveGameMapToFileUseCase(private val gameMapRepository: GameMapRepository) {
-    suspend fun execute(uri: Uri, suffix: String) {
-        gameMapRepository.saveGameMapToFile(uri, suffix)
-    }
+    suspend fun execute(uri: Uri, suffix: String): Uri = gameMapRepository.saveGameMapToFile(uri, suffix)
 }

@@ -5,7 +5,5 @@ import ru.newlevel.hordemap.domain.repository.GameMapRepository
 
 class LoadLastGameMapUseCase(private val gameMapRepository: GameMapRepository)
 {
-    suspend fun execute(): Uri? {
-        return gameMapRepository.loadLastGameMap()
-    }
+    suspend fun execute(): Uri? = gameMapRepository.loadLastGameMap()
 }
