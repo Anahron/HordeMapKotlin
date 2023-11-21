@@ -2,7 +2,6 @@ package ru.newlevel.hordemap.di
 
 import android.content.Context
 import android.hardware.SensorManager
-import androidx.room.Room
 import androidx.room.Room.databaseBuilder
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -10,6 +9,7 @@ import ru.newlevel.hordemap.data.db.MyLocationDao
 import ru.newlevel.hordemap.data.db.MyLocationDatabase
 import ru.newlevel.hordemap.data.repository.*
 import ru.newlevel.hordemap.data.storage.implementation.FilesLocalStorage
+import ru.newlevel.hordemap.data.storage.implementation.FilesUtils
 import ru.newlevel.hordemap.data.storage.implementation.MyFirebaseDatabase
 import ru.newlevel.hordemap.data.storage.implementation.MyFirebaseStorage
 import ru.newlevel.hordemap.data.storage.implementation.SharedPrefUserLocalStorage
@@ -51,11 +51,11 @@ val dataModule = module {
         MyFirebaseDatabase()
     }
     single<FilesLocalStorage> {
-        FilesLocalStorage(context = get())
+        FilesLocalStorage(context = get(), FilesUtils())
     }
 
     single<GameMapLocalStorage> {
-        FilesLocalStorage(context = get())
+        FilesLocalStorage(context = get(), FilesUtils())
     }
     single<GameMapRemoteStorage> {
         MyFirebaseStorage()
