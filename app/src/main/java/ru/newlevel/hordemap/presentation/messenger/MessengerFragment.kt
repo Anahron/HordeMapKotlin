@@ -112,9 +112,9 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupUIComponents()
         requestWriteExternalStoragePermission()
         setupRecyclerView()
-        setupUIComponents()
         setupMessagesUpdates()
         showAnimation()
     }
@@ -183,13 +183,13 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupUIComponents() {
+        setupBottomSheetBehavior()
         setupEditTextMessage()
         setupSendMessageButton()
         setupAttackBtn()
         setupCloseMessengerButton()
         setupProgressBar()
         setupScrollDownButton()
-        setupBottomSheetBehavior()
         setupBottomBehaviorListeners()
     }
 
