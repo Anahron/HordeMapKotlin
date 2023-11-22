@@ -80,7 +80,8 @@ class MyLocationManager : Service() {
         timeToSendData = UserEntityProvider.userEntity?.timeToSendData?.times(1000L) ?: 60000L
         locationRequest =
             LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData)
-                .setMinUpdateDistanceMeters(10F)
+                //TODO 0 для теста установить 10
+                .setMinUpdateDistanceMeters(0F)
                 .setMinUpdateIntervalMillis(6000L)
                 .setMaxUpdateAgeMillis(Long.MAX_VALUE)
                 .setMaxUpdateDelayMillis(UserEntityProvider.userEntity?.timeToSendData?.times(1000L) ?: 60000L)

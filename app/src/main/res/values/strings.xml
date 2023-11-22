@@ -18,7 +18,7 @@
     <string name="time_to_send_data">Data Sending Frequency</string>
     <string name="marker_size">Marker Size</string>
     <string name="user_marker_size">User Marker Size</string>
-    <string name="timeToSenData">Request Period: </string>
+    <string name="timeToSenData">Request GPS in: </string>
     <string name="myMarker">My Marker</string>
     <string name="settings">Settings</string>
     <string name="statikMarkerSize">Marker Size</string>

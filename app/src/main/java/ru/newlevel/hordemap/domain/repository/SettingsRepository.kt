@@ -1,12 +1,12 @@
 package ru.newlevel.hordemap.domain.repository
 
-import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
 interface SettingsRepository {
 
-    fun saveUser(userDomainModel: UserDomainModel)
+    fun saveUser(userDataModel: UserDataModel)
 
-    fun getUser(): UserDomainModel
+    fun getUser(): UserDataModel
 
     fun resetUser()
 

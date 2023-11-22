@@ -15,15 +15,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "1031356381967-brja1ct8qd55qdrafu444k97a06i94tp.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "ru.newlevel.hordemap",
-            "certificate_hash": "87abc5d77cc5b7964b2f25b7ff740db5e23d0e42"
-          }
-        },
-        {
-          "client_id": "1031356381967-tiqhkb2klhoch66qfs68q7jke6c2opn2.apps.googleusercontent.com",
+          "client_id": "1031356381967-ks6sptipmnn407nhgu5cr4o9ld4dqerg.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -52,7 +44,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "1031356381967-tiqhkb2klhoch66qfs68q7jke6c2opn2.apps.googleusercontent.com",
+          "client_id": "1031356381967-ks6sptipmnn407nhgu5cr4o9ld4dqerg.apps.googleusercontent.com",
           "client_type": 3
         }
       ],

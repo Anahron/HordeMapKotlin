@@ -19,11 +19,12 @@ import java.util.Date
 
 private const val TAG = "AAA"
 
+
 class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinComponent {
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(context: Context, intent: Intent?) {
         Log.e(TAG, "onReceive in LocationUpdatesBroadcastReceiver")
-        if (intent.action == ACTION_PROCESS_UPDATES) {
+        if (intent?.action == ACTION_PROCESS_UPDATES) {
             LocationAvailability.extractLocationAvailability(intent)?.let { locationAvailability ->
                 if (!locationAvailability.isLocationAvailable) {
                     Log.e(TAG, "Location services are no longer available!")
@@ -63,7 +64,6 @@ class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinCompone
             }
         }
     }
-
     companion object {
         const val ACTION_PROCESS_UPDATES =
             "ru.newlevel.hordemap.app.action." +

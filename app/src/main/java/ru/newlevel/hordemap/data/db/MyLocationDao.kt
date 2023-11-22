@@ -10,14 +10,17 @@ import java.util.*
 @Dao
 interface MyLocationDao {
 
-    @Query("SELECT * FROM my_location_table WHERE sessionId =(:sessionId) ORDER BY date DESC")
+    @Query("SELECT * FROM my_location_table WHERE sessionId =(:sessionId) ORDER BY date ASC")
     fun getCurrentLocationsLiveData(sessionId: String): LiveData<List<MyLocationEntity>>
 
-    @Query("SELECT * FROM my_location_table WHERE sessionId =(:sessionId) ORDER BY date DESC")
+    @Query("SELECT * FROM my_location_table WHERE sessionId =(:sessionId) ORDER BY date ASC")
     fun getLocationsBySessionId(sessionId: String): List<MyLocationEntity>
 
     @Query("DELETE FROM my_location_table WHERE sessionId = :sessionId")
     fun deleteLocationsBySessionId(sessionId: String)
+
+    @Query("SELECT * FROM my_location_table WHERE sessionId = :sessionId ORDER BY date DESC LIMIT 2")
+    fun getTwoLastLocationsInDescendingOrder(sessionId: String): List<MyLocationEntity>
 
     @Query("UPDATE my_location_table SET trackName = :newTrackName WHERE sessionId = :sessionId")
     fun renameTrackNameForSession(sessionId: String, newTrackName: String)
@@ -28,6 +31,9 @@ interface MyLocationDao {
     fun updateSessionId(oldSessionId: String, newSessionId: String)
     @Update
     fun updateLocation(myLocationEntity: MyLocationEntity)
+
+    @Query("DELETE FROM my_location_table WHERE id = :locationUuid")
+    fun deleteLocationByUuid(locationUuid: String)
 
     @Insert
     fun addLocation(myLocationEntity: MyLocationEntity)

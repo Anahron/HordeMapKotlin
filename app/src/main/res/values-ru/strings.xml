@@ -18,7 +18,7 @@
     <string name="time_to_send_data">Частота отправки данных</string>
     <string name="marker_size">Размер меток</string>
     <string name="user_marker_size">Размер игроков</string>
-    <string name="timeToSenData">Период запросов: </string>
+    <string name="timeToSenData">Запрос GPS раз в: </string>
     <string name="myMarker">Мой маркер</string>
     <string name="settings">Настройки</string>
     <string name="statikMarkerSize">Размер меток</string>

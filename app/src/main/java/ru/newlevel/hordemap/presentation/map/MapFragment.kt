@@ -10,6 +10,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -45,6 +46,7 @@ import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
 import ru.newlevel.hordemap.presentation.settings.SettingsFragment
 import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
+import java.util.Date
 import kotlin.math.roundToInt
 
 class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, SettingsFragment.OnChangeMarkerSettings {
@@ -107,7 +109,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
                     binding.drawableSettings.closeDrawer(GravityCompat.END)
                     binding.ibMarkers.setBackgroundResource(R.drawable.img_map_show_markers)
                     mapViewModel.userMarkersLiveData.observe(viewLifecycleOwner) {
-                        userMarkerCollection.markers.forEach { marker -> marker.remove() }
                         mapViewModel.createUsersMarkers(
                             it, markerCollection = userMarkerCollection, requireContext()
                         )
@@ -431,23 +432,25 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             googleMap.uiSettings.isMapToolbarEnabled = false
             googleMap.uiSettings.isMyLocationButtonEnabled = false
         } else {
-            (activity as MainActivity).requestPermission()
+            (activity as MainActivity).goToRequestsPermissions()
         }
     }
 
     private fun startAlarmManager() {
+        Log.e("AAA", "startAlarmManager at " + Date(System.currentTimeMillis()))
         val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
         (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 600000, pendingIntent
+            AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 240000, pendingIntent
         )
     }
 
     override fun onPause() {
         super.onPause()
         mapViewModel.compassDeActivate()
+        binding.drawableSettings.closeDrawers()
     }
 
     override fun onResume() {
@@ -473,6 +476,9 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     override fun onChangeMarkerSettings() {
+        userMarkerCollection.markers.forEach {
+                marker -> marker.remove() }
+        userMarkerCollection.markers
         mapViewModel.reCreateMarkers()
     }
 }

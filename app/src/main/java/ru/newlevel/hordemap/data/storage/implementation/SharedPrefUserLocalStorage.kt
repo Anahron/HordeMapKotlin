@@ -17,7 +17,7 @@ const val DEFAULT_SIZE = 60
 const val DEFAULT_TIME = 30
 const val KEY_IS_AUTO_LOAD = "isAutoLoad"
 
-class SharedPrefUserLocalStorage(private val context: Context): UserLocalStorage {
+class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorage {
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(SHARE_PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -37,7 +37,15 @@ class SharedPrefUserLocalStorage(private val context: Context): UserLocalStorage
         val staticMarkerSize = sharedPreferences.getInt(KEY_STATIC_MARKER_SIZE, DEFAULT_SIZE)
         val usersMarkerSize = sharedPreferences.getInt(KEY_USERS_MARKER_SIZE, DEFAULT_SIZE)
         val isAutoLoad = sharedPreferences.getBoolean(KEY_IS_AUTO_LOAD, false)
-        return UserDataModel(userName,timeToSend,usersMarkerSize,staticMarkerSize,selectedMarker, context.getMyDeviceId(), isAutoLoad)
+        return UserDataModel(
+            name = userName,
+            timeToSendData = timeToSend,
+            usersMarkerSize = usersMarkerSize,
+            staticMarkerSize = staticMarkerSize,
+            selectedMarker = selectedMarker,
+            deviceID = context.getMyDeviceId(),
+            autoLoad = isAutoLoad
+        )
     }
 
     override fun reset() {

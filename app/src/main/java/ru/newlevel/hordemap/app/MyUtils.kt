@@ -20,11 +20,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 fun makeLongToast(text: String, context: Context) {
-    Toast.makeText(
-        context,
-        text,
-        Toast.LENGTH_LONG
-    ).show()
+    Toast.makeText(context, text, Toast.LENGTH_LONG).show()
 }
 
 fun Context.getFileNameFromUri(uri: Uri): String? {
@@ -49,7 +45,7 @@ fun UserDataModel.mapToDomainModel(): UserDomainModel {
         timeToSendData = timeToSendData,
         usersMarkerSize = usersMarkerSize,
         staticMarkerSize = staticMarkerSize,
-        selectedMarker = timeToSendData,
+        selectedMarker = selectedMarker,
         deviceID = deviceID,
         autoLoad = autoLoad
     )
@@ -61,15 +57,14 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
         timeToSendData = timeToSendData,
         usersMarkerSize = usersMarkerSize,
         staticMarkerSize = staticMarkerSize,
-        selectedMarker = timeToSendData,
+        selectedMarker = selectedMarker,
         deviceID = deviceID,
         autoLoad = autoLoad
     )
 }
 
 fun Context.getMyDeviceId(): String {
-    @SuppressLint("HardwareIds") val androidId =
-        Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
+    @SuppressLint("HardwareIds") val androidId = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
     return androidId ?: UUID.randomUUID().toString()
 }
 
@@ -94,7 +89,6 @@ fun Location.toMarker(userModel: UserModel): MarkerDataModel {
 
 fun Context.hasPermission(permission: String): Boolean {
     return ContextCompat.checkSelfPermission(
-        this,
-        permission
+        this, permission
     ) == PackageManager.PERMISSION_GRANTED
 }

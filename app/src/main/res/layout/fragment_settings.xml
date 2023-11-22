@@ -84,9 +84,9 @@
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:contentDescription="@string/Distance"
-            android:stepSize="10"
+            android:stepSize="5"
             android:value="30"
-            android:valueFrom="20.0"
+            android:valueFrom="5.0"
             android:valueTo="120.0"
             tools:ignore="DuplicateSpeakableTextCheck" />
 
