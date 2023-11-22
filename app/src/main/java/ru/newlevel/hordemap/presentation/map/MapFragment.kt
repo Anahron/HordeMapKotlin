@@ -478,7 +478,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     override fun onChangeMarkerSettings() {
         userMarkerCollection.markers.forEach {
                 marker -> marker.remove() }
-        userMarkerCollection.markers
         mapViewModel.reCreateMarkers()
     }
 }
