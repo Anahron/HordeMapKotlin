@@ -13,17 +13,10 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.database.FirebaseDatabase
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 
-private const val TAG = "AAA"
-private const val GEO_USER_MARKERS_PATH = "geoData0"
-
 class BgLocationWorker(context: Context, param: WorkerParameters) :
     CoroutineWorker(context, param) {
 
     private val databaseReference by lazy(LazyThreadSafetyMode.NONE) { FirebaseDatabase.getInstance().reference }
-
-    companion object {
-        const val workName = "BgLocationWorker"
-    }
 
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)
 

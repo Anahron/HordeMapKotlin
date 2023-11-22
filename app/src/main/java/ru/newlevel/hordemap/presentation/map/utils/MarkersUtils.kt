@@ -161,10 +161,13 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
     ) {
         val userEntity = UserEntityProvider.userEntity ?: return
         MARKER_SIZE_USERS = userEntity.usersMarkerSize
-        markerCollection.markers.removeAll { existingMarker ->
-            val existingMarkerInfo = existingMarker.tag.toString().split("/")
-            markersModels.none { it.deviceId == existingMarkerInfo[0] }
+
+        markerCollection.markers.forEach { marker ->
+            val markerId = marker.tag.toString().split("/")
+            if (markersModels.none{it.deviceId == markerId[0]})
+                marker.remove()
         }
+
         markersModels.forEach { markerModel ->
             if (userEntity.deviceID == markerModel.deviceId) return@forEach
             val foundMarker = markerCollection.markers.find {

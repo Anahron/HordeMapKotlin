@@ -6,18 +6,17 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import ru.newlevel.hordemap.app.GEO_STATIC_MARKERS_PATH
+import ru.newlevel.hordemap.app.GEO_USER_MARKERS_PATH
+import ru.newlevel.hordemap.app.MESSAGE_PATH
+import ru.newlevel.hordemap.app.TAG
+import ru.newlevel.hordemap.app.TIMESTAMP_PATH
+import ru.newlevel.hordemap.app.TIME_TO_DELETE_USER_MARKER
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
-
-private const val GEO_USER_MARKERS_PATH = "geoData0"
-private const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
-private const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах
-private const val MESSAGE_PATH = "messages0"
-private const val TIMESTAMP_PATH = "timestamp"
-private const val TAG = "AAA"
 
 class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
 

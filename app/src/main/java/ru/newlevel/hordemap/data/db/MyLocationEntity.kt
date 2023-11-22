@@ -2,11 +2,12 @@ package ru.newlevel.hordemap.data.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import ru.newlevel.hordemap.app.LOCATION_DATABASE
 import java.text.DateFormat
 import java.util.Date
 import java.util.UUID
 
-@Entity(tableName = "my_location_table")
+@Entity(tableName = LOCATION_DATABASE)
 data class MyLocationEntity(
     @PrimaryKey val id: UUID = UUID.randomUUID(),
     val sessionId: String,

@@ -22,8 +22,6 @@ import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import java.util.*
 
-private const val TAG = "AAA"
-
 @SuppressLint("RestrictedApi")
 class MyAlarmReceiver : BroadcastReceiver(), KoinComponent {
     override fun onReceive(context: Context, intent: Intent?) {

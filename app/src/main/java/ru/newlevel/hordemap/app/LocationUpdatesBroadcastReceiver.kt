@@ -17,8 +17,6 @@ import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import java.util.Date
 
-private const val TAG = "AAA"
-
 
 class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinComponent {
 

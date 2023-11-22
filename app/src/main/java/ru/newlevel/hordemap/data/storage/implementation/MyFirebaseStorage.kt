@@ -18,13 +18,12 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.app.BASE_LAST_MAP_FILENAME
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
+import ru.newlevel.hordemap.app.MAP_URL
+import ru.newlevel.hordemap.app.MESSAGE_FILE_FOLDER
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
 import java.io.File
 import kotlin.coroutines.resume
-
-private const val MESSAGE_FILE_FOLDER = "MessengerFiles0"
-private const val MAP_URL = "gs://horde-4112c.appspot.com/maps/map.kmz"  // карта полигона
 
 class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
 
@@ -37,11 +36,9 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
         return suspendCancellableCoroutine { continuation ->
             val filename = BASE_LAST_MAP_FILENAME + KMZ_EXTENSION
             val file = File(context.filesDir, filename)
-            gsReference.getFile(file)
-                .addOnSuccessListener { _ ->
+            gsReference.getFile(file).addOnSuccessListener { _ ->
                     continuation.resume(Uri.fromFile(file))
-                }
-                .addOnFailureListener {
+                }.addOnFailureListener {
                     continuation.resume(null)
                 }
             continuation.invokeOnCancellation {
@@ -51,10 +48,7 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
     }
 
     override suspend fun sendFile(
-        message: String,
-        uri: Uri,
-        fileName: String?,
-        fileSize: Long
+        message: String, uri: Uri, fileName: String?, fileSize: Long
     ): String {
         return withContext(Dispatchers.IO) {
             val messageFilesStorage = storageReference.child("$MESSAGE_FILE_FOLDER/$fileName")
@@ -68,12 +62,10 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
             uploadTask.addOnCompleteListener { task: Task<UploadTask.TaskSnapshot?> ->
                 if (task.isSuccessful) {
                     progressLiveData.postValue(1000)
-                    messageFilesStorage.downloadUrl
-                        .addOnSuccessListener { uri: Uri ->
+                    messageFilesStorage.downloadUrl.addOnSuccessListener { uri: Uri ->
                             val downloadUrl = uri.toString()
                             resultDeferred.complete(downloadUrl)
-                        }
-                        .addOnFailureListener {
+                        }.addOnFailureListener {
                             resultDeferred.complete("")
                         }
                 } else {
@@ -95,9 +87,13 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             request.setAllowedOverMetered(true)
             request.setAllowedOverRoaming(true)
-            MediaScannerConnection.scanFile(context, arrayOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + fileName),null,null)
-            val downloadManager =
-                context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            MediaScannerConnection.scanFile(
+                context, arrayOf(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        .toString() + "/" + fileName
+                ), null, null
+            )
+            val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadManager.enqueue(request)
             val downloadId = downloadManager.enqueue(request)
             observeDownloadProgress(downloadManager, downloadId)
@@ -121,11 +117,11 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
                                     downloading = false
                                     progressLiveData.value = 1000
                                 }
+
                                 else -> {
                                     val columnIndexBytesDownloaded =
                                         it.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
-                                    val columnIndexBytesTotal =
-                                        it.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+                                    val columnIndexBytesTotal = it.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
                                     if (columnIndexBytesDownloaded != -1 && columnIndexBytesTotal != -1) {
                                         val bytesDownloaded = it.getInt(columnIndexBytesDownloaded)
                                         val bytesTotal = cursor.getInt(columnIndexBytesTotal)

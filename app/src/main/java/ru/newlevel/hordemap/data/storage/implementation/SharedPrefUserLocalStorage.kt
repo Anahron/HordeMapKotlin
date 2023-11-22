@@ -2,20 +2,18 @@ package ru.newlevel.hordemap.data.storage.implementation
 
 import android.content.Context
 import android.content.SharedPreferences
+import ru.newlevel.hordemap.app.DEFAULT_SIZE
+import ru.newlevel.hordemap.app.DEFAULT_TIME
+import ru.newlevel.hordemap.app.KEY_IS_AUTO_LOAD
+import ru.newlevel.hordemap.app.KEY_MARKER
+import ru.newlevel.hordemap.app.KEY_NAME
+import ru.newlevel.hordemap.app.KEY_STATIC_MARKER_SIZE
+import ru.newlevel.hordemap.app.KEY_TIME_TO_SEND_DATA
+import ru.newlevel.hordemap.app.KEY_USERS_MARKER_SIZE
+import ru.newlevel.hordemap.app.SHARE_PREFS_NAME
 import ru.newlevel.hordemap.app.getMyDeviceId
 import ru.newlevel.hordemap.data.storage.interfaces.UserLocalStorage
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
-
-
-const val SHARE_PREFS_NAME = "sharedHordeMap"
-const val KEY_NAME = "userName"
-const val KEY_MARKER = "userMarker"
-const val KEY_TIME_TO_SEND_DATA = "timeToSend"
-const val KEY_STATIC_MARKER_SIZE = "staticMarkerSize"
-const val KEY_USERS_MARKER_SIZE = "usersMarkerSize"
-const val DEFAULT_SIZE = 60
-const val DEFAULT_TIME = 30
-const val KEY_IS_AUTO_LOAD = "isAutoLoad"
 
 class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorage {
 
