@@ -17,6 +17,5 @@ class RenameTrackNameForSessionUseCase(private val locationRepository: LocationR
             }
         }
         return currentList
-
     }
 }
