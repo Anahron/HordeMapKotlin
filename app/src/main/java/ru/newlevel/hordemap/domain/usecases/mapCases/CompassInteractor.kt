@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import ru.newlevel.hordemap.domain.repository.SensorRepository
 
-class CompassUseCase(private val sensorRepository: SensorRepository) {
+class CompassInteractor(private val sensorRepository: SensorRepository) {
 
     private val orientationAngles = FloatArray(3)
     private val rotationVectorReading = FloatArray(3)

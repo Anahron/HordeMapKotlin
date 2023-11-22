@@ -9,18 +9,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
-import ru.newlevel.hordemap.domain.usecases.messengerCases.DownloadFileUseCase
-import ru.newlevel.hordemap.domain.usecases.messengerCases.SendFileUseCase
-import ru.newlevel.hordemap.domain.usecases.messengerCases.SendMessageUseCase
-import ru.newlevel.hordemap.domain.usecases.messengerCases.StartMessageUpdateUseCase
-import ru.newlevel.hordemap.domain.usecases.messengerCases.StopMessageUpdateUseCase
+import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 
 class MessengerViewModel(
-    private val stopMessageUpdateUseCase: StopMessageUpdateUseCase,
-    private val startMessageUpdateUseCase: StartMessageUpdateUseCase,
-    private val sendMessageUseCase: SendMessageUseCase,
-    private val sendFileUseCase: SendFileUseCase,
-    private val downloadFileUseCase: DownloadFileUseCase
+   private val messengerUseCases: MessengerUseCases
 ) : ViewModel() {
 
     private var messagesMutableLiveData = MutableLiveData<List<MessageDataModel>>()
@@ -31,25 +23,25 @@ class MessengerViewModel(
 
 
     fun startMessageUpdate() {
-        messagesMutableLiveData = startMessageUpdateUseCase.getMessageUpdate()
-        progressMutableLiveData = startMessageUpdateUseCase.getDownloadProgress()
+        messagesMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
+        progressMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getDownloadProgress()
     }
 
     fun stopMessageUpdate() {
-        stopMessageUpdateUseCase.execute()
+        messengerUseCases.stopMessageUpdateInteractor.execute()
     }
 
     fun sendMessage(text: String) {
-        sendMessageUseCase.execute(text)
+        messengerUseCases.sendMessageUseCase.execute(text)
     }
 
     fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long) {
         CoroutineScope(Dispatchers.IO).launch {
-            sendFileUseCase.execute(message, uri, fileName, fileSize)
+            messengerUseCases.sendFileUseCase.execute(message, uri, fileName, fileSize)
         }
     }
 
     fun downloadFile(context: Context, uri: Uri, fileName: String?) {
-        fileName?.let { downloadFileUseCase.execute(context, uri, it) }
+        fileName?.let { messengerUseCases.downloadFileUseCase.execute(context, uri, it) }
     }
 }

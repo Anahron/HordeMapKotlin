@@ -11,27 +11,17 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.default
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
-import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteAllTracksUseCase
-import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteSessionLocationUseCase
-import ru.newlevel.hordemap.domain.usecases.tracksCases.GetSessionLocationsUseCase
-import ru.newlevel.hordemap.domain.usecases.tracksCases.RenameTrackNameForSessionUseCase
-import ru.newlevel.hordemap.domain.usecases.tracksCases.SaveCurrentTrackUseCase
-import ru.newlevel.hordemap.domain.usecases.tracksCases.SetFavouriteTrackForSessionUseCase
+import ru.newlevel.hordemap.domain.usecases.tracksCases.TracksUseCases
 
 enum class SortState {
     DATA_SORT, DURATION_SORT, DISTANCE_SORT
 }
 
 class TracksViewModel(
-    private val getSessionLocationsUseCase: GetSessionLocationsUseCase,
-    private val deleteSessionLocationUseCase: DeleteSessionLocationUseCase,
-    private val renameTrackNameForSessionUseCase: RenameTrackNameForSessionUseCase,
-    private val setFavouriteTrackForSessionUseCase: SetFavouriteTrackForSessionUseCase,
-    private val saveCurrentTrackUseCase: SaveCurrentTrackUseCase,
-    private val deleteAllTracksUseCase: DeleteAllTracksUseCase
+    private val tracksUseCases: TracksUseCases
 ) : ViewModel() {
 
-   val currentTrack: LiveData<TrackItemDomainModel> = getSessionLocationsUseCase.getCurrentSessionLocationsLiveData(UserEntityProvider.sessionId.toString())
+   val currentTrack: LiveData<TrackItemDomainModel> = tracksUseCases.getSessionLocationsUseCase.getCurrentSessionLocationsLiveData(UserEntityProvider.sessionId.toString())
 
     private val _trackItemAll = MutableLiveData<List<TrackItemDomainModel>?>()
     val trackItemAll: LiveData<List<TrackItemDomainModel>?> = _trackItemAll
@@ -41,7 +31,7 @@ class TracksViewModel(
 
     suspend fun saveCurrentTrack(sessionId: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            saveCurrentTrackUseCase.execute(sessionId)
+            tracksUseCases.saveCurrentTrackUseCase.execute(sessionId)
         }.join()
         deleteSessionLocations(sessionId)
         getAllSessionsLocations()
@@ -49,7 +39,7 @@ class TracksViewModel(
 
     suspend fun deleteAllTracks() {
         CoroutineScope(Dispatchers.IO).launch {
-            deleteAllTracksUseCase.execute()
+            tracksUseCases.deleteAllTracksUseCase.execute()
         }.join()
         getAllSessionsLocations()
     }
@@ -64,7 +54,7 @@ class TracksViewModel(
 
     fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean) {
         _trackItemAll.postValue(
-            setFavouriteTrackForSessionUseCase.execute(
+            tracksUseCases.setFavouriteTrackForSessionUseCase.execute(
                 sessionId,
                 isFavourite,
                 trackItemAll.value
@@ -75,7 +65,7 @@ class TracksViewModel(
     fun renameTrackNameForSession(sessionId: String, newTrackName: String) {
         CoroutineScope(Dispatchers.IO).launch {
             _trackItemAll.postValue(
-                renameTrackNameForSessionUseCase.execute(
+                tracksUseCases.renameTrackNameForSessionUseCase.execute(
                     sessionId = sessionId,
                     newTrackName = newTrackName,
                     trackItemAll.value
@@ -87,7 +77,7 @@ class TracksViewModel(
     fun deleteSessionLocations(sessionId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             _trackItemAll.postValue(
-                deleteSessionLocationUseCase.execute(
+                tracksUseCases.deleteSessionLocationUseCase.execute(
                     sessionId,
                     trackItemAll.value
                 )
@@ -97,7 +87,7 @@ class TracksViewModel(
 
     fun getAllSessionsLocations() {
         CoroutineScope(Dispatchers.IO).launch {
-            val allSessionLocationsList = getSessionLocationsUseCase.getAllSessionLocations()
+            val allSessionLocationsList = tracksUseCases.getSessionLocationsUseCase.getAllSessionLocations()
             withContext(Dispatchers.Main) {
                 _trackItemAll.value = allSessionLocationsList
             }

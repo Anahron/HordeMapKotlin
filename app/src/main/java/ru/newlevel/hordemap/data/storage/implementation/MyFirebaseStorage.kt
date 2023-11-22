@@ -16,6 +16,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import ru.newlevel.hordemap.app.BASE_LAST_MAP_FILENAME
+import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
 import java.io.File
@@ -33,7 +35,7 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage {
 
     override suspend fun loadGameMapFromServer(context: Context): Uri? {
         return suspendCancellableCoroutine { continuation ->
-            val filename = "lastSavedMap.kmz"
+            val filename = BASE_LAST_MAP_FILENAME + KMZ_EXTENSION
             val file = File(context.filesDir, filename)
             gsReference.getFile(file)
                 .addOnSuccessListener { _ ->

@@ -15,23 +15,10 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.collections.MarkerManager
-import ru.newlevel.hordemap.app.getInputSteamFromUri
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.domain.usecases.mapCases.CompassUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.LoadGameMapFromServerUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.LoadLastGameMapUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.LocationUpdatesUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.SaveGameMapToFileUseCase
-import ru.newlevel.hordemap.domain.usecases.markersCases.CreateGarminMarkersUseCase
-import ru.newlevel.hordemap.domain.usecases.markersCases.CreateMarkersUseCase
-import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
-import ru.newlevel.hordemap.domain.usecases.markersCases.GarminGPXParser
-import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
-import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateUseCase
-import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateUseCase
-import java.io.InputStream
+import ru.newlevel.hordemap.domain.usecases.mapCases.MapUseCases
+import ru.newlevel.hordemap.presentation.map.utils.MarkersUtils
 import kotlin.math.roundToInt
 
 sealed class MapState {
@@ -41,19 +28,8 @@ sealed class MapState {
 }
 
 class MapViewModel(
-    private val deleteMarkerUseCase: DeleteMarkerUseCase,
-    private val createMarkersUseCase: CreateMarkersUseCase,
-    private val saveGameMapToFileUseCase: SaveGameMapToFileUseCase,
-    private val loadLastGameMapUseCase: LoadLastGameMapUseCase,
-    private val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase,
-    private val sendStaticMarkerUseCase: SendStaticMarkerUseCase,
-    private val stopMarkerUpdateUseCase: StopMarkerUpdateUseCase,
-    private val startMarkerUpdateUseCase: StartMarkerUpdateUseCase,
-    private val compassUseCase: CompassUseCase,
-    private val createRouteUseCase: CreateRouteUseCase,
-    private val locationUpdatesUseCase: LocationUpdatesUseCase,
-    private val createGarminMarkersUseCase: CreateGarminMarkersUseCase,
-    private val garminGPXParser: GarminGPXParser
+    private val mapUseCases: MapUseCases,
+    private val markersUtils: MarkersUtils
 ) : ViewModel() {
 
     val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState }
@@ -75,34 +51,29 @@ class MapViewModel(
     val isAutoLoadMap: LiveData<Boolean> = _isAutoLoadMap
 
     val polygon: MutableLiveData<Polygon> = MutableLiveData<Polygon>()
+
     init {
         _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
     }
 
-    suspend fun parseGpx(
-        inputStream: InputStream,
-        markerCollection: MarkerManager.Collection,
-        context: Context,
-        googleMap: GoogleMap
+    suspend fun createGpxLayer(
+        uri: Uri, markerCollection: MarkerManager.Collection, context: Context, googleMap: GoogleMap
     ) {
-        val parse = garminGPXParser.parseGPX(inputStream)
-        parse?.let {
-            createGarminMarkersUseCase.createGarminMarkers(parse, markerCollection, context)
-            parse.bounds?.let {
-                polygon.value = googleMap.addPolygon(createGarminMarkersUseCase.createGarminBounds(parse))
-            }
-        }
+        Log.e("AAA", "fun createGpxLayer ")
+        polygon.value = markersUtils.createGpxLayer(
+            uri, markerCollection, context, googleMap
+        )
     }
 
-    fun startLocationUpdates() = locationUpdatesUseCase.startLocationUpdates()
+    fun startLocationUpdates() = mapUseCases.locationUpdatesInteractor.startLocationUpdates()
 
-    fun stopLocationUpdates() = locationUpdatesUseCase.stopLocationUpdates()
+    fun stopLocationUpdates() = mapUseCases.locationUpdatesInteractor.stopLocationUpdates()
     fun compassActivate() {
-        compassAngle = compassUseCase.startSensorEventListener()
+        compassAngle = mapUseCases.compassInteractor.startSensorEventListener()
     }
 
     fun compassDeActivate() {
-        compassUseCase.stopSensorEventListener()
+        mapUseCases.compassInteractor.stopSensorEventListener()
     }
 
     fun setRoutePolyline(polyline: Polyline) {
@@ -117,7 +88,7 @@ class MapViewModel(
         removeRoute()
         this.destination = destination
         setDistanceText(currentLatLng, destination)
-        return createRouteUseCase.execute(currentLatLng, destination, context)
+        return mapUseCases.createRouteUseCase.execute(currentLatLng, destination, context)
     }
 
     fun createRoute(listLatLng: List<LatLng>): PolylineOptions {
@@ -149,7 +120,7 @@ class MapViewModel(
     }
 
     fun sendMarker(latLng: LatLng, description: String, checkedItem: Int) {
-        sendStaticMarkerUseCase.execute(latLng, description, checkedItem)
+        mapUseCases.sendStaticMarkerUseCase.execute(latLng, description, checkedItem)
     }
 
     fun setUriForMap(uri: Uri) {
@@ -170,19 +141,14 @@ class MapViewModel(
         _isAutoLoadMap.value = boolean
     }
 
-    suspend fun saveGameMapToFile(uri: Uri, suffix: String): Uri = saveGameMapToFileUseCase.execute(uri, suffix)
-
-
-    suspend fun getInputSteam(uri: Uri, context: Context): InputStream? {
-        return getInputSteamFromUri(uri, context)
-    }
+    suspend fun saveGameMapToFile(uri: Uri, suffix: String): Uri = mapUseCases.saveGameMapToFileUseCase.execute(uri, suffix)
 
     suspend fun loadMapFromServer(context: Context): Uri? {
-        return loadGameMapFromServerUseCase.execute(context)
+        return mapUseCases.loadGameMapFromServerUseCase.execute(context)
     }
 
     suspend fun loadLastGameMap(): Boolean {
-        val uri = loadLastGameMapUseCase.execute()
+        val uri = mapUseCases.loadLastGameMapUseCase.execute()
         return if (uri != null) {
             _mapUri.postValue(uri)
             true
@@ -194,37 +160,33 @@ class MapViewModel(
     }
 
     fun showOrHideMarkers() {
-        if (state.value is MapState.MarkersOffState)
-            state.value = MapState.DefaultState
-        else if (state.value is MapState.DefaultState)
-            state.value = MapState.MarkersOffState
+        if (state.value is MapState.MarkersOffState) state.value = MapState.DefaultState
+        else if (state.value is MapState.DefaultState) state.value = MapState.MarkersOffState
     }
 
     fun createUsersMarkers(
-        it: List<MarkerDataModel>,
-        markerCollection: MarkerManager.Collection
+        it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
     ) {
-        createMarkersUseCase.createUsersMarkers(it, markerCollection)
+        markersUtils.createUsersMarkers(it, markerCollection = markerCollection, context = context)
     }
 
     fun createStaticMarkers(
-        it: List<MarkerDataModel>,
-        markerCollection: MarkerManager.Collection
+        it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
     ) {
-        createMarkersUseCase.createStaticMarkers(it, markerCollection = markerCollection)
+        markersUtils.createStaticMarkers(it, markerCollection = markerCollection, context = context)
     }
 
     fun stopMarkerUpdates() {
-        stopMarkerUpdateUseCase.execute()
+        mapUseCases.stopMarkerUpdateInteractor.execute()
     }
 
     fun startMarkerUpdates() {
-        staticMarkersLiveData = startMarkerUpdateUseCase.startStaticUpdates()
-        userMarkersLiveData = startMarkerUpdateUseCase.startUserUpdates()
+        staticMarkersLiveData = mapUseCases.startMarkerUpdateInteractor.startStaticUpdates()
+        userMarkersLiveData = mapUseCases.startMarkerUpdateInteractor.startUserUpdates()
     }
 
     fun deleteStaticMarker(marker: Marker) {
-        deleteMarkerUseCase.execute(marker)
+        mapUseCases.deleteMarkerUseCase.execute(marker)
     }
 
     override fun onCleared() {

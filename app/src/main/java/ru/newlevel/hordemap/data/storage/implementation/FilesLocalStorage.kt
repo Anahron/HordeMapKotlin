@@ -10,6 +10,7 @@ import ru.newlevel.hordemap.app.GPX_EXTENSION
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapLocalStorage
 import java.io.File
+import java.io.FileOutputStream
 import java.nio.file.Files
 import kotlin.io.path.Path
 
@@ -33,9 +34,10 @@ class FilesLocalStorage(private val context: Context, private val filesUtils: Fi
                 e.printStackTrace()
             }
             else try {
+                gpxFile.createNewFile()
                 context.contentResolver.openInputStream(uri).use { inputStream ->
-                    context.openFileOutput(gpxFile.toString(), Context.MODE_PRIVATE).use {
-                        inputStream?.copyTo(it)
+                    FileOutputStream(gpxFile).use { outputStream ->
+                        inputStream?.copyTo(outputStream)
                     }
                 }
             } catch (e: Exception) {

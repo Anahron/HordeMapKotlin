@@ -5,6 +5,6 @@ import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 
 class DeleteMarkerUseCase(private val geoDataRepository: GeoDataRepository) {
     fun execute(marker: Marker){
-        geoDataRepository.deleteStaticMarker(marker)
+        geoDataRepository.deleteStaticMarker(marker.tag.toString())
     }
 }

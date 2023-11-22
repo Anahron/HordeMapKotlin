@@ -7,18 +7,14 @@ import android.location.Location
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.provider.Settings
-import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.models.UserModel
 import java.io.File
-import java.io.InputStream
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -47,33 +43,33 @@ fun Context.getFileNameFromUri(uri: Uri): String? {
 }
 
 
-fun mapUserDataToDomain(user: UserDataModel): UserDomainModel {
+fun UserDataModel.mapToDomainModel(): UserDomainModel {
     return UserDomainModel(
-        user.name,
-        user.timeToSendData,
-        user.usersMarkerSize,
-        user.staticMarkerSize,
-        user.selectedMarker,
-        user.deviceID,
-        user.autoLoad
+        name = name,
+        timeToSendData = timeToSendData,
+        usersMarkerSize = usersMarkerSize,
+        staticMarkerSize = staticMarkerSize,
+        selectedMarker = timeToSendData,
+        deviceID = deviceID,
+        autoLoad = autoLoad
     )
 }
 
-fun mapUserDomainToData(userDomainModel: UserDomainModel): UserDataModel {
+fun UserDomainModel.mapToDataModel(): UserDataModel {
     return UserDataModel(
-        userDomainModel.name,
-        userDomainModel.timeToSendData,
-        userDomainModel.usersMarkerSize,
-        userDomainModel.staticMarkerSize,
-        userDomainModel.selectedMarker,
-        userDomainModel.deviceID,
-        userDomainModel.autoLoad
+        name = name,
+        timeToSendData = timeToSendData,
+        usersMarkerSize = usersMarkerSize,
+        staticMarkerSize = staticMarkerSize,
+        selectedMarker = timeToSendData,
+        deviceID = deviceID,
+        autoLoad = autoLoad
     )
 }
 
-fun getDeviceId(context: Context): String {
+fun Context.getMyDeviceId(): String {
     @SuppressLint("HardwareIds") val androidId =
-        Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+        Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
     return androidId ?: UUID.randomUUID().toString()
 }
 
@@ -101,14 +97,4 @@ fun Context.hasPermission(permission: String): Boolean {
         this,
         permission
     ) == PackageManager.PERMISSION_GRANTED
-}
-
-suspend fun getInputSteamFromUri(uri: Uri, context: Context): InputStream? {
-    return withContext(Dispatchers.IO) {
-        try {
-            context.contentResolver.openInputStream(uri)
-        } catch (e: Exception) {
-            null
-        }
-    }
 }

@@ -1,10 +1,10 @@
 package ru.newlevel.hordemap.app
 
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.util.Log
+import androidx.legacy.content.WakefulBroadcastReceiver
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationResult
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +19,7 @@ import java.util.Date
 
 private const val TAG = "AAA"
 
-class LocationUpdatesBroadcastReceiver : BroadcastReceiver(), KoinComponent {
+class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinComponent {
 
     override fun onReceive(context: Context, intent: Intent) {
         Log.e(TAG, "onReceive in LocationUpdatesBroadcastReceiver")

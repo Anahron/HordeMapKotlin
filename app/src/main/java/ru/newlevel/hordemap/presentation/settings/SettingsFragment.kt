@@ -17,23 +17,21 @@ import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.slider.Slider
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.mapUserDataToDomain
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentSettingsBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.presentation.map.MapViewModel
 import kotlin.properties.Delegates
 
-class SettingsFragment(
-    private val mapViewModel: MapViewModel,
-) : Fragment(R.layout.fragment_settings) {
+class SettingsFragment: Fragment(R.layout.fragment_settings) {
 
     private val settingsViewModel: SettingsViewModel by viewModel()
     private val binding: FragmentSettingsBinding by viewBinding()
     private var checkedRadioButton by Delegates.notNull<Int>()
-    private var user: UserDomainModel =
-        UserEntityProvider.userEntity?.let { mapUserDataToDomain(it) }!!
-
+    private var user: UserDomainModel = UserEntityProvider.userEntity!!
+    private var mCallback: OnChangeMarkerSettings? = null
+    fun attachCallback(callback: OnChangeMarkerSettings) {
+        this.mCallback = callback
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUIComponents()
@@ -148,7 +146,7 @@ class SettingsFragment(
             override fun onStopTrackingTouch(slider: Slider) {
                 user.usersMarkerSize = userMarkerSize.value.toInt()
                 settingsViewModel.saveUser(user)
-                mapViewModel.reCreateMarkers()
+                mCallback?.onChangeMarkerSettings()
             }
         })
         staticMarkerSize.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
@@ -158,7 +156,7 @@ class SettingsFragment(
             override fun onStopTrackingTouch(slider: Slider) {
                 user.staticMarkerSize = staticMarkerSize.value.toInt()
                 settingsViewModel.saveUser(user)
-                mapViewModel.reCreateMarkers()
+                mCallback?.onChangeMarkerSettings()
             }
         })
 
@@ -186,5 +184,7 @@ class SettingsFragment(
             }
         })
     }
-
+    interface OnChangeMarkerSettings{
+        fun onChangeMarkerSettings()
+    }
 }

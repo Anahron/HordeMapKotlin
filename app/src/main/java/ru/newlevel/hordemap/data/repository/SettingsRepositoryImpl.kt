@@ -1,9 +1,8 @@
 package ru.newlevel.hordemap.data.repository
 
-import ru.newlevel.hordemap.app.mapUserDataToDomain
-import ru.newlevel.hordemap.app.mapUserDomainToData
+import ru.newlevel.hordemap.app.mapToDataModel
+import ru.newlevel.hordemap.app.mapToDomainModel
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.data.storage.interfaces.UserLocalStorage
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.repository.SettingsRepository
@@ -11,15 +10,14 @@ import ru.newlevel.hordemap.domain.repository.SettingsRepository
 class SettingsRepositoryImpl(private val userLocalStorage: UserLocalStorage): SettingsRepository {
 
     override fun saveUser(userDomainModel: UserDomainModel) {
-        val user = mapUserDomainToData(userDomainModel)
-        userLocalStorage.save(mapUserDomainToData(userDomainModel))
-        UserEntityProvider.userEntity = UserDataModel(user.name,user.timeToSendData,user.usersMarkerSize,user.staticMarkerSize,user.selectedMarker,user.deviceID, user.autoLoad)
+        userLocalStorage.save(userDomainModel.mapToDataModel())
+        UserEntityProvider.userEntity = userDomainModel
     }
 
     override fun getUser(): UserDomainModel {
         val user = userLocalStorage.get()
-        UserEntityProvider.userEntity = UserDataModel(user.name,user.timeToSendData,user.usersMarkerSize,user.staticMarkerSize,user.selectedMarker,user.deviceID, user.autoLoad)
-        return mapUserDataToDomain(user)
+        UserEntityProvider.userEntity = user.mapToDomainModel()
+        return user.mapToDomainModel()
     }
 
     override fun resetUser() {

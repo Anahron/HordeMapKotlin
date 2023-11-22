@@ -3,8 +3,8 @@ package ru.newlevel.hordemap.presentation.permissions
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import ru.newlevel.hordemap.domain.usecases.mapCases.GetSettingsUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.SaveSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
 
 sealed class PermissionState {
     object AddLocationPermState : PermissionState()
@@ -15,8 +15,8 @@ sealed class PermissionState {
 }
 
 class PermissionViewModel(
-    private val getSettingsUseCase: GetSettingsUseCase,
-    private val saveSettingsUseCase: SaveSettingsUseCase
+    private val getUserSettingsUseCase: GetUserSettingsUseCase,
+    private val saveUserSettingsUseCase: SaveUserSettingsUseCase
 ) : ViewModel() {
 
     private val _state = MutableLiveData<PermissionState>().apply { value =
@@ -25,13 +25,13 @@ class PermissionViewModel(
     val state: LiveData<PermissionState> get() = _state
 
     fun checkUserName(): Boolean {
-        return getSettingsUseCase.execute().name.length > 2
+        return getUserSettingsUseCase.execute().name.length > 2
     }
 
     fun saveUserName(string: String) {
-        val user = getSettingsUseCase.execute()
+        val user = getUserSettingsUseCase.execute()
         user.name = string
-        saveSettingsUseCase.execute(user)
+        saveUserSettingsUseCase.execute(user)
     }
 
     fun turnToAddBackWorkingState() {

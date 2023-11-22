@@ -4,15 +4,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.domain.usecases.mapCases.GetSettingsUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.ResetSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.ResetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveAutoLoadUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.SaveSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
 
 class SettingsViewModel(
-    private val getSettingsUseCase: GetSettingsUseCase,
-    private val saveSettingsUseCase: SaveSettingsUseCase,
-    private val resetSettingsUseCase: ResetSettingsUseCase,
+    private val getUserSettingsUseCase: GetUserSettingsUseCase,
+    private val saveUserSettingsUseCase: SaveUserSettingsUseCase,
+    private val resetUserSettingsUseCase: ResetUserSettingsUseCase,
     private val saveAutoLoadUseCase : SaveAutoLoadUseCase,
 ) : ViewModel() {
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
@@ -22,7 +22,7 @@ class SettingsViewModel(
     val loginResultData: LiveData<UserDomainModel> = loginResultLiveDataMutable
 
     fun saveUser(userDomainModel: UserDomainModel) {
-        saveSettingsUseCase.execute(userDomainModel)
+        saveUserSettingsUseCase.execute(userDomainModel)
         resultLiveDataMutable.value = userDomainModel
         loginResultLiveDataMutable.value = userDomainModel
     }
@@ -32,17 +32,17 @@ class SettingsViewModel(
     }
 
     fun checkLogin(): UserDomainModel {
-        val user = getSettingsUseCase.execute()
+        val user = getUserSettingsUseCase.execute()
         loginResultLiveDataMutable.value = user
         return user
     }
 
     fun getUser() {
-        resultLiveDataMutable.value = getSettingsUseCase.execute()
+        resultLiveDataMutable.value = getUserSettingsUseCase.execute()
     }
 
     fun reset() {
-        resetSettingsUseCase.execute()
+        resetUserSettingsUseCase.execute()
     }
 
 }

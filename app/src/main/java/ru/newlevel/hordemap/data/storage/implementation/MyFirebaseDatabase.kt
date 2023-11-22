@@ -2,7 +2,6 @@ package ru.newlevel.hordemap.data.storage.implementation
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.google.android.gms.maps.model.Marker
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -29,8 +28,8 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
     private val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
     private val liveDataMessageDataModel = MutableLiveData<List<MessageDataModel>>()
 
-    override fun deleteStaticMarker(marker: Marker) {
-        staticDatabaseReference.child(marker.tag.toString()).removeValue()
+    override fun deleteStaticMarker(key: String) {
+        staticDatabaseReference.child(key).removeValue()
     }
 
     override fun sendUserMarker(markerModel: MarkerDataModel) {

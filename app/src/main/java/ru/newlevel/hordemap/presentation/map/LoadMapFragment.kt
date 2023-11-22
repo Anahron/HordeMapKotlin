@@ -10,18 +10,14 @@ import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.GPX_EXTENSION
+import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.LoadMapDialogBinding
 import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
-import java.io.File
-import java.io.FileOutputStream
-import java.nio.charset.Charset
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
-import java.util.zip.ZipOutputStream
 
 class LoadMapFragment(
     private val mapViewModel: MapViewModel,
@@ -59,15 +55,14 @@ class LoadMapFragment(
             result?.let {
                 lifecycleScope.launch {
                     val mimeType = requireContext().getFileNameFromUri(it)
-                    Log.e("AAA", mimeType.toString())
+                    Log.e("AAA",  "registerForActivityResult(SelectFilesContract())  " + mimeType.toString())
                     when {
-                        mimeType?.endsWith(".kmz") == true -> {
-                            mapViewModel.setUriForMap(mapViewModel.saveGameMapToFile(it, ".kmz"))
+                        mimeType?.endsWith(KMZ_EXTENSION) == true -> {
+                            mapViewModel.setUriForMap(mapViewModel.saveGameMapToFile(it, KMZ_EXTENSION))
                         }
 
-                        mimeType?.endsWith(".gpx") == true -> {
-                            mapViewModel.saveGameMapToFile(it, ".gpx")
-                            mapViewModel.setUriForMap(mapViewModel.saveGameMapToFile(it, ".kmz"))
+                        mimeType?.endsWith(GPX_EXTENSION) == true -> {
+                            mapViewModel.setUriForMap(mapViewModel.saveGameMapToFile(it, GPX_EXTENSION))
                         }
 
                         else -> Toast.makeText(

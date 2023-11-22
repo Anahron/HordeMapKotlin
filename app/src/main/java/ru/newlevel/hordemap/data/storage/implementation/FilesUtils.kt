@@ -3,7 +3,6 @@ package ru.newlevel.hordemap.data.storage.implementation
 import android.content.Context
 import android.net.Uri
 import ru.newlevel.hordemap.app.KML_EXTENSION
-import ru.newlevel.hordemap.app.getInputSteamFromUri
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
@@ -37,28 +36,29 @@ class FilesUtils {
         }
     }
 
-   suspend fun extractKMLContentFromKMZ(uri: Uri, context: Context): String {
-        val buffer = ByteArray(10024)
-        val stringBuilder = StringBuilder()
-        getInputSteamFromUri(uri, context).use {
-            ZipInputStream(it).use { zipInputStream ->
-                var entry: ZipEntry?
-                while (zipInputStream.nextEntry.also { entry = it } != null) {
-                    if (entry?.name?.endsWith(KML_EXTENSION) == true) {
-                        var bytesRead: Int
-                        while (zipInputStream.read(buffer).also { bytesRead = it } != -1) {
-                            stringBuilder.append(buffer.decodeToString(0, bytesRead))
+    fun extractKMLContentFromKMZ(uri: Uri, context: Context): String {
+
+            val buffer = ByteArray(10024)
+            val stringBuilder = StringBuilder()
+            context.contentResolver.openInputStream(uri).use {
+                ZipInputStream(it).use { zipInputStream ->
+                    var entry: ZipEntry?
+                    while (zipInputStream.nextEntry.also { entry = it } != null) {
+                        if (entry?.name?.endsWith(KML_EXTENSION) == true) {
+                            var bytesRead: Int
+                            while (zipInputStream.read(buffer).also { bytesRead = it } != -1) {
+                                stringBuilder.append(buffer.decodeToString(0, bytesRead))
+                            }
+                            zipInputStream.closeEntry()
+                            return stringBuilder.toString()
                         }
-                        zipInputStream.closeEntry()
-                        return stringBuilder.toString()
                     }
                 }
-            }
         }
         return ""
     }
 
-   fun removeDocumentTags(kmlContent: String): String {
+    fun removeDocumentTags(kmlContent: String): String {
         return kmlContent
             .replace("<Document>", "")
             .replace("</Document>", "")

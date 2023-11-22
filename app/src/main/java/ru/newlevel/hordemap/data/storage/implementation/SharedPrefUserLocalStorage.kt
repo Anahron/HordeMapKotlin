@@ -2,7 +2,7 @@ package ru.newlevel.hordemap.data.storage.implementation
 
 import android.content.Context
 import android.content.SharedPreferences
-import ru.newlevel.hordemap.app.getDeviceId
+import ru.newlevel.hordemap.app.getMyDeviceId
 import ru.newlevel.hordemap.data.storage.interfaces.UserLocalStorage
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
@@ -37,7 +37,7 @@ class SharedPrefUserLocalStorage(private val context: Context): UserLocalStorage
         val staticMarkerSize = sharedPreferences.getInt(KEY_STATIC_MARKER_SIZE, DEFAULT_SIZE)
         val usersMarkerSize = sharedPreferences.getInt(KEY_USERS_MARKER_SIZE, DEFAULT_SIZE)
         val isAutoLoad = sharedPreferences.getBoolean(KEY_IS_AUTO_LOAD, false)
-        return UserDataModel(userName,timeToSend,usersMarkerSize,staticMarkerSize,selectedMarker, getDeviceId(context), isAutoLoad)
+        return UserDataModel(userName,timeToSend,usersMarkerSize,staticMarkerSize,selectedMarker, context.getMyDeviceId(), isAutoLoad)
     }
 
     override fun reset() {
