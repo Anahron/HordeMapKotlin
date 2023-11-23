@@ -8,31 +8,29 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
-import android.os.PowerManager.PARTIAL_WAKE_LOCK
+import android.os.PowerManager.FULL_WAKE_LOCK
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.presentation.map.MapFragment
 import ru.newlevel.hordemap.presentation.messenger.MessengerFragment
 import ru.newlevel.hordemap.presentation.permissions.PermissionRequestFragment
-import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
+import ru.newlevel.hordemap.presentation.sign_in.SingInFragment
 import ru.newlevel.hordemap.presentation.tracks.TracksFragment
 
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), PermissionRequestFragment.Callbacks {
+class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationUi {
 
-    private val loginViewModel by viewModel<SettingsViewModel>()
     private var mainFragment: Fragment = MapFragment()
     private var tracksFragment: TracksFragment = TracksFragment()
     private var messengerFragment: MessengerFragment = MessengerFragment()
+    private var signInFragment: SingInFragment = SingInFragment()
     private lateinit var currentFragment: Fragment
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var navView: BottomNavigationView
@@ -44,10 +42,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), PermissionReques
         UserEntityProvider.sessionId = System.currentTimeMillis()
         windowSettings()
         setupNavView()
-        loginCheck()
-        setupWakeLock()
+     //   setupWakeLock()
         onBackPressedListener()
         currentFragment = mainFragment
+        addAndShowFragment(signInFragment)
+        navView.visibility = ViewGroup.GONE
     }
 
     private fun onBackPressedListener(){
@@ -60,7 +59,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), PermissionReques
     }
     private fun setupWakeLock() {
         val pm = applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val wl: PowerManager.WakeLock = pm.newWakeLock(PARTIAL_WAKE_LOCK, "HordeMap:wakelock")
+        val wl: PowerManager.WakeLock = pm.newWakeLock(FULL_WAKE_LOCK, "HordeMap:wakelock")
         wl.acquire(600 * 60 * 1000L /*600 minutes*/)
     }
 
@@ -138,22 +137,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), PermissionReques
         }
     }
 
-    private fun loginCheck() {
-        loginViewModel.checkLogin()
-        loginViewModel.loginResultData.observe(this) {
-            if (it.name.isNotEmpty() && applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+    private fun checkPermissionAndShowMap() {
+            if (applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
                 addAndShowFragment(mainFragment)
-                loginViewModel.loginResultData.removeObservers(this)
                 navView.visibility = ViewGroup.VISIBLE
-                val string: String = this.getString(R.string.hello)
-                Toast.makeText(this, (string + " " + it.name), Toast.LENGTH_LONG).show()
             } else {
-                loginViewModel.loginResultData.removeObservers(this)
                 navView.visibility = ViewGroup.GONE
                 goToRequestsPermissions()
             }
         }
-    }
 
     private fun windowSettings() {
         window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
@@ -161,7 +153,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), PermissionReques
     }
 
     override fun displayLocationUI() {
-        loginCheck()
+        checkPermissionAndShowMap()
+    }
+
+    override fun logOut() {
+        removeFragment(currentFragment)
+        supportFragmentManager.beginTransaction().setCustomAnimations(
+            R.anim.slide_in_bottom,
+            R.anim.slide_out_bottom,
+            R.anim.slide_in_bottom,
+            R.anim.slide_out_bottom,
+        ).replace(R.id.container, signInFragment).addToBackStack(null).commit()
+        navView.visibility = ViewGroup.GONE
     }
 
     fun goToRequestsPermissions() {

@@ -7,7 +7,7 @@ import ru.newlevel.hordemap.domain.repository.SettingsRepository
 
 class GetUserSettingsUseCase(private val settingsRepository: SettingsRepository) {
     fun execute(): UserDomainModel {
-        val user = settingsRepository.getUser()
+        val user = settingsRepository.getUserSetting()
         UserEntityProvider.userEntity = user.mapToDomainModel()
         return user.mapToDomainModel()
     }

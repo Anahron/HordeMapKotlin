@@ -8,6 +8,6 @@ import ru.newlevel.hordemap.domain.repository.SettingsRepository
 class SaveUserSettingsUseCase(private val settingsRepository: SettingsRepository) {
     fun execute(userDomainModel: UserDomainModel){
         UserEntityProvider.userEntity = userDomainModel
-        settingsRepository.saveUser(userDomainModel.mapToDataModel())
+        settingsRepository.saveUserSetting(userDomainModel.mapToDataModel())
     }
 }

@@ -55,6 +55,8 @@ apply plugin: 'com.android.application'
 
 dependencies {
     implementation 'androidx.fragment:fragment:1.6.2'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'androidx.annotation:annotation:1.6.0'
 
 
     //db
@@ -83,6 +85,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.0.0')
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.google.firebase:firebase-database'
+    implementation 'com.google.firebase:firebase-auth:22.3.0'
 
     //google
     implementation 'com.google.maps:google-maps-services:0.15.0'

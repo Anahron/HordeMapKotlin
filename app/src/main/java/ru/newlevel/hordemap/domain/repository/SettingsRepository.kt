@@ -4,9 +4,9 @@ import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
 interface SettingsRepository {
 
-    fun saveUser(userDataModel: UserDataModel)
+    fun saveUserSetting(userDataModel: UserDataModel)
 
-    fun getUser(): UserDataModel
+    fun getUserSetting(): UserDataModel
 
     fun resetUser()
 

@@ -90,4 +90,5 @@
     <string name="share">Share</string>
     <string name="hello">"Hello "</string>
     <string name="minimal_distance_should_be">The minimum distance must be greater than 300 meters.</string>
+    <string name="web_client_id" translatable="false">1031356381967-tiqhkb2klhoch66qfs68q7jke6c2opn2.apps.googleusercontent.com</string>
 </resources>

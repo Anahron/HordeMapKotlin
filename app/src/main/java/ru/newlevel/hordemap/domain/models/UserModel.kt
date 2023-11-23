@@ -8,4 +8,6 @@ interface UserModel {
     var selectedMarker: Int
     val deviceID: String
     var autoLoad: Boolean
+    val authName: String
+    val profileImageUrl: String
 }

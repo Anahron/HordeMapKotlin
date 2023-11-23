@@ -2,14 +2,18 @@ package ru.newlevel.hordemap.data.storage.implementation
 
 import android.content.Context
 import android.content.SharedPreferences
+import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.DEFAULT_SIZE
 import ru.newlevel.hordemap.app.DEFAULT_TIME
+import ru.newlevel.hordemap.app.KEY_AUTH_NAME
 import ru.newlevel.hordemap.app.KEY_IS_AUTO_LOAD
 import ru.newlevel.hordemap.app.KEY_MARKER
 import ru.newlevel.hordemap.app.KEY_NAME
+import ru.newlevel.hordemap.app.KEY_PROFILE_URL
 import ru.newlevel.hordemap.app.KEY_STATIC_MARKER_SIZE
 import ru.newlevel.hordemap.app.KEY_TIME_TO_SEND_DATA
 import ru.newlevel.hordemap.app.KEY_USERS_MARKER_SIZE
+import ru.newlevel.hordemap.app.KEY_USER_ID
 import ru.newlevel.hordemap.app.SHARE_PREFS_NAME
 import ru.newlevel.hordemap.app.getMyDeviceId
 import ru.newlevel.hordemap.data.storage.interfaces.UserLocalStorage
@@ -26,6 +30,9 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
         sharedPreferences.edit().putInt(KEY_TIME_TO_SEND_DATA, userDataModel.timeToSendData).apply()
         sharedPreferences.edit().putInt(KEY_STATIC_MARKER_SIZE, userDataModel.staticMarkerSize).apply()
         sharedPreferences.edit().putInt(KEY_USERS_MARKER_SIZE, userDataModel.usersMarkerSize).apply()
+        sharedPreferences.edit().putString(KEY_PROFILE_URL, userDataModel.profileImageUrl).apply()
+        sharedPreferences.edit().putString(KEY_AUTH_NAME, userDataModel.authName).apply()
+        sharedPreferences.edit().putString(KEY_USER_ID, userDataModel.deviceID).apply()
     }
 
     override fun get(): UserDataModel {
@@ -35,25 +42,33 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
         val staticMarkerSize = sharedPreferences.getInt(KEY_STATIC_MARKER_SIZE, DEFAULT_SIZE)
         val usersMarkerSize = sharedPreferences.getInt(KEY_USERS_MARKER_SIZE, DEFAULT_SIZE)
         val isAutoLoad = sharedPreferences.getBoolean(KEY_IS_AUTO_LOAD, false)
+        val authName = sharedPreferences.getString(KEY_AUTH_NAME,  context.getString(R.string.hintAnonim))?:""
+        val userId = sharedPreferences.getString(KEY_USER_ID, context.getMyDeviceId())?: ""
+        val profileUrl = sharedPreferences.getString(KEY_PROFILE_URL, "")?: ""
         return UserDataModel(
             name = userName,
             timeToSendData = timeToSend,
             usersMarkerSize = usersMarkerSize,
             staticMarkerSize = staticMarkerSize,
             selectedMarker = selectedMarker,
-            deviceID = context.getMyDeviceId(),
-            autoLoad = isAutoLoad
+            deviceID = userId,
+            autoLoad = isAutoLoad,
+            authName = authName,
+            profileImageUrl = profileUrl
         )
     }
 
     override fun reset() {
         sharedPreferences.edit()
-            //TODO удплить .remove(KEY_NAME)
             .remove(KEY_NAME)
             .remove(KEY_MARKER)
             .remove(KEY_TIME_TO_SEND_DATA)
             .remove(KEY_STATIC_MARKER_SIZE)
             .remove(KEY_USERS_MARKER_SIZE)
+            .remove(KEY_IS_AUTO_LOAD)
+            .remove(KEY_AUTH_NAME)
+            .remove(KEY_USER_ID)
+            .remove(KEY_PROFILE_URL)
             .apply()
     }
 

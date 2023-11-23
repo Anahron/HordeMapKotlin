@@ -47,7 +47,9 @@ fun UserDataModel.mapToDomainModel(): UserDomainModel {
         staticMarkerSize = staticMarkerSize,
         selectedMarker = selectedMarker,
         deviceID = deviceID,
-        autoLoad = autoLoad
+        autoLoad = autoLoad,
+        profileImageUrl = profileImageUrl,
+        authName = authName,
     )
 }
 
@@ -59,7 +61,9 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
         staticMarkerSize = staticMarkerSize,
         selectedMarker = selectedMarker,
         deviceID = deviceID,
-        autoLoad = autoLoad
+        autoLoad = autoLoad,
+        profileImageUrl = profileImageUrl,
+        authName = authName,
     )
 }
 

@@ -15,8 +15,8 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.collections.MarkerManager
-import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.MapUseCases
 import ru.newlevel.hordemap.presentation.map.utils.MarkersUtils
 import kotlin.math.roundToInt
@@ -29,7 +29,8 @@ sealed class MapState {
 
 class MapViewModel(
     private val mapUseCases: MapUseCases,
-    private val markersUtils: MarkersUtils
+    private val markersUtils: MarkersUtils,
+    getUserSettingsUseCase: GetUserSettingsUseCase,
 ) : ViewModel() {
 
     val state = MutableLiveData<MapState>().apply { value = MapState.LoadingState }
@@ -53,7 +54,7 @@ class MapViewModel(
     val polygon: MutableLiveData<Polygon> = MutableLiveData<Polygon>()
 
     init {
-        _isAutoLoadMap.value = UserEntityProvider.userEntity?.autoLoad
+        _isAutoLoadMap.value = getUserSettingsUseCase.execute().autoLoad
     }
 
     suspend fun createGpxLayer(

@@ -9,4 +9,6 @@ data class UserDataModel(
     override var staticMarkerSize: Int,
     override var selectedMarker: Int,
     override val deviceID: String,
-    override var autoLoad: Boolean): UserModel
+    override var autoLoad: Boolean,
+    override val authName: String,
+    override val profileImageUrl: String): UserModel

@@ -18,27 +18,20 @@ class SettingsViewModel(
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
     val resultData: LiveData<UserDomainModel> = resultLiveDataMutable
 
-    private val loginResultLiveDataMutable = MutableLiveData<UserDomainModel>()
-    val loginResultData: LiveData<UserDomainModel> = loginResultLiveDataMutable
-
     fun saveUser(userDomainModel: UserDomainModel) {
         saveUserSettingsUseCase.execute(userDomainModel)
         resultLiveDataMutable.value = userDomainModel
-        loginResultLiveDataMutable.value = userDomainModel
     }
 
     fun saveAutoLoad(boolean: Boolean){
         saveAutoLoadUseCase.execute(boolean)
     }
 
-    fun checkLogin(): UserDomainModel {
+    fun getUserSettings(): UserDomainModel {
         val user = getUserSettingsUseCase.execute()
-        loginResultLiveDataMutable.value = user
+        resultLiveDataMutable.value = user
         return user
-    }
 
-    fun getUser() {
-        resultLiveDataMutable.value = getUserSettingsUseCase.execute()
     }
 
     fun reset() {
