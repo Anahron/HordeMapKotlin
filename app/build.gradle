@@ -54,9 +54,9 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.android.application'
 
 dependencies {
-    implementation 'androidx.fragment:fragment:1.6.2'
+    implementation 'androidx.fragment:fragment-ktx:1.6.2'
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
-    implementation 'androidx.annotation:annotation:1.6.0'
+    implementation 'androidx.annotation:annotation:1.7.0'
 
 
     //db

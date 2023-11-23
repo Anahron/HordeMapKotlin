@@ -45,9 +45,6 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val usernameEditText = binding.username
-        val passwordEditText = binding.password
-        val loginButton = binding.login
         val loadingProgressBar = binding.loading
         if (googleAuthUiClient.getSignedInUser() != null)
             activityListener?.displayLocationUI()
