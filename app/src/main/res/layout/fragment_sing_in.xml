@@ -5,44 +5,182 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/fragment_horizontal_margin"
-    android:paddingTop="@dimen/fragment_vertical_margin"
-    android:background="@color/main_green"
-    android:paddingRight="@dimen/fragment_horizontal_margin"
-    android:paddingBottom="@dimen/fragment_vertical_margin"
+    android:background="@drawable/vertical_gradient"
     tools:context=".presentation.sign_in.SingInFragment">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnSignInGoogle"
+    <TextView
+        android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_normal"
-        android:layout_marginEnd="@dimen/margin_normal"
-        android:layout_marginBottom="55dp"
-        android:background="@drawable/border_dark"
-        android:padding="15dp"
-        android:text="Google Sing In"
-        android:textColor="@color/main_green"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="28dp"
+        android:fontFamily="@font/inter_bold"
+        android:text="@string/welcome_to_horde_map"
+        android:textColor="@color/main_green_dialog"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="@+id/cardView"
+        app:layout_constraintTop_toBottomOf="@+id/imageView6" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_semibold"
+        android:text="@string/please_sign_in_to_continue"
+        android:textColor="@color/main_green_dialog"
+        android:textSize="@dimen/fragment_permission_body_text_size"
+        app:layout_constraintStart_toStartOf="@+id/textView4"
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_marginTop="16dp"
+        android:elevation="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="16dp"
+        app:cardPreventCornerOverlap="false"
+        app:cardUseCompatPadding="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/detailsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/inter"
+                android:paddingHorizontal="6dp"
+                android:text="@string/name_rationale_details_text"
+                android:textColor="@color/main_green_dark"
+                android:textSize="@dimen/fragment_permission_body_text_size" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginVertical="8dp"
+                android:layout_marginStart="2dp"
+                android:hint="@string/put_name_here"
+                android:textColorHint="@color/main_green_dark"
+                app:boxCornerRadiusBottomEnd="3dp"
+                app:boxCornerRadiusBottomStart="3dp"
+                app:boxCornerRadiusTopEnd="3dp"
+                app:boxCornerRadiusTopStart="3dp"
+                app:boxStrokeColor="@color/main_green_dark"
+                app:boxStrokeWidth="1.5dp"
+                app:helperTextTextColor="@color/main_green_dark">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:textColor="@color/slate_800"
+                    android:textSize="18sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/loginLinearAnonymous"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:rotationX="90"
+                android:visibility="gone">
+
+                <ImageButton
+                    android:layout_width="63dp"
+                    android:layout_height="63dp"
+                    android:background="@drawable/img_login_anonymous"
+                    android:contentDescription="@string/todo"/>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnSignInAsAnonymous"
+                    android:layout_width="63dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="4.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_login_btn"
+                    android:elevation="0dp"
+                    android:text="@string/login_as_anonymous"
+                    android:textAppearance="@style/MyHintText"
+                    android:textColor="@color/main_green_dialog"
+                    android:textSize="20sp" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/loginLinearGoogle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:rotationX="90"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:layout_width="63dp"
+                    android:layout_height="63dp"
+                    android:background="@drawable/img_login_google"
+                    android:contentDescription="@string/todo"/>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnSignInGoogle"
+                    android:layout_width="63dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="4.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_login_btn"
+                    android:elevation="0dp"
+                    android:text="@string/login_with_google"
+                    android:textAppearance="@style/MyHintText"
+                    android:textColor="@color/main_green_dialog"
+                    android:textSize="20sp" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.cardview.widget.CardView>
 
     <ProgressBar
         android:id="@+id/loading"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="146dp"
+        android:layout_height="90dp"
         android:layout_gravity="center"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="395dp"
-        android:layout_marginBottom="850dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible" />
+        app:layout_constraintVertical_bias="0.906"
+        tools:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/imageView6"
+        android:layout_width="147dp"
+        android:layout_height="133dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/vector_avatar_v2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/todo"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

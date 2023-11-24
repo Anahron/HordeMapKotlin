@@ -36,7 +36,7 @@
     <string name="back_location_access_rationale_title_text">\t Доступ к геоданным в фоновом режиме.</string>
     <string name="back_location_permission_rationale_details_text">\tФоновый сбор гео данных необходим для корректной работы приложения, пожалуйста предоставьте разрешение. \n  \n \tВыберите \"Allow all the time\" (Разрешить в любое время)</string>
     <string name="name_rationale_title_text">\t Установить позывной.</string>
-    <string name="name_rationale_details_text">\tОсталось совсем немного. \n  \n \tВведите свой позывной, который будет отображаться у маркера для других игроков.</string>
+    <string name="name_rationale_details_text">\tПожалуйста введите свой позывной.</string>
     <string name="ok">OK</string>
     <string name="background_permission_denied_explanation">Вы запретили фоновый сбор данных, но он необходим для корректной работы приложения, пожалуйста предоставьте разрешение вручную.</string>
     <string name="fine_location_access_rationale_title_text">\t Доступ к геоданным.</string>
@@ -91,4 +91,8 @@
     <string name="share">Поделиться</string>
     <string name="hello">Привет </string>
     <string name="minimal_distance_should_be">Минимальная дистанция должна быть больше 300 метров.</string>
+    <string name="please_sign_in_to_continue">войдите чтобы продолжить</string>
+    <string name="welcome_to_horde_map">Welcome to Horde Map</string>
+    <string name="login_as_anonymous">Войти как аноним</string>
+    <string name="login_with_google">Войти через Google</string>
 </resources>

@@ -36,7 +36,7 @@
     <string name="back_location_access_rationale_title_text">Background Geodata Access.</string>
     <string name="back_location_permission_rationale_details_text">Background geodata collection is necessary for the proper functioning of the application, please grant permission. \n \n \tChoose "Allow all the time".</string>
     <string name="name_rationale_title_text">Set Namesign.</string>
-    <string name="name_rationale_details_text">Just a little more. \n \n \tEnter your Name, which will be displayed at the marker for other players.</string>
+    <string name="name_rationale_details_text">\tPlease enter your Name, which will be displayed at the marker for other members.</string>
     <string name="ok">OK</string>
     <string name="background_permission_denied_explanation">You have denied background data collection, but it is necessary for the proper functioning of the application, please grant permission manually.</string>
     <string name="fine_location_access_rationale_title_text">Geodata Access.</string>
@@ -90,4 +90,8 @@
     <string name="share">Share</string>
     <string name="hello">"Hello "</string>
     <string name="minimal_distance_should_be">The minimum distance must be greater than 300 meters.</string>
+    <string name="welcome_to_horde_map">Welcome to Horde Map</string>
+    <string name="please_sign_in_to_continue">login to continue</string>
+    <string name="login_as_anonymous">Login as Anonymous</string>
+    <string name="login_with_google">Login with Google</string>
 </resources>

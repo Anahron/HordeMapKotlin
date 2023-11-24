@@ -7,21 +7,21 @@ import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.GoogleAuthProvider
-
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.presentation.MyResult
 import java.util.concurrent.CancellationException
 
 class GoogleAuthUiClient(private val context: Context, private val oneTapClient: SignInClient) {
 
     private val auth = Firebase.auth
 
-    suspend fun signIn(): IntentSender? {
-        val result = try {
+    suspend fun signIn():  MyResult<*> {
+        val myResult = try {
             withContext(Dispatchers.IO) {
                 oneTapClient.beginSignIn(
                     buildSignInRequest()
@@ -30,9 +30,9 @@ class GoogleAuthUiClient(private val context: Context, private val oneTapClient:
         } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
-            null
+            return MyResult.Error(e)
         }
-        return result?.pendingIntent?.intentSender
+        return MyResult.Success(myResult?.pendingIntent?.intentSender as IntentSender)
     }
 
     suspend fun signInFromIntent(intent: Intent): SingInResult {
