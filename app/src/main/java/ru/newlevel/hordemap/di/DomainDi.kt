@@ -1,5 +1,7 @@
 package ru.newlevel.hordemap.di
 
+import com.google.android.gms.auth.api.identity.Identity
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import ru.newlevel.hordemap.domain.usecases.mapCases.CompassInteractor
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
@@ -12,9 +14,7 @@ import ru.newlevel.hordemap.domain.usecases.mapCases.ResetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveAutoLoadUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveGameMapToFileUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
-import ru.newlevel.hordemap.presentation.map.utils.MarkersUtils
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
-import ru.newlevel.hordemap.presentation.map.utils.GarminGpxParser
 import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateInteractor
@@ -31,6 +31,9 @@ import ru.newlevel.hordemap.domain.usecases.tracksCases.RenameTrackNameForSessio
 import ru.newlevel.hordemap.domain.usecases.tracksCases.SaveCurrentTrackUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.SetFavouriteTrackForSessionUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.TracksUseCases
+import ru.newlevel.hordemap.presentation.map.utils.GarminGpxParser
+import ru.newlevel.hordemap.presentation.map.utils.MarkersUtils
+import ru.newlevel.hordemap.presentation.sign_in.GoogleAuthUiClient
 
 
 val domainModule = module {
@@ -125,7 +128,14 @@ val domainModule = module {
         GarminGpxParser()
     }
 
-    single<MapUseCases>{
+    single<GoogleAuthUiClient> {
+        GoogleAuthUiClient(
+            androidContext().applicationContext,
+            Identity.getSignInClient(androidContext().applicationContext)
+        )
+    }
+
+    single<MapUseCases> {
         MapUseCases(
             deleteMarkerUseCase = get(),
             saveGameMapToFileUseCase = get(),
@@ -139,7 +149,7 @@ val domainModule = module {
             locationUpdatesInteractor = get()
         )
     }
-    single<TracksUseCases>{
+    single<TracksUseCases> {
         TracksUseCases(
             getSessionLocationsUseCase = get(),
             deleteSessionLocationUseCase = get(),
@@ -149,7 +159,7 @@ val domainModule = module {
             deleteAllTracksUseCase = get(),
         )
     }
-    single<MessengerUseCases>{
+    single<MessengerUseCases> {
         MessengerUseCases(
             startMessageUpdateInteractor = get(),
             stopMessageUpdateInteractor = get(),

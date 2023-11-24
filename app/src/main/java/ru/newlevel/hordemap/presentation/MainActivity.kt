@@ -15,48 +15,50 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import org.koin.android.ext.android.inject
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.presentation.map.MapFragment
 import ru.newlevel.hordemap.presentation.messenger.MessengerFragment
 import ru.newlevel.hordemap.presentation.permissions.PermissionRequestFragment
+import ru.newlevel.hordemap.presentation.sign_in.GoogleAuthUiClient
 import ru.newlevel.hordemap.presentation.sign_in.SingInFragment
 import ru.newlevel.hordemap.presentation.tracks.TracksFragment
 
 
 class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationUi {
 
-    private var mainFragment: Fragment = MapFragment()
-    private var tracksFragment: TracksFragment = TracksFragment()
-    private var messengerFragment: MessengerFragment = MessengerFragment()
-    private var signInFragment: SingInFragment = SingInFragment()
+    private val mainFragment: MapFragment by lazy { MapFragment() }
+    private val tracksFragment: TracksFragment by lazy { TracksFragment() }
+    private val messengerFragment: MessengerFragment by lazy { MessengerFragment() }
+    private val googleAuthUiClient by inject<GoogleAuthUiClient>()
     private lateinit var currentFragment: Fragment
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var navView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //TODO удалить ресет (тест первого запуска)
-        //   loginViewModel.reset()
         UserEntityProvider.sessionId = System.currentTimeMillis()
         windowSettings()
         setupNavView()
-     //   setupWakeLock()
-        onBackPressedListener()
-        currentFragment = mainFragment
-        addAndShowFragment(signInFragment)
         navView.visibility = ViewGroup.GONE
+        if (googleAuthUiClient.getSignedInUser() != null)
+            checkPermissionAndShowMap()
+        else
+            logOut()
+        //   setupWakeLock()
+        onBackPressedListener()
     }
 
-    private fun onBackPressedListener(){
+    private fun onBackPressedListener() {
         this.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (currentFragment != mainFragment)
-                    navView.selectedItemId = R.id.mapFragment
+                if (currentFragment != mainFragment) navView.selectedItemId = R.id.mapFragment
             }
         })
     }
+
     private fun setupWakeLock() {
         val pm = applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
         val wl: PowerManager.WakeLock = pm.newWakeLock(FULL_WAKE_LOCK, "HordeMap:wakelock")
@@ -72,10 +74,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
                     hideNavView()
                     true
                 }
+
                 R.id.tracksFragment -> {
                     showFragment(tracksFragment)
                     true
                 }
+
                 else -> {
                     showFragment(mainFragment)
                     true
@@ -103,11 +107,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         if (fragment != mainFragment) {
             supportFragmentManager.clearBackStack("${fragment.id}")
             supportFragmentManager.beginTransaction().setCustomAnimations(
-                    R.anim.slide_in_bottom,
-                    R.anim.slide_out_bottom,
-                    R.anim.slide_in_bottom,
-                    R.anim.slide_out_bottom,
-                ).hide(fragment).commit()
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+            ).hide(fragment).commit()
             handler.postDelayed({
                 supportFragmentManager.beginTransaction().remove(fragment).commit()
             }, 300)
@@ -128,24 +132,31 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     private fun showFragment(fragment: Fragment) {
         if (navView.translationY != 0F) showNavView()
         if (currentFragment != fragment) {
-            if (currentFragment == tracksFragment) handler.postDelayed({
+            removeFragment(currentFragment)
+            if (currentFragment == tracksFragment)
+                handler.postDelayed({
                 addAndShowFragment(fragment)
             }, 150)
             else addAndShowFragment(fragment)
-            removeFragment(currentFragment)
             currentFragment = fragment
         }
     }
 
     private fun checkPermissionAndShowMap() {
-            if (applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                addAndShowFragment(mainFragment)
-                navView.visibility = ViewGroup.VISIBLE
-            } else {
-                navView.visibility = ViewGroup.GONE
-                goToRequestsPermissions()
-            }
+        if (applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            supportFragmentManager.beginTransaction().setCustomAnimations(
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+            ).replace(R.id.container, mainFragment).addToBackStack(null).commit()
+            currentFragment = mainFragment
+            navView.visibility = ViewGroup.VISIBLE
+        } else {
+            navView.visibility = ViewGroup.GONE
+            goToRequestsPermissions()
         }
+    }
 
     private fun windowSettings() {
         window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
@@ -153,27 +164,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 
     override fun displayLocationUI() {
-        checkPermissionAndShowMap()
+        handler.postDelayed({
+            checkPermissionAndShowMap()
+        }, 150)
     }
 
     override fun logOut() {
-        removeFragment(currentFragment)
         supportFragmentManager.beginTransaction().setCustomAnimations(
             R.anim.slide_in_bottom,
             R.anim.slide_out_bottom,
             R.anim.slide_in_bottom,
             R.anim.slide_out_bottom,
-        ).replace(R.id.container, signInFragment).addToBackStack(null).commit()
+        ).replace(R.id.container, SingInFragment()).addToBackStack(null).commit()
         navView.visibility = ViewGroup.GONE
     }
 
     fun goToRequestsPermissions() {
-        val permissionRequestFragment = PermissionRequestFragment()
         supportFragmentManager.beginTransaction().setCustomAnimations(
             R.anim.slide_in_bottom,
             R.anim.slide_out_bottom,
             R.anim.slide_in_bottom,
             R.anim.slide_out_bottom,
-        ).replace(R.id.container, permissionRequestFragment).addToBackStack(null).commit()
+        ).replace(R.id.container, PermissionRequestFragment()).addToBackStack(null).commit()
+        navView.visibility = ViewGroup.GONE
     }
 }

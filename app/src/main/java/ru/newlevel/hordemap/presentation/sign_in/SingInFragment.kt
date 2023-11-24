@@ -22,7 +22,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
-import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
@@ -34,18 +33,12 @@ import ru.newlevel.hordemap.presentation.MyResult
 import kotlin.math.roundToInt
 
 
-class SingInFragment : Fragment(R.layout.fragment_sing_in) {
+class SingInFragment() : Fragment(R.layout.fragment_sing_in) {
 
     private val signInViewModel by viewModel<SignInViewModel>()
     private val binding: FragmentSingInBinding by viewBinding()
     private var activityListener: DisplayLocationUi? = null
     private val handler = Handler(Looper.getMainLooper())
-    private val googleAuthUiClient by lazy {
-        GoogleAuthUiClient(
-            context = requireContext(),
-            oneTapClient = Identity.getSignInClient(requireContext())
-        )
-    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -59,15 +52,11 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val loadingProgressBar = binding.loading
-        if (googleAuthUiClient.getSignedInUser() != null)
-            activityListener?.displayLocationUI()
-
-
         val launcher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 lifecycleScope.launch {
                     Log.e(TAG, result.data.toString())
-                    val signInResult = googleAuthUiClient.signInFromIntent(
+                    val signInResult = signInViewModel.signInFromIntent(
                         intent = result.data ?: return@launch
                     )
                     signInViewModel.onSingInResult(signInResult)
@@ -78,12 +67,13 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
             signInViewModel.state.collect { state ->
                 state.signInError?.let { showLoginFailed(it) }
                 if (state.isSingSuccess) {
-                    googleAuthUiClient.getSignedInUser()?.userName?.let { updateUiWithUser(it) }
-                    signInViewModel.saveUser(googleAuthUiClient.getSignedInUser())
-                    activityListener?.displayLocationUI()
-                    signInViewModel.resetState()
+                    signInViewModel.getSignedInUser()?.userName?.let { updateUiWithUser(it) }
+                    signInViewModel.saveUser(signInViewModel.getSignedInUser(), binding.editName.text.toString().trim())
+                    hideBtns()
+                    handler.postDelayed({
+                        activityListener?.displayLocationUI() }, 300)
                 } else {
-                   setButtonsEnabled()
+                    setButtonsEnabled()
                 }
             }
         }
@@ -116,20 +106,30 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
             }
         })
 
+        binding.btnSignInAsAnonymous.setOnClickListener {
+            setButtonsNoEnabled()
+            lifecycleScope.launch {
+                loadingProgressBar.visibility = View.VISIBLE
+                val signInResult = signInViewModel.signInAnonymously()
+                loadingProgressBar.visibility = View.GONE
+                signInViewModel.onSingInResult(signInResult)
+            }
+        }
         binding.btnSignInGoogle.setOnClickListener {
             setButtonsNoEnabled()
             lifecycleScope.launch {
                 loadingProgressBar.visibility = View.VISIBLE
-                val singInResult = googleAuthUiClient.signIn()
+                val singInResult = signInViewModel.signIn()
                 loadingProgressBar.visibility = View.GONE
                 when (singInResult) {
                     is MyResult.Success -> {
                         launcher.launch(
                             IntentSenderRequest.Builder(
-                                singInResult.data as? IntentSender?: return@launch
+                                singInResult.data as? IntentSender ?: return@launch
                             ).build()
                         )
                     }
+
                     is MyResult.Error -> {
                         showLoginFailed(singInResult.exception.message)
                         setButtonsEnabled()
@@ -139,19 +139,20 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
         }
     }
 
-    private fun setButtonsEnabled(){
-        binding.loginLinearAnonymous.alpha = 1f
-        binding.loginLinearGoogle.alpha = 1f
+    private fun setButtonsEnabled() {
+        binding.cardView.alpha = 1f
+        binding.editName.isEnabled = true
         binding.btnSignInAsAnonymous.isEnabled = true
         binding.btnSignInGoogle.isEnabled = true
     }
 
-    private fun setButtonsNoEnabled(){
-        binding.loginLinearAnonymous.alpha = 0.5f
-        binding.loginLinearGoogle.alpha = 0.5f
+    private fun setButtonsNoEnabled() {
+        binding.cardView.alpha = 0.6f
+        binding.editName.isEnabled = false
         binding.btnSignInAsAnonymous.isEnabled = false
         binding.btnSignInGoogle.isEnabled = false
     }
+
     private fun hideBtns() {
         val cardView = binding.cardView
         val resizeAnimation = ResizeAnimation(cardView, cardView.height - convertDpToPx(126))

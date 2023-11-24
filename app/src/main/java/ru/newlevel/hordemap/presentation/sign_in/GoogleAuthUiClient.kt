@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.presentation.sign_in
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.util.Log
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -13,14 +14,38 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.presentation.MyResult
 import java.util.concurrent.CancellationException
 
 class GoogleAuthUiClient(private val context: Context, private val oneTapClient: SignInClient) {
 
     private val auth = Firebase.auth
+    suspend fun signInAnonymously(): SingInResult {
+        return try {
+            withContext(Dispatchers.IO) {
+                val user = auth.signInAnonymously().await().user
+                Log.d(TAG, "signInAnonymously:success")
+                SingInResult(
+                    data = user?.run {
+                        UserData(
+                            userId = uid,
+                            userName = displayName,
+                            profileImageUrl = photoUrl?.toString()
+                        )
+                    }, errorMessage = null
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return SingInResult(
+                data = null,
+                errorMessage = e.message
+            )
+        }
+    }
 
-    suspend fun signIn():  MyResult<*> {
+    suspend fun signIn(): MyResult<*> {
         val myResult = try {
             withContext(Dispatchers.IO) {
                 oneTapClient.beginSignIn(

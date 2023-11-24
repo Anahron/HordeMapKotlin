@@ -31,7 +31,8 @@ val presentationModule = module {
     viewModel<SignInViewModel>() {
         SignInViewModel(
             getUserSettingsUseCase = get(),
-            saveUserSettingsUseCase = get()
+            saveUserSettingsUseCase = get(),
+            googleAuthUiClient = get()
         )
     }
     viewModel<TracksViewModel> {
@@ -40,7 +41,7 @@ val presentationModule = module {
         )
     }
     viewModel<PermissionViewModel> {
-        PermissionViewModel(getUserSettingsUseCase = get(), saveUserSettingsUseCase = get())
+        PermissionViewModel()
     }
 
     single<TrackTransferViewModel> {

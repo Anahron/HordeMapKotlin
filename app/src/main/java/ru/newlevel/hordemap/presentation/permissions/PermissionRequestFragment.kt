@@ -11,7 +11,6 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityOptionsCompat
@@ -44,7 +43,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             when {
                 granted -> {
-                    permissionViewModel.turnToAddUserNameState()
+                    activityListener?.displayLocationUI()
                 }
 
                 else -> {
@@ -142,7 +141,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                             requestBackgroundLocationPermission()
                         }
                     } else {
-                        permissionViewModel.turnToAddUserNameState()
+                        activityListener?.displayLocationUI()
                     }
                     binding.apply {
                         titleTextView.text =
@@ -157,34 +156,6 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                         permissionBackgroundRequestButton.isGone = false
                     }
                 }
-
-                is PermissionState.AddUserNameState -> {
-                    binding.apply {
-                        titleTextView.text =
-                            context?.getString(R.string.name_rationale_title_text)
-                        detailsTextView.text =
-                            context?.getString(R.string.name_rationale_details_text)
-                        editName.isGone = false
-                        btnAccept.isGone = true
-                        btnUserNameRequest.isGone = false
-                        permissionRequestButton.isGone = true
-                        permissionBackgroundRequestButton.isGone = true
-                    }
-                    binding.btnUserNameRequest.setOnClickListener {
-                        if (binding.editName.text.toString().length > 2) {
-                            binding.editName.isActivated = false
-                            permissionViewModel.saveUserName(binding.editName.text.toString())
-                            activityListener?.displayLocationUI()
-                        } else {
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.name_must_be_3,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-
                 else -> {}
             }
         }
