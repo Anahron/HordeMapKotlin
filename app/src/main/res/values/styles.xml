@@ -10,6 +10,7 @@
         <item name="labelStyle">@style/CustomTooltip</item>
         <item name="haloColor">@color/gray_blue</item>
         <item name="thumbRadius">8dp</item>
+        <item name="trackHeight">8dp</item>
     </style>
 
     <style name="DialogStyle" parent="Theme.AppCompat.Dialog">

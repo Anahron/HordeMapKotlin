@@ -11,4 +11,8 @@
         android:id="@+id/messengerFragment"
         android:title="@string/chat"
         android:icon="@drawable/vector_chat" />
+    <item
+        android:id="@+id/settingsFragment"
+        android:title="@string/settings"
+        android:icon="@drawable/vector_settings" />
 </menu>

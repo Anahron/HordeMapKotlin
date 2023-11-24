@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.koin.android.ext.android.inject
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.SettingsFragment
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.presentation.map.MapFragment
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
 
     private val mainFragment: MapFragment by lazy { MapFragment() }
     private val tracksFragment: TracksFragment by lazy { TracksFragment() }
+    private val settingsFragment: SettingsFragment by lazy { SettingsFragment() }
     private val messengerFragment: MessengerFragment by lazy { MessengerFragment() }
     private val googleAuthUiClient by inject<GoogleAuthUiClient>()
     private lateinit var currentFragment: Fragment
@@ -77,6 +79,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
 
                 R.id.tracksFragment -> {
                     showFragment(tracksFragment)
+                    true
+                }
+
+                R.id.settingsFragment -> {
+                    showFragment(settingsFragment)
                     true
                 }
 
@@ -133,11 +140,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         if (navView.translationY != 0F) showNavView()
         if (currentFragment != fragment) {
             removeFragment(currentFragment)
-            if (currentFragment == tracksFragment)
-                handler.postDelayed({
-                addAndShowFragment(fragment)
-            }, 150)
-            else addAndShowFragment(fragment)
+            addAndShowFragment(fragment)
             currentFragment = fragment
         }
     }
