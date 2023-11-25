@@ -54,5 +54,6 @@ class SettingsViewModel(
 
     fun reset() {
         resetUserSettingsUseCase.execute()
+        resultLiveDataMutable.value = getUserSettingsUseCase.execute()
     }
 }

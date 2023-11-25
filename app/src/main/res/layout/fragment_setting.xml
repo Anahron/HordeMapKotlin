@@ -40,10 +40,10 @@
 
             <TextView
                 android:id="@+id/tvTitleSettings"
-                android:layout_marginEnd="48dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:layout_marginEnd="48dp"
                 android:layout_weight="1"
                 android:fontFamily="@font/inter_semibold"
                 android:gravity="center_horizontal"
@@ -102,9 +102,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="48dp"
-                android:paddingVertical="4dp"
+                android:orientation="vertical"
                 android:paddingHorizontal="8dp"
-                android:orientation="vertical">
+                android:paddingVertical="4dp">
 
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="wrap_content"
@@ -117,18 +117,17 @@
                         android:id="@+id/tvUserAuthName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="12dp"
                         android:fontFamily="@font/inter_medium"
                         android:textColor="@color/main_green_dark"
                         android:textSize="16sp"
-                       android:layout_gravity="center_vertical"
                         app:layout_constraintStart_toEndOf="@+id/circleImageView"
                         app:layout_constraintTop_toTopOf="@+id/circleImageView"
                         tools:text="UserAutName" />
 
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
-
 
 
                 <androidx.appcompat.widget.LinearLayoutCompat
@@ -141,9 +140,9 @@
                         android:id="@+id/textView12"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:layout_marginEnd="4dp"
                         android:text="@string/nickname"
-                        android:layout_gravity="center_vertical"
                         android:textColor="@color/main_green_dark"
                         android:textSize="16sp" />
 
@@ -151,9 +150,9 @@
                         android:id="@+id/tvNickName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/main_green_dark"
                         android:layout_gravity="center_vertical"
                         android:fontFamily="@font/inter_medium"
+                        android:textColor="@color/main_green_dark"
                         android:textSize="16sp"
                         tools:text="Nickname" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -191,9 +190,9 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnToggleLoadMap"
                 android:layout_width="0dp"
-                android:maxWidth="200dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:maxWidth="200dp"
                 android:text="@string/load_map"
                 app:shapeAppearanceOverlay="@style/RoundedButton"
                 app:textAllCaps="false"
@@ -212,7 +211,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toggleGroup"
-            tools:visibility="gone">
+            tools:visibility="visible">
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
@@ -223,28 +222,13 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:orientation="vertical"
-                android:padding="12dp">
-
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="4dp"
-                    android:hint="@string/myName"
-                    android:textColorHint="@color/main_green_dark"
-                    app:boxCornerRadiusBottomEnd="7dp"
-                    app:boxCornerRadiusBottomStart="7dp"
-                    app:boxCornerRadiusTopEnd="7dp"
-                    app:boxCornerRadiusTopStart="7dp"
-                    app:boxStrokeColor="@color/main_green_dark"
-                    app:boxStrokeWidth="1dp"
-                    app:helperTextTextColor="@color/main_green_dark" />
-
+                android:paddingHorizontal="12dp"
+                android:paddingBottom="12dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
+                    android:layout_height="40dp"
+                    android:gravity="bottom"
                     android:orientation="horizontal">
 
                     <TextView
@@ -258,8 +242,18 @@
                         android:id="@+id/tv_time_to_send_data"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:textColor="@color/text_green_dark"
                         tools:text="60 sec" />
+
+                    <ImageButton
+                        android:id="@+id/btnSettingsReset"
+                        android:layout_width="60dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="0"
+                        android:background="@color/transparent"
+                        app:srcCompat="@drawable/vector_reset"
+                        android:contentDescription="@string/todo"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -281,16 +275,18 @@
                         android:valueFrom="5.0"
                         android:valueTo="120.0"
                         tools:ignore="DuplicateSpeakableTextCheck" />
-
-                    <ImageView
+                    <FrameLayout
                         android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="5dp"
-                        android:contentDescription="@string/todo"
-                        android:scaleType="centerInside"
-                        app:srcCompat="@drawable/vector_gps" />
+                        android:layout_height="50dp">
 
+                        <ImageView
+                            android:layout_width="60dp"
+                            android:layout_height="53dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:scaleType="centerInside"
+                            app:srcCompat="@drawable/vector_gps" />
+                    </FrameLayout>
                 </LinearLayout>
 
                 <TextView
@@ -318,17 +314,20 @@
                         android:valueFrom="20.0"
                         android:valueTo="100.0" />
 
-                    <ImageView
-                        android:id="@+id/imageUserMarker"
-                        android:minWidth="60dp"
+                    <FrameLayout
                         android:layout_width="60dp"
-                        android:layout_height="60px"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="5dp"
-                        android:contentDescription="@string/todo"
-                        app:srcCompat="@drawable/img_marker_red"
-                        tools:ignore="PxUsage" />
+                        android:layout_height="50dp">
 
+                        <ImageView
+                            android:id="@+id/imageUserMarker"
+                            android:layout_width="60dp"
+                            android:layout_height="60px"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/todo"
+                            android:minWidth="60dp"
+                            app:srcCompat="@drawable/img_marker_red"
+                            tools:ignore="PxUsage" />
+                    </FrameLayout>
                 </LinearLayout>
 
                 <TextView
@@ -357,18 +356,19 @@
                         android:value="60"
                         android:valueFrom="20.0"
                         android:valueTo="100.0" />
-
+                    <FrameLayout
+                        android:layout_width="60dp"
+                        android:layout_height="50dp">
                     <ImageView
                         android:id="@+id/imageCustomMarker"
-                        android:minWidth="60dp"
                         android:layout_width="60dp"
                         android:layout_height="60px"
                         android:layout_gravity="center"
-                        android:layout_marginStart="5dp"
                         android:contentDescription="@string/todo"
+                        android:minWidth="60dp"
                         app:srcCompat="@drawable/img_marker_swords"
                         tools:ignore="PxUsage" />
-
+                </FrameLayout>
 
                 </LinearLayout>
 
@@ -472,7 +472,8 @@
             app:cardElevation="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toggleGroup">
+            app:layout_constraintTop_toBottomOf="@+id/toggleGroup"
+            tools:visibility="gone">
 
 
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -496,11 +497,11 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:padding="10dp"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:background="@color/transparent"
                         android:contentDescription="@string/todo"
+                        android:padding="10dp"
                         android:src="@drawable/vector_load_map_cloud" />
 
                     <androidx.appcompat.widget.AppCompatButton
@@ -527,9 +528,9 @@
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:padding="10dp"
                         android:background="@color/transparent"
                         android:contentDescription="@string/todo"
+                        android:padding="10dp"
                         android:src="@drawable/vector_file_dir" />
 
                     <androidx.appcompat.widget.AppCompatButton
@@ -555,9 +556,9 @@
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:padding="10dp"
                         android:background="@color/transparent"
                         android:contentDescription="@string/todo"
+                        android:padding="10dp"
                         android:src="@drawable/vector_reload" />
 
                     <androidx.appcompat.widget.AppCompatButton
@@ -584,9 +585,9 @@
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:padding="10dp"
                         android:background="@color/transparent"
                         android:contentDescription="@string/todo"
+                        android:padding="10dp"
                         android:src="@drawable/vector_clear" />
 
                     <androidx.appcompat.widget.AppCompatButton
@@ -614,8 +615,8 @@
                         android:layout_height="45dp"
                         android:background="@color/transparent"
                         android:contentDescription="@string/todo"
-                        android:src="@drawable/vector_autoload"
-                        android:padding="8dp"/>
+                        android:padding="8dp"
+                        android:src="@drawable/vector_autoload" />
 
                     <CheckBox
                         android:id="@+id/checkBox"

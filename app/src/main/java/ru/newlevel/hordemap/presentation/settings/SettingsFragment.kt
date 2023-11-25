@@ -62,6 +62,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         setupSeekBarListeners()
         setUpLogOutButton()
         setUpLoadingMapListeners()
+        setUpResetButton()
 
         toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
@@ -238,6 +239,11 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     private fun setUpLogOutButton() {
         binding.btnSettingsPopUp.setOnClickListener {
             showUserPopupMenu(it)
+        }
+    }
+    private fun setUpResetButton(){
+        binding.btnSettingsReset.setOnClickListener{
+            settingsViewModel.reset()
         }
     }
 

@@ -60,15 +60,11 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
 
     override fun reset() {
         sharedPreferences.edit()
-            .remove(KEY_NAME)
             .remove(KEY_MARKER)
             .remove(KEY_TIME_TO_SEND_DATA)
             .remove(KEY_STATIC_MARKER_SIZE)
             .remove(KEY_USERS_MARKER_SIZE)
             .remove(KEY_IS_AUTO_LOAD)
-            .remove(KEY_AUTH_NAME)
-            .remove(KEY_USER_ID)
-            .remove(KEY_PROFILE_URL)
             .apply()
     }
 
