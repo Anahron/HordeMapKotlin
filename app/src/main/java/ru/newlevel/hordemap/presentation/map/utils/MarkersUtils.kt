@@ -10,13 +10,11 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
 import com.google.maps.android.collections.MarkerManager
 import ru.newlevel.hordemap.R
@@ -33,16 +31,13 @@ import java.time.format.DateTimeFormatter
 class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
 
     suspend fun createGpxLayer(
-        uri: Uri, markerCollection: MarkerManager.Collection, context: Context, googleMap: GoogleMap
-    ): Polygon? {
+        uri: Uri, markerCollection: MarkerManager.Collection, context: Context
+    ): PolygonOptions? {
         val parse = garminGpxParser.parseGpxFile(uri, context)
         parse?.let {
             createGarminMarkers(parse, markerCollection, context)
-            parse.bounds?.let {
-                googleMap.addPolygon(createGarminBounds(parse))
-            }
         }
-        return parse?.bounds?.let { googleMap.addPolygon(createGarminBounds(parse)) }
+        return parse?.bounds?.let { createGarminBounds(parse) }
     }
 
     private fun createGarminMarkers(

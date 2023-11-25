@@ -2,7 +2,7 @@
     <string name="app_name">Horde Map</string>
     <string name="action_settings" />
     <string name="Distance">Дистанция</string>
-    <string name="load_map">Загрузить полигон</string>
+    <string name="load_map">Полигон</string>
     <string name="options">Настройки</string>
     <string name="show_distance">Показать дистанцию</string>
     <string name="relog">Сбросить логин</string>
@@ -96,4 +96,11 @@
     <string name="login_as_anonymous">Войти как аноним</string>
     <string name="login_with_google">Войти через Google</string>
     <string name="nickname">Позывной:</string>
+    <string name="load_map_filed">Download failed</string>
+    <string name="load_map_started">Downloading has started, please wait…</string>
+    <string name="wrong_format_file">Invalid file format</string>
+    <string name="file_wrong">Problem with the file or incorrect format</string>
+    <string name="change_name">Сhange name</string>
+    <string name="map_empty">No saved map</string>
+    <string name="logout">Logout</string>
 </resources>

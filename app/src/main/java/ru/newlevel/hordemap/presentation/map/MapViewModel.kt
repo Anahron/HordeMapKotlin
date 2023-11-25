@@ -62,8 +62,7 @@ class MapViewModel(
     ) {
         Log.e("AAA", "fun createGpxLayer ")
         polygon.value = markersUtils.createGpxLayer(
-            uri, markerCollection, context, googleMap
-        )
+            uri, markerCollection, context)?.let { googleMap.addPolygon(it) }
     }
 
     fun startLocationUpdates() = mapUseCases.locationUpdatesInteractor.startLocationUpdates()
@@ -124,13 +123,12 @@ class MapViewModel(
         mapUseCases.sendStaticMarkerUseCase.execute(latLng, description, checkedItem)
     }
 
-    fun setUriForMap(uri: Uri) {
-        _mapUri.postValue(uri)
-    }
+//    fun setUriForMap(uri: Uri) {
+//        _mapUri.postValue(uri)
+//    }
 
     fun cleanUriForMap() {
         _mapUri.postValue(null)
-        polygon.value?.remove()
     }
 
     fun reCreateMarkers() {
@@ -142,18 +140,30 @@ class MapViewModel(
         _isAutoLoadMap.value = boolean
     }
 
-    suspend fun saveGameMapToFile(uri: Uri, suffix: String): Uri = mapUseCases.saveGameMapToFileUseCase.execute(uri, suffix)
-
-    suspend fun loadMapFromServer(context: Context): Uri? {
-        return mapUseCases.loadGameMapFromServerUseCase.execute(context)
+    suspend fun saveGameMapToFile(uri: Uri, context: Context): Throwable? {
+        val result =  mapUseCases.saveGameMapToFileUseCase.execute(uri, context)
+        result.onSuccess {
+            _mapUri.postValue(it)
+        }
+        return result.exceptionOrNull()
     }
 
-    suspend fun loadLastGameMap(): Boolean {
-        val uri = mapUseCases.loadLastGameMapUseCase.execute()
-        return if (uri != null) {
-            _mapUri.postValue(uri)
-            true
-        } else false
+
+
+    suspend fun loadMapFromServer(context: Context): Throwable? {
+        val result = mapUseCases.loadGameMapFromServerUseCase.execute(context)
+        result.onSuccess {
+            _mapUri.postValue(it)
+        }
+        return result.exceptionOrNull()
+    }
+
+    fun loadLastGameMap(context: Context): Throwable? {
+        val result = mapUseCases.loadLastGameMapUseCase.execute(context = context)
+        result.onSuccess {
+            _mapUri.postValue(it)
+        }
+        return result.exceptionOrNull()
     }
 
     fun turnToDefaultState() {

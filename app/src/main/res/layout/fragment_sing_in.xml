@@ -89,7 +89,8 @@
                     android:ems="10"
                     android:inputType="textPersonName"
                     android:textColor="@color/slate_800"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:maxLength="14"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 

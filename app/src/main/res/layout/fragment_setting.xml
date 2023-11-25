@@ -40,6 +40,7 @@
 
             <TextView
                 android:id="@+id/tvTitleSettings"
+                android:layout_marginEnd="48dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -50,15 +51,6 @@
                 android:textColor="@color/main_green_dialog"
                 android:textSize="20sp" />
 
-            <ImageButton
-                android:id="@+id/ibPopupSettings"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center_vertical"
-                android:background="@color/transparent"
-                android:contentDescription="@string/todo"
-                app:srcCompat="@drawable/vector_dots"
-                tools:ignore="TouchTargetSizeCheck" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -77,12 +69,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linearLayoutCompat" />
 
+        <ImageButton
+            android:id="@+id/btnSettingsPopUp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="-40dp"
+            android:layout_marginBottom="-40dp"
+            android:background="@color/transparent"
+            android:contentDescription="@string/todo"
+            android:elevation="15dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/vector_dots_slate"
+            app:civ_border_width="2dp"
+            app:layout_constraintBottom_toTopOf="@+id/topCard"
+            app:layout_constraintStart_toEndOf="@+id/topCard"
+            tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
+
         <androidx.cardview.widget.CardView
             android:id="@+id/topCard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginStart="45dp"
+            android:layout_marginStart="30dp"
             android:layout_marginTop="35dp"
             app:cardCornerRadius="16dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -93,14 +101,16 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="40dp"
-                android:orientation="vertical"
-                android:padding="8dp">
+                android:layout_marginStart="48dp"
+                android:paddingVertical="4dp"
+                android:paddingHorizontal="8dp"
+                android:orientation="vertical">
 
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="6dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="30dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -111,16 +121,20 @@
                         android:fontFamily="@font/inter_medium"
                         android:textColor="@color/main_green_dark"
                         android:textSize="16sp"
+                       android:layout_gravity="center_vertical"
                         app:layout_constraintStart_toEndOf="@+id/circleImageView"
                         app:layout_constraintTop_toTopOf="@+id/circleImageView"
-                        tools:text="UserAuthName" />
+                        tools:text="UserAutName" />
+
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
+
+
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="6dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <TextView
@@ -129,6 +143,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="4dp"
                         android:text="@string/nickname"
+                        android:layout_gravity="center_vertical"
                         android:textColor="@color/main_green_dark"
                         android:textSize="16sp" />
 
@@ -136,7 +151,9 @@
                         android:id="@+id/tvNickName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/light_blue_900"
+                        android:textColor="@color/main_green_dark"
+                        android:layout_gravity="center_vertical"
+                        android:fontFamily="@font/inter_medium"
                         android:textSize="16sp"
                         tools:text="Nickname" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -185,17 +202,17 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/cardView"
+            android:id="@+id/cardViewSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
             android:elevation="16dp"
-            android:visibility="gone"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toggleGroup">
+            app:layout_constraintTop_toBottomOf="@+id/toggleGroup"
+            tools:visibility="gone">
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
@@ -303,6 +320,7 @@
 
                     <ImageView
                         android:id="@+id/imageUserMarker"
+                        android:minWidth="60dp"
                         android:layout_width="60dp"
                         android:layout_height="60px"
                         android:layout_gravity="center"
@@ -342,6 +360,7 @@
 
                     <ImageView
                         android:id="@+id/imageCustomMarker"
+                        android:minWidth="60dp"
                         android:layout_width="60dp"
                         android:layout_height="60px"
                         android:layout_gravity="center"
@@ -380,7 +399,6 @@
                         android:layout_weight="1"
                         android:alpha="0.3"
                         android:background="@color/transparent"
-                        android:button="@null"
                         android:scaleType="centerInside"
                         android:src="@drawable/img_marker_red"
                         android:tag="0"
@@ -394,7 +412,6 @@
                         android:layout_weight="1"
                         android:alpha="0.3"
                         android:background="@color/transparent"
-                        android:button="@null"
                         android:scaleType="centerInside"
                         android:src="@drawable/img_marker_yellow"
                         android:tag="1"
@@ -408,7 +425,6 @@
                         android:layout_weight="1"
                         android:alpha="0.3"
                         android:background="@color/transparent"
-                        android:button="@null"
                         android:scaleType="centerInside"
                         android:src="@drawable/img_marker_green"
                         android:tag="2"
@@ -422,7 +438,6 @@
                         android:layout_weight="1"
                         android:alpha="0.3"
                         android:background="@color/transparent"
-                        android:button="@null"
                         android:scaleType="centerInside"
                         android:src="@drawable/img_marker_blue"
                         android:tag="3"
@@ -481,7 +496,7 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:padding="8dp"
+                        android:padding="10dp"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:background="@color/transparent"
@@ -512,7 +527,7 @@
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:padding="8dp"
+                        android:padding="10dp"
                         android:background="@color/transparent"
                         android:contentDescription="@string/todo"
                         android:src="@drawable/vector_file_dir" />
@@ -540,7 +555,7 @@
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:padding="8dp"
+                        android:padding="10dp"
                         android:background="@color/transparent"
                         android:contentDescription="@string/todo"
                         android:src="@drawable/vector_reload" />
@@ -569,7 +584,7 @@
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:padding="8dp"
+                        android:padding="10dp"
                         android:background="@color/transparent"
                         android:contentDescription="@string/todo"
                         android:src="@drawable/vector_clear" />
@@ -627,7 +642,7 @@
             android:background="@color/transparent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardView">
+            app:layout_constraintTop_toBottomOf="@+id/cardViewSettings">
 
         </FrameLayout>
 
@@ -640,21 +655,6 @@
             app:layout_constraintTop_toBottomOf="@+id/cardViewLoadMap">
 
         </FrameLayout>
-        <ImageButton
-            android:id="@+id/imageButton2"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="-21dp"
-            android:layout_marginBottom="-31dp"
-            android:background="@color/transparent"
-            android:contentDescription="@string/todo"
-            android:elevation="10dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/img_settings_exit"
-            app:civ_border_width="2dp"
-            app:layout_constraintBottom_toTopOf="@+id/topCard"
-            app:layout_constraintStart_toEndOf="@+id/topCard"
-            tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

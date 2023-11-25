@@ -26,14 +26,14 @@ import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.databinding.FragmentTracksDialogBinding
+import ru.newlevel.hordemap.databinding.FragmentTracksBinding
 import kotlin.math.roundToInt
 
-class TracksFragment : Fragment(R.layout.fragment_tracks_dialog) {
+class TracksFragment : Fragment(R.layout.fragment_tracks) {
 
     private val trackTransferViewModel by viewModel<TrackTransferViewModel>()
     private val tracksViewModel by viewModel<TracksViewModel>()
-    private val binding: FragmentTracksDialogBinding by viewBinding()
+    private val binding: FragmentTracksBinding by viewBinding()
     private lateinit var recyclerView: RecyclerView
     private lateinit var trackAdapter: TracksAdapter
     private lateinit var alertDialog: AlertDialog

@@ -71,7 +71,8 @@ class SingInFragment() : Fragment(R.layout.fragment_sing_in) {
                     signInViewModel.saveUser(signInViewModel.getSignedInUser(), binding.editName.text.toString().trim())
                     hideBtns()
                     handler.postDelayed({
-                        activityListener?.displayLocationUI() }, 300)
+                        activityListener?.displayLocationUI()
+                    }, 300)
                 } else {
                     setButtonsEnabled()
                 }
@@ -82,7 +83,7 @@ class SingInFragment() : Fragment(R.layout.fragment_sing_in) {
             }
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                if (s.toString().length < 3 && binding.loginLinearAnonymous.isVisible && binding.loginLinearAnonymous.rotationX.toInt() == 0) {
+                if (s.toString().trim().length < 3 && binding.loginLinearAnonymous.isVisible && binding.loginLinearAnonymous.rotationX.toInt() == 0) {
                     hideBtns()
                 }
             }
@@ -129,7 +130,6 @@ class SingInFragment() : Fragment(R.layout.fragment_sing_in) {
                             ).build()
                         )
                     }
-
                     is MyResult.Error -> {
                         showLoginFailed(singInResult.exception.message)
                         setButtonsEnabled()

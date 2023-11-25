@@ -70,7 +70,7 @@ val domainModule = module {
     }
 
     factory<LoadLastGameMapUseCase> {
-        LoadLastGameMapUseCase(gameMapRepository = get())
+        LoadLastGameMapUseCase()
     }
 
     factory<DownloadFileUseCase> {

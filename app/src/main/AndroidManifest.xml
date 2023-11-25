@@ -63,7 +63,9 @@
             android:theme="@style/Theme.HordeMap"
             android:exported="true"
             android:label="Horde Map"
-            android:screenOrientation="portrait">
+            android:windowSoftInputMode="adjustNothing"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

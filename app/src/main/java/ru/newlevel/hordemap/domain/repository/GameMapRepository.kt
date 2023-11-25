@@ -7,7 +7,5 @@ import android.net.Uri
 interface GameMapRepository {
     suspend fun loadGameMapFromServer(context: Context): Uri?
 
-    suspend fun loadLastGameMap(): Uri?
-
-    suspend fun saveGameMapToFile(uri: Uri, suffix: String): Uri
+    suspend fun saveGameMapToFile(uri: Uri, suffix: String): Result<Uri?>
 }

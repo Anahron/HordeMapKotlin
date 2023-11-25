@@ -26,14 +26,13 @@ class SignInViewModel(
                 isSingSuccess = result.data != null, signInError = result.errorMessage
             )
         }
-
     }
 
     fun saveUser(userData: UserData?, newUserName: String) {
         val user = getUserSettingsUseCase.execute()
         userData?.userId?.let {
             saveUserSettingsUseCase.execute(user.copy(
-                authName = userData.userName ?: "",
+                authName = userData.userName ?: "Anonymous",
                 profileImageUrl = userData.profileImageUrl ?: "",
                 deviceID = it,
                 name = newUserName

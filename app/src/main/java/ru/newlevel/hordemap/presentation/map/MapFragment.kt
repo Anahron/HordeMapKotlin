@@ -15,6 +15,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -31,7 +32,6 @@ import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.data.kml.KmlLayer
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -49,7 +49,7 @@ import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
 import java.util.Date
 import kotlin.math.roundToInt
 
-class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, SettingsFragment.OnChangeMarkerSettings {
+class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, SettingsFragment.OnChangeSettings {
 
     private val tracksTransferViewModel by viewModel<TrackTransferViewModel>()
     private val binding: FragmentMapsBinding by viewBinding()
@@ -59,8 +59,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
     private lateinit var garminMarkerCollection: MarkerManager.Collection
-    private lateinit var settingsFragment: SettingsFragment
-    private  lateinit var loadMapFragment: LoadMapFragment
     private var kmlLayer: KmlLayer? = null
 
     private fun init() {
@@ -69,12 +67,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         userMarkerCollection = markerManager.newCollection()
         staticMarkerCollection = markerManager.newCollection()
         garminMarkerCollection = markerManager.newCollection()
-        settingsFragment = SettingsFragment()
-        loadMapFragment = LoadMapFragment(
-            mapViewModel = mapViewModel
-        )
-        addMenuFragments()
-        settingsFragment.attachCallback(this)
         menuListenersSetup()
         markerStateObserver()
         overlayObserver()
@@ -181,9 +173,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
 
     private fun overlayObserver() {
         mapViewModel.isAutoLoadMap.observe(viewLifecycleOwner) {
-            if (it) CoroutineScope(Dispatchers.IO).launch {
-                mapViewModel.loadLastGameMap()
-            }
+            if (it)
+                onLoadLastGameMapClick()
         }
         mapViewModel.mapUri.observe(viewLifecycleOwner) { uri ->
             removeOverlays()
@@ -230,6 +221,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             }
         }
     }
+
     private fun loadGpxToMap(uri: Uri) {
         try {
             lifecycleScope.launch {
@@ -240,13 +232,13 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
                     cameraUpdate(it.position.latitude, it.position.longitude)
                     true
                 }
-
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
-    private fun removeOverlays(){
+
+    private fun removeOverlays() {
         kmlLayer?.removeLayerFromMap()
         garminMarkerCollection.markers.forEach { marker -> marker.remove() }
         mapViewModel.polygon.value?.remove()
@@ -327,7 +319,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
     }
 
-    private fun onMapLongClickMenu(latLng: LatLng){
+    private fun onMapLongClickMenu(latLng: LatLng) {
         // location -> pixels window for popup
         val projection = googleMap.projection
         val point = projection.toScreenLocation(latLng)
@@ -357,12 +349,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         )
     }
 
-    private fun addMenuFragments(){
-        val fragmentTrans = childFragmentManager.beginTransaction()
-        fragmentTrans.add(R.id.fragment_container, settingsFragment)
-        fragmentTrans.add(R.id.fragment_container, loadMapFragment)
-        fragmentTrans.commit()
-    }
     private fun menuListenersSetup() {
         binding.drawableSettings.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         binding.ibMapType.setOnClickListener {
@@ -383,30 +369,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         binding.ibMarkers.setOnClickListener {
             mapViewModel.showOrHideMarkers()
         }
-        binding.ibSettings.setOnClickListener {
-          openSettingMenu()
-        }
-        binding.ibLoadMap.setOnClickListener {
-           openLoadMapMenu()
-        }
-    }
-    private fun openLoadMapMenu(){
-        val fragmentTransaction = childFragmentManager.beginTransaction()
-        settingsFragment.let {
-            fragmentTransaction.hide(settingsFragment)
-            fragmentTransaction.show(loadMapFragment)
-            fragmentTransaction.commit()
-        }
-        binding.drawableSettings.openDrawer(GravityCompat.END)
-    }
-    private fun openSettingMenu(){
-        val fragmentTransaction = childFragmentManager.beginTransaction()
-        loadMapFragment.let {
-            fragmentTransaction.hide(loadMapFragment)
-            fragmentTransaction.show(settingsFragment)
-            fragmentTransaction.commit()
-        }
-        binding.drawableSettings.openDrawer(GravityCompat.END)
     }
 
     private fun createStaticMarkerDialog(latLng: LatLng) {
@@ -476,8 +438,50 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     override fun onChangeMarkerSettings() {
-        userMarkerCollection.markers.forEach {
-                marker -> marker.remove() }
+        userMarkerCollection.markers.forEach { marker -> marker.remove() }
         mapViewModel.reCreateMarkers()
     }
+
+    override fun onLoadLastGameMapClick() {
+        lifecycleScope.launch {
+            mapViewModel.loadLastGameMap(requireContext())?.let {
+                it.message?.let { it1 -> makeLongText(it1) }
+            }
+        }
+    }
+
+    override fun onLoadMapFromServerClick() {
+        makeLongText(requireContext().getString(R.string.load_map_started))
+        lifecycleScope.launch {
+            mapViewModel.loadMapFromServer(requireContext().applicationContext)?.let {
+                it.message?.let { it1 -> makeLongText(it1) }
+            }
+        }
+    }
+
+    override fun onSelectFileClick(uri: Uri) {
+        lifecycleScope.launch {
+            mapViewModel.saveGameMapToFile(uri, requireContext())?.let {
+                it.message?.let { it1 -> makeLongText(it1) }
+            }
+        }
+    }
+    override fun onAutoLoadClick(isAutoLoad: Boolean) {
+        mapViewModel.setIsAutoLoadMap(isAutoLoad)
+    }
+
+    override fun onClearMapClick() {
+        removeOverlays()
+        mapViewModel.cleanUriForMap()
+    }
+
+
+    private fun makeLongText(text: String) {
+        Toast.makeText(
+            requireContext().applicationContext,
+            text,
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
 }

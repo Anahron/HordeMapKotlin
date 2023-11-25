@@ -89,26 +89,6 @@
                 android:contentDescription="@string/todo" />
 
             <ImageButton
-                android:id="@+id/ib_settings"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_gravity="end|top"
-                android:layout_marginTop="195dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/img_map_settings"
-                android:contentDescription="@string/todo" />
-
-            <ImageButton
-                android:id="@+id/ib_load_map"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_gravity="end|top"
-                android:layout_marginTop="255dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/img_map_loadmap"
-                android:contentDescription="@string/todo" />
-
-            <ImageButton
                 android:id="@+id/ibTrackHide"
                 android:layout_width="55dp"
                 android:layout_height="65dp"

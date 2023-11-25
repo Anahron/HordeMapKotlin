@@ -258,7 +258,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             setOnScrollChangeListener { _, _, _, _, _ ->
                 if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
                     showOrHideDownBtn(false)
-                } else if (binding.btnGoDown.translationX == 500F){
+                } else if (binding.btnGoDown.translationX == 500F) {
                     showOrHideDownBtn(true)
                     binding.btnGoDown.visibility = VISIBLE
                 }
@@ -280,6 +280,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             animator.start()
         }
     }
+
     private fun setupScrollDownButton() {
         binding.btnGoDown.translationX = 500f
         binding.btnGoDown.setOnClickListener {

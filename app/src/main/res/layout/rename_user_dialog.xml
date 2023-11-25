@@ -14,7 +14,7 @@
         android:textColor="@color/main_green_dark"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/rename_track"
+        android:text="@string/change_name"
         android:layout_margin="8dp"
         android:textSize="22sp"/>
 
@@ -33,15 +33,15 @@
         app:helperTextTextColor="@color/main_green_dark"
         android:textColorHint="@color/main_green_dark"
         app:boxStrokeWidth="1dp"
-        android:hint="@string/entry_text">
+        android:hint="@string/put_name_here">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/description_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textLongMessage"
+            android:maxLength="14"
             android:textColor="@color/main_green_dark"
-            android:maxLength="30"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -82,7 +82,7 @@
         android:orientation="horizontal">
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_cancel"
+            android:id="@+id/btnUserSettingsCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -93,7 +93,7 @@
             android:padding="15dp" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_save"
+            android:id="@+id/btnUserSettingsSaveUserName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
