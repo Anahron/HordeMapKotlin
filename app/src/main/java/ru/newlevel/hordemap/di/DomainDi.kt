@@ -8,6 +8,7 @@ import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadGameMapFromServerUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadLastGameMapUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.LoadProfilePhotoUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.LocationUpdatesInteractor
 import ru.newlevel.hordemap.domain.usecases.mapCases.MapUseCases
 import ru.newlevel.hordemap.domain.usecases.mapCases.ResetUserSettingsUseCase
@@ -114,6 +115,9 @@ val domainModule = module {
     }
     factory<SetFavouriteTrackForSessionUseCase> {
         SetFavouriteTrackForSessionUseCase(locationRepository = get())
+    }
+    factory<LoadProfilePhotoUseCase> {
+        LoadProfilePhotoUseCase(settingsRepository = get())
     }
     factory<SaveCurrentTrackUseCase> {
         SaveCurrentTrackUseCase(locationRepository = get())

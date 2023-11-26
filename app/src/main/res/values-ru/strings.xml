@@ -103,4 +103,5 @@
     <string name="change_name">Сhange name</string>
     <string name="map_empty">No saved map</string>
     <string name="logout">Logout</string>
+    <string name="no_gps_connection">No GPS connection</string>
 </resources>

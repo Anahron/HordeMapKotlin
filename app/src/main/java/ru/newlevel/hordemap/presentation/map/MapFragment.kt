@@ -51,9 +51,9 @@ import kotlin.math.roundToInt
 
 class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, SettingsFragment.OnChangeSettings {
 
+    private val mapViewModel by viewModel<MapViewModel>()
     private val tracksTransferViewModel by viewModel<TrackTransferViewModel>()
     private val binding: FragmentMapsBinding by viewBinding()
-    private val mapViewModel by viewModel<MapViewModel>()
     private lateinit var googleMap: GoogleMap
     private lateinit var markerManager: MarkerManager
     private lateinit var userMarkerCollection: MarkerManager.Collection
@@ -290,10 +290,14 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             mapViewModel.updateRoute(currentLatLng)
         }
         binding.ibMyLocation.setOnClickListener {
-            val myLocation = googleMap.myLocation
-            cameraUpdate(
-                myLocation.latitude, myLocation.longitude
-            )
+            try {
+                val myLocation = googleMap.myLocation
+                cameraUpdate(
+                    myLocation.latitude, myLocation.longitude
+                )
+            } catch (e: Exception){
+                makeLongText(getString(R.string.no_gps_connection))
+            }
         }
         staticMarkerCollection.setOnInfoWindowClickListener {
             it.hideInfoWindow()
@@ -439,6 +443,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
 
     override fun onChangeMarkerSettings() {
         userMarkerCollection.markers.forEach { marker -> marker.remove() }
+        staticMarkerCollection.markers.forEach { marker ->  marker.remove() }
         mapViewModel.reCreateMarkers()
     }
 

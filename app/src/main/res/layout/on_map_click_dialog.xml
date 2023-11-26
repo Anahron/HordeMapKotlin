@@ -1,15 +1,20 @@
-<androidx.appcompat.widget.LinearLayoutCompat
+
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:elevation="8dp"
+    android:background="@drawable/round_white"
+    app:cardCornerRadius="8dp">
+<androidx.appcompat.widget.LinearLayoutCompat
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/round_white"
     android:padding="15dp"
     android:orientation="vertical">
 
-
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textView2"
         android:textColor="@color/main_green_dark"
         android:layout_width="match_parent"
@@ -181,3 +186,4 @@
     </LinearLayout>
 
 </androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.cardview.widget.CardView>

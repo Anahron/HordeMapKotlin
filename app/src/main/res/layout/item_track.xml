@@ -22,7 +22,7 @@
             android:layout_marginStart="12dp"
             android:orientation="horizontal">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_track_title"
                 android:paddingTop="12dp"
                 android:layout_width="0dp"
@@ -73,7 +73,7 @@
                 app:srcCompat="@drawable/vector_calendar"
                 android:contentDescription="@string/todo"/>
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_track_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -90,7 +90,7 @@
                 app:srcCompat="@drawable/vector_clock"
                 android:contentDescription="@string/todo"/>
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_track_duration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -108,7 +108,7 @@
                 app:srcCompat="@drawable/vector_track"
                 android:contentDescription="@string/todo"/>
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_track_distance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

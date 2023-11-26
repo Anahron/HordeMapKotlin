@@ -1,97 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
+
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:background="@drawable/border_light"
-    android:padding="15dp">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/round_white"
+    android:elevation="8dp"
+    app:cardCornerRadius="8dp">
 
-    <TextView
-        android:id="@+id/textView3"
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/added_image"
-        android:padding="4dp"
-        android:textSize="20sp"
-        android:textColor="@color/main_green_dark"/>
-    <TextView
-        android:id="@+id/fileDiscriptions"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="6dp"
-        android:layout_margin="4dp"
-        android:background="@drawable/border"
-        android:textSize="16sp"
-        android:visibility="gone"
-        android:textColor="@color/main_green_dark"/>
+        android:background="@color/transparent"
+        android:orientation="vertical"
+        android:padding="15dp">
 
-    <ImageView
-        android:id="@+id/imageViewPhoto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxHeight="360dp"
-        android:adjustViewBounds="true"
-        android:scaleType="centerInside"
-        android:layout_gravity="center_horizontal"
-        android:src="@drawable/downloaded_image"
-        android:contentDescription="@string/todo" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:text="@string/added_image"
+            android:textColor="@color/main_green_dark"
+            android:textSize="20sp" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        app:boxStrokeColor="@color/main_green_dark"
-        android:layout_margin="8dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:boxCornerRadiusBottomEnd="7dp"
-        app:boxCornerRadiusTopEnd="7dp"
-        app:boxCornerRadiusBottomStart="7dp"
-        app:boxCornerRadiusTopStart="7dp"
-        app:helperTextTextColor="@color/main_green_dark"
-        android:textColorHint="@color/main_green_dark"
-        app:boxStrokeWidth="1dp"
-        android:hint="@string/descriptions">
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/fileDiscriptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@drawable/border"
+            android:padding="6dp"
+            android:textColor="@color/main_green_dark"
+            android:textSize="16sp"
+            android:text="@string/descriptions"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editTextDescription"
+        <ImageView
+            android:id="@+id/imageViewPhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/todo"
+            android:maxHeight="360dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/downloaded_image" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textLongMessage"
-            android:textColor="@color/main_green_dark"
-            />
+            android:layout_margin="8dp"
+            android:hint="@string/descriptions"
+            android:textColorHint="@color/main_green_dark"
+            app:boxCornerRadiusBottomEnd="7dp"
+            app:boxCornerRadiusBottomStart="7dp"
+            app:boxCornerRadiusTopEnd="7dp"
+            app:boxCornerRadiusTopStart="7dp"
+            app:boxStrokeColor="@color/main_green_dark"
+            app:boxStrokeWidth="1dp"
+            app:helperTextTextColor="@color/main_green_dark">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textLongMessage"
+                android:textColor="@color/main_green_dark" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_margin="6dp"
-        android:background="@drawable/border"
-        android:textColor="@color/main_green_dark"
-        android:text="@string/cancel"
-        android:padding="15dp" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/border"
+                android:padding="15dp"
+                android:text="@string/cancel"
+                android:textColor="@color/main_green_dark" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnSend"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_margin="6dp"
-        android:background="@drawable/border_dark"
-        android:textColor="@color/main_green"
-        android:text="@string/send"
-        android:padding="15dp"
-        style="?android:attr/backgroundDimEnabled" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSend"
+                style="?android:attr/backgroundDimEnabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_dark"
+                android:padding="15dp"
+                android:text="@string/send"
+                android:textColor="@color/main_green" />
 
-    </LinearLayout>
+        </LinearLayout>
 
-</androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.cardview.widget.CardView>

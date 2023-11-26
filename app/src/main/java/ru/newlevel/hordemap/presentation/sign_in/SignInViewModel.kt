@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.presentation.sign_in
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -7,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import ru.newlevel.hordemap.app.TAG
+import ru.newlevel.hordemap.app.getMyDeviceId
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
 import ru.newlevel.hordemap.presentation.MyResult
@@ -28,13 +30,15 @@ class SignInViewModel(
         }
     }
 
-    fun saveUser(userData: UserData?, newUserName: String) {
+    fun saveUser(userData: UserData?, newUserName: String, context: Context) {
         val user = getUserSettingsUseCase.execute()
+        val authName = userData?.userName?: "Anonymous"
+        val deviceID =  if (authName == "Anonymous") context.getMyDeviceId() else userData?.userId?: context.getMyDeviceId()
         userData?.userId?.let {
             saveUserSettingsUseCase.execute(user.copy(
-                authName = userData.userName ?: "Anonymous",
+                authName = authName,
                 profileImageUrl = userData.profileImageUrl ?: "",
-                deviceID = it,
+                deviceID = deviceID,
                 name = newUserName
             ))
         }

@@ -11,8 +11,8 @@ class SendStaticMarkerUseCase(private val geoDataRepository: GeoDataRepository) 
             latitude = latLng.latitude
             longitude = latLng.longitude
             title = description
-            userName = UserEntityProvider.userEntity?.name ?: "Аноним"
-            deviceId = UserEntityProvider.userEntity?.deviceID ?: ""
+            userName = UserEntityProvider.userEntity.name
+            deviceId = UserEntityProvider.userEntity.deviceID
             timestamp = System.currentTimeMillis()
             item = checkedItem
         })

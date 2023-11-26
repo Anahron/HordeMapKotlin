@@ -68,7 +68,7 @@ class SingInFragment() : Fragment(R.layout.fragment_sing_in) {
                 state.signInError?.let { showLoginFailed(it) }
                 if (state.isSingSuccess) {
                     signInViewModel.getSignedInUser()?.userName?.let { updateUiWithUser(it) }
-                    signInViewModel.saveUser(signInViewModel.getSignedInUser(), binding.editName.text.toString().trim())
+                    signInViewModel.saveUser(signInViewModel.getSignedInUser(), binding.editName.text.toString().trim(), requireContext())
                     hideBtns()
                     handler.postDelayed({
                         activityListener?.displayLocationUI()

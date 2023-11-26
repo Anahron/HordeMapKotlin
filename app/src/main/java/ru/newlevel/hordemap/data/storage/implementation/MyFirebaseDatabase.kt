@@ -32,7 +32,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
     }
 
     override fun sendUserMarker(markerModel: MarkerDataModel) {
-        Log.e(TAG, " sendUserMarker" + markerModel.toString())
+        Log.e(TAG, " sendUserMarker$markerModel")
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
@@ -61,10 +61,11 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
         val time = System.currentTimeMillis()
         val geoDataPath = "$MESSAGE_PATH/$time"
         val updates: MutableMap<String, Any> = HashMap()
-        updates["$geoDataPath/userName"] = UserEntityProvider.userEntity?.name.toString()
+        updates["$geoDataPath/userName"] = UserEntityProvider.userEntity.name
         updates["$geoDataPath/message"] = text
-        updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity?.deviceID.toString()
+        updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity.deviceID
         updates["$geoDataPath/timestamp"] = time
+        updates["$geoDataPath/userProfilePhoto"] = UserEntityProvider.userEntity.profileImageUrl
         databaseReference.updateChildren(updates)
     }
 
@@ -72,13 +73,14 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
         val time = System.currentTimeMillis()
         val geoDataPath = "$MESSAGE_PATH/$time"
         val updates: MutableMap<String, Any> = HashMap()
-        updates["$geoDataPath/userName"] = UserEntityProvider.userEntity?.name.toString()
+        updates["$geoDataPath/userName"] = UserEntityProvider.userEntity.name
         updates["$geoDataPath/message"] = text
         updates["$geoDataPath/url"] = downloadUrl
-        updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity?.deviceID.toString()
+        updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity.deviceID
         updates["$geoDataPath/timestamp"] = time
         updates["$geoDataPath/fileSize"] = fileSize
         updates["$geoDataPath/fileName"] = fileName
+        updates["$geoDataPath/userProfilePhoto"] = UserEntityProvider.userEntity.profileImageUrl
         databaseReference.updateChildren(updates)
     }
 

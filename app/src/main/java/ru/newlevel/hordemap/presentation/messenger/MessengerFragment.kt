@@ -248,7 +248,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         messageAdapter = MessagesAdapter(this, this)
         messageLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = true
-            initialPrefetchItemCount = 15
+            initialPrefetchItemCount = 30
         }
         recyclerView = binding.recyclerViewMessages.apply {
             layoutManager = messageLayoutManager
@@ -256,11 +256,13 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             setHasFixedSize(false)
             isNestedScrollingEnabled = false
             setOnScrollChangeListener { _, _, _, _, _ ->
-                if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
+                if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0 && (binding.btnGoDown.translationX != 500F)) {
                     showOrHideDownBtn(false)
                 } else if (binding.btnGoDown.translationX == 500F) {
-                    showOrHideDownBtn(true)
-                    binding.btnGoDown.visibility = VISIBLE
+                    handler.postDelayed({
+                        showOrHideDownBtn(true)
+                        binding.btnGoDown.visibility = VISIBLE
+                    },500)
                 }
             }
         }

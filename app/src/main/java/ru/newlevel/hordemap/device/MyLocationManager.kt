@@ -76,14 +76,14 @@ class MyLocationManager : Service() {
         Log.e("AAA", "startService()" )
         val notification = createNotification()
         startForeground(1, notification)
-        timeToSendData = UserEntityProvider.userEntity?.timeToSendData?.times(1000L) ?: 60000L
+        timeToSendData = UserEntityProvider.userEntity.timeToSendData.times(1000L)
         locationRequest =
             LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData)
                 //TODO 0 для теста установить 10
                 .setMinUpdateDistanceMeters(0F)
                 .setMinUpdateIntervalMillis(6000L)
                 .setMaxUpdateAgeMillis(Long.MAX_VALUE)
-                .setMaxUpdateDelayMillis(UserEntityProvider.userEntity?.timeToSendData?.times(1000L) ?: 60000L)
+                .setMaxUpdateDelayMillis(UserEntityProvider.userEntity.timeToSendData.times(1000L))
                 .build()
         startLocationUpdates()
     }

@@ -1,5 +1,7 @@
 package ru.newlevel.hordemap.presentation.messenger
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -22,6 +24,8 @@ class SendFileDescriptionDialogFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) = with(binding) {
         super.onViewCreated(view, savedInstanceState)
+
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         if (isImage)
             Glide.with(this@SendFileDescriptionDialogFragment)
                 .load(uri)
@@ -31,7 +35,8 @@ class SendFileDescriptionDialogFragment(
             imageViewPhoto.visibility = View.GONE
             textView3.text = resources.getText(R.string.send_as_file)
             fileDiscriptions.visibility = View.VISIBLE
-            fileDiscriptions.text = "$fileName $fileSizeText"
+            val discriptionText =  "$fileName $fileSizeText"
+            fileDiscriptions.text = discriptionText
         }
         btnSend.setOnClickListener {
             val description = editTextDescription.text.toString()

@@ -201,3 +201,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         navView.visibility = ViewGroup.GONE
     }
 }
+
+interface DisplayLocationUi {
+    fun displayLocationUI()
+    fun logOut()
+}

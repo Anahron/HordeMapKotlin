@@ -74,9 +74,12 @@ val dataModule = module {
         get()
     }
 
+    single<ProfilePhotoStorage>{
+        MyFirebaseStorage()
+    }
     // Repos
     single<SettingsRepository> {
-        SettingsRepositoryImpl(userLocalStorage = get())
+        SettingsRepositoryImpl(userLocalStorage = get(), profilePhotoStorage = get())
     }
     single<GeoDataRepository> {
         GeoDataRepositoryImpl(markersRemoteStorage = get())

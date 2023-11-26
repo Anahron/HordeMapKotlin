@@ -17,6 +17,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupWindow
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
@@ -24,6 +25,7 @@ import androidx.core.view.iterator
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
+import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
@@ -64,14 +66,29 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         setUpLoadingMapListeners()
         setUpResetButton()
 
+        val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri != null) {
+                lifecycleScope.launch {
+                   settingsViewModel.loadProfilePhoto(uri, requireContext())?.let {
+                       Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
+                   }
+                }
+            }
+        }
+
         toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 settingsViewModel.setState(checkedId)
             }
         }
 
+        circleImageView.setOnClickListener {
+            pickImage.launch("image/*")
+        }
+
         settingsViewModel.resultData.observe(viewLifecycleOwner) { user ->
             currentUserSetting = user
+            loadImageIntoProfile()
             setLayoutParams(user)
             checkBox.isChecked = user.autoLoad
             tvUserAuthName.text = user.authName
@@ -206,8 +223,17 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     }
 
     @SuppressLint("SetTextI18n")
-    private fun setupUIComponents() = with(binding) {
+    private fun setupUIComponents() {
         binding.cardViewLoadMap.translationX = requireContext().resources.displayMetrics.widthPixels.toFloat()
+    }
+
+    fun loadImageIntoProfile() {
+        if (currentUserSetting.profileImageUrl.isNotEmpty())
+            Glide.with(requireContext())
+                .load(currentUserSetting.profileImageUrl)
+                .thumbnail(0.1f)
+                .timeout(30_000)
+                .into(binding.circleImageView)
     }
 
     private fun saveUserSelectedMarker(selectedMarker: Int) {
@@ -241,8 +267,9 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             showUserPopupMenu(it)
         }
     }
-    private fun setUpResetButton(){
-        binding.btnSettingsReset.setOnClickListener{
+
+    private fun setUpResetButton() {
+        binding.btnSettingsReset.setOnClickListener {
             settingsViewModel.reset()
         }
     }

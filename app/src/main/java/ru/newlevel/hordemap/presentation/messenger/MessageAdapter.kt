@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -37,6 +38,7 @@ class MessagesAdapter(
         val view = when (viewType) {
             ITEM_IN -> LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_message_in, parent, false)
+
             else -> LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_message_out, parent, false)
         }
@@ -47,11 +49,15 @@ class MessagesAdapter(
         holder: MessageViewHolder,
         position: Int
     ) {
-        holder.bind(messageDataModels[position], onButtonSaveClickListener, onImageClickListener)
+        var someUserMessage = false
+        if (position > 1)
+            if (messageDataModels[position - 1].deviceID == messageDataModels[position].deviceID)
+                someUserMessage = true
+        holder.bind(messageDataModels[position], onButtonSaveClickListener, onImageClickListener, someUserMessage)
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (messageDataModels[position].deviceID == UserEntityProvider.userEntity?.deviceID) ITEM_OUT else ITEM_IN
+        return if (messageDataModels[position].deviceID == UserEntityProvider.userEntity.deviceID) ITEM_OUT else ITEM_IN
     }
 
     override fun getItemCount(): Int {
@@ -61,10 +67,10 @@ class MessagesAdapter(
     class MessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         private val binding = ItemMessageInBinding.bind(view)
+
         @SuppressLint("SimpleDateFormat")
         private val dateFormat: DateFormat = SimpleDateFormat("HH:mm")
         private val timeZone = TimeZone.getDefault()
-
         init {
             dateFormat.timeZone = timeZone
         }
@@ -72,17 +78,33 @@ class MessagesAdapter(
         fun bind(
             messageDataModel: MessageDataModel,
             onButtonSaveClickListener: OnButtonSaveClickListener,
-            onImageClickListener: OnImageClickListener
+            onImageClickListener: OnImageClickListener,
+            isSomeUser: Boolean
         ) = with(binding) {
             val message = messageDataModel.message
             val fileName = messageDataModel.fileName
             val fileSize = messageDataModel.fileSize
             val url = messageDataModel.url
+            textViewUsername.visibility = View.VISIBLE
             downloadButton.visibility = View.GONE
+            imvProfilePhoto.visibility = View.VISIBLE
             imageView.visibility = View.GONE
             textViewMessage.visibility = View.GONE
             textViewUsername.text = messageDataModel.userName
             textViewTime.text = dateFormat.format(Date(messageDataModel.timestamp))
+            if (isSomeUser) {
+                textViewUsername.visibility = View.GONE
+                imvProfilePhoto.visibility = View.INVISIBLE
+            } else if (messageDataModel.userProfilePhoto.isNotEmpty()) {
+                Glide.with(itemView.context)
+                    .load(messageDataModel.userProfilePhoto.toUri())
+                    .thumbnail(1f)
+                    .timeout(30_000)
+                     .placeholder(R.drawable.img_anonymous)
+                    .into(imvProfilePhoto)
+            } else {
+                imvProfilePhoto.setImageResource(R.drawable.img_anonymous)
+            }
             if (message.isNotEmpty()) {
                 textViewMessage.visibility = View.VISIBLE
                 textViewMessage.text = message

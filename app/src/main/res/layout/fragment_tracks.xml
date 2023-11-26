@@ -28,7 +28,7 @@
                 android:contentDescription="@string/todo"
                 app:srcCompat="@drawable/vector_back" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvTitleLoadPath"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

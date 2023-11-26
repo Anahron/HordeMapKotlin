@@ -20,6 +20,7 @@ const val DEFAULT_SIZE = 60
 const val DEFAULT_TIME = 30
 const val KEY_IS_AUTO_LOAD = "isAutoLoad"
 const val MESSAGE_FILE_FOLDER = "MessengerFiles0"
+const val PROFILE_PHOTO_FOLDER = "UsersPhotoStorage"
 const val MAP_URL = "gs://horde-4112c.appspot.com/maps/map.kmz"  // карта полигона
 const val GEO_USER_MARKERS_PATH = "geoData0"
 const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
