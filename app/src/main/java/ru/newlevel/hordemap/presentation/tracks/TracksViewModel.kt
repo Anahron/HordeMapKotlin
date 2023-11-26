@@ -114,7 +114,7 @@ class TracksViewModel(
         CoroutineScope(Dispatchers.Main).launch {
             _trackItemAll.value =
                 trackItemAll.value?.sortedWith(compareByDescending<TrackItemDomainModel> { it.isFavourite }
-                    .thenByDescending { it.durationLong })
+                    .thenBy { it.durationLong })
         }
     }
 }

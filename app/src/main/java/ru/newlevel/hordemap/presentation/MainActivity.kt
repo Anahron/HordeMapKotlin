@@ -2,18 +2,18 @@ package ru.newlevel.hordemap.presentation
 
 import android.Manifest
 import android.animation.ObjectAnimator
-import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PowerManager
-import android.os.PowerManager.FULL_WAKE_LOCK
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -44,32 +44,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var navView: BottomNavigationView
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         UserEntityProvider.sessionId = System.currentTimeMillis()
         windowSettings()
+        onConfigurationChanged(Configuration())
         setupNavView()
         navView.visibility = ViewGroup.GONE
         if (googleAuthUiClient.getSignedInUser() != null)
             checkPermissionAndShowMap()
         else
             logOut()
-        //   setupWakeLock()
         onBackPressedListener()
     }
 
     private fun onBackPressedListener() {
         this.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (currentFragment != mainFragment) navView.selectedItemId = R.id.mapFragment
+                if (currentFragment != mainFragment)
+                    navView.selectedItemId = R.id.mapFragment
             }
         })
-    }
-
-    private fun setupWakeLock() {
-        val pm = applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val wl: PowerManager.WakeLock = pm.newWakeLock(FULL_WAKE_LOCK, "HordeMap:wakelock")
-        wl.acquire(600 * 60 * 1000L /*600 minutes*/)
     }
 
     private fun setupNavView() {
@@ -175,7 +171,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
 
     override fun changeProfilePhoto(newPhotoUrl: Uri) {
         lifecycleScope.launch {
-            googleAuthUiClient.profileUpdate(newUserPhoto = newPhotoUrl).errorMessage?.let { makeLongToast(it, applicationContext) }
+            googleAuthUiClient.profileUpdate(newUserPhoto = newPhotoUrl).errorMessage?.let {
+                makeLongToast(
+                    it,
+                    applicationContext
+                )
+            }
         }
     }
 

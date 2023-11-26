@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.presentation.settings
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -57,6 +58,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?): Unit = with(binding) {
+        Log.e(TAG, "onViewCreated()")
         super.onViewCreated(view, savedInstanceState)
         setupUIComponents()
         setupRadioButtonListeners()
@@ -125,8 +127,12 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         }
     }
 
-
+    override fun onResume() {
+        super.onResume()
+        Log.e(TAG, "onResume")
+    }
     private fun changeUiToLoadMap() {
+        Log.e(TAG, "changeUiToLoadMap()")
         val pixels = requireContext().resources.displayMetrics.widthPixels
         val cardViewSettings = binding.cardViewSettings
         val cardViewLoadMap = binding.cardViewLoadMap
@@ -139,6 +145,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     }
 
     private fun changeUiToSettings() {
+        Log.e(TAG, "changeUiToSettings")
         val cardViewSettings = binding.cardViewSettings
         val cardViewLoadMap = binding.cardViewLoadMap
         val pixels = requireContext().resources.displayMetrics.widthPixels
@@ -228,7 +235,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         binding.cardViewLoadMap.translationX = requireContext().resources.displayMetrics.widthPixels.toFloat()
     }
 
-    fun loadImageIntoProfile() {
+    private fun loadImageIntoProfile() {
         if (currentUserSetting.profileImageUrl.isNotEmpty())
             Glide.with(requireContext())
                 .load(currentUserSetting.profileImageUrl)
@@ -263,6 +270,19 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val cardViewSettings = binding.cardViewSettings
+        val cardViewLoadMap = binding.cardViewLoadMap
+        val pixels = requireContext().resources.displayMetrics.widthPixels
+        if (cardViewSettings.translationX.toInt() != 0)
+            cardViewSettings.translationX = -pixels.toFloat()
+        if (cardViewLoadMap.translationX.toInt() != 0)
+            cardViewLoadMap.translationX = pixels.toFloat()
+    }
+    override fun onStart() {
+        super.onStart()
+    }
     private fun setUpLogOutButton() {
         binding.btnSettingsPopUp.setOnClickListener {
             showUserPopupMenu(it)
