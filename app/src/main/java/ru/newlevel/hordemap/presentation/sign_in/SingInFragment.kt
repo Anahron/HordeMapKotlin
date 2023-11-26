@@ -33,7 +33,7 @@ import ru.newlevel.hordemap.presentation.MyResult
 import kotlin.math.roundToInt
 
 
-class SingInFragment() : Fragment(R.layout.fragment_sing_in) {
+class SingInFragment : Fragment(R.layout.fragment_sing_in) {
 
     private val signInViewModel by viewModel<SignInViewModel>()
     private val binding: FragmentSingInBinding by viewBinding()

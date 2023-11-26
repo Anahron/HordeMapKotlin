@@ -3,13 +3,16 @@ package ru.newlevel.hordemap.presentation.sign_in
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.net.Uri
 import android.util.Log
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -29,6 +32,7 @@ class GoogleAuthUiClient(private val context: Context, private val oneTapClient:
                 SingInResult(
                     data = user?.run {
                         UserData(
+                            isAnonymous = isAnonymous,
                             userId = uid,
                             userName = displayName,
                             profileImageUrl = photoUrl?.toString()
@@ -44,6 +48,42 @@ class GoogleAuthUiClient(private val context: Context, private val oneTapClient:
             )
         }
     }
+
+
+    suspend fun profileUpdate(newUserPhoto: Uri): SingInResult {
+        return withContext(Dispatchers.IO) {
+            val user = auth.currentUser
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setPhotoUri(newUserPhoto)
+                .build()
+
+            val resultDeferred = CompletableDeferred<SingInResult>()
+            user?.updateProfile(profileUpdates)?.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val newUserData = auth.currentUser
+                    val result = SingInResult(
+                        data = newUserData?.let {
+                            UserData(
+                                isAnonymous = it.isAnonymous,
+                                userId = it.uid,
+                                userName = it.displayName,
+                                profileImageUrl = it.photoUrl?.toString()
+                            )
+                        }, errorMessage = null
+                    )
+                    resultDeferred.complete(result)
+                } else {
+                    val result = SingInResult(
+                        data = null,
+                        errorMessage = "Failed to update user profile."
+                    )
+                    resultDeferred.complete(result)
+                }
+            }
+            resultDeferred.await()
+        }
+    }
+
 
     suspend fun signIn(): MyResult<*> {
         val myResult = try {

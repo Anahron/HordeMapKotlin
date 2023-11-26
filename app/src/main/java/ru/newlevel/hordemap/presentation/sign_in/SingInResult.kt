@@ -7,5 +7,6 @@ data class SingInResult(
 data class UserData(
     val userId:String,
     val userName: String?,
-    val profileImageUrl: String?
+    val profileImageUrl: String?,
+    val isAnonymous: Boolean = false
 )

@@ -33,11 +33,11 @@ class SignInViewModel(
     fun saveUser(userData: UserData?, newUserName: String, context: Context) {
         val user = getUserSettingsUseCase.execute()
         val authName = userData?.userName?: "Anonymous"
-        val deviceID =  if (authName == "Anonymous") context.getMyDeviceId() else userData?.userId?: context.getMyDeviceId()
-        userData?.userId?.let {
+        val deviceID =  if (userData?.isAnonymous == false) userData.userId else context.getMyDeviceId()
+        userData?.userId.let {
             saveUserSettingsUseCase.execute(user.copy(
                 authName = authName,
-                profileImageUrl = userData.profileImageUrl ?: "",
+                profileImageUrl = userData?.profileImageUrl ?: "",
                 deviceID = deviceID,
                 name = newUserName
             ))

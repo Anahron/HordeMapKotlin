@@ -35,8 +35,8 @@ class SendFileDescriptionDialogFragment(
             imageViewPhoto.visibility = View.GONE
             textView3.text = resources.getText(R.string.send_as_file)
             fileDiscriptions.visibility = View.VISIBLE
-            val discriptionText =  "$fileName $fileSizeText"
-            fileDiscriptions.text = discriptionText
+            val descriptionText =  "$fileName $fileSizeText"
+            fileDiscriptions.text = descriptionText
         }
         btnSend.setOnClickListener {
             val description = editTextDescription.text.toString()
