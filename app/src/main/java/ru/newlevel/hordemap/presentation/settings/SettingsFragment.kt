@@ -69,6 +69,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
                 lifecycleScope.launch {
+                    activityListener?.changeProfilePhoto(newPhotoUrl = uri)
                    settingsViewModel.loadProfilePhoto(uri, requireContext())?.let {
                        Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
                    }

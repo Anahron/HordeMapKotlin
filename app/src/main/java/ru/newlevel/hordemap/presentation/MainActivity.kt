@@ -4,6 +4,7 @@ import android.Manifest
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
+import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.presentation.map.MapFragment
 import ru.newlevel.hordemap.presentation.messenger.MessengerFragment
@@ -171,6 +173,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         supportActionBar?.hide()                  // Скрыть акшн бар
     }
 
+    override fun changeProfilePhoto(newPhotoUrl: Uri) {
+        lifecycleScope.launch {
+            googleAuthUiClient.profileUpdate(newUserPhoto = newPhotoUrl).errorMessage?.let { makeLongToast(it, applicationContext) }
+        }
+    }
+
     override fun displayLocationUI() {
         handler.postDelayed({
             checkPermissionAndShowMap()
@@ -203,6 +211,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
 }
 
 interface DisplayLocationUi {
+
+    fun changeProfilePhoto(newPhotoUrl: Uri)
     fun displayLocationUI()
     fun logOut()
 }

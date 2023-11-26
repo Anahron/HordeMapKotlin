@@ -101,7 +101,6 @@ class GoogleAuthUiClient(private val context: Context, private val oneTapClient:
     }
 
     suspend fun signInFromIntent(intent: Intent): SingInResult {
-
         val credential = oneTapClient.getSignInCredentialFromIntent(intent)
         val googleIdToken = credential.googleIdToken
         val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
@@ -130,6 +129,10 @@ class GoogleAuthUiClient(private val context: Context, private val oneTapClient:
 
     suspend fun signOut() {
         try {
+            val currentUser = auth.currentUser
+            Log.e(TAG, currentUser.toString())
+            if (auth.currentUser?.isAnonymous == true)
+                currentUser?.delete()
             oneTapClient.signOut().await()
             auth.signOut()
         } catch (e: Exception) {
