@@ -64,8 +64,8 @@
             android:exported="true"
             android:label="Horde Map"
             android:windowSoftInputMode="adjustNothing"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity">
+            android:configChanges="screenSize|orientation"
+           android:screenOrientation="fullSensor">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

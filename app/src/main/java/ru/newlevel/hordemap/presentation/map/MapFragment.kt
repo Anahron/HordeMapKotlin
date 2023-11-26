@@ -17,8 +17,6 @@ import android.view.ViewGroup
 import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
@@ -40,6 +38,7 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.GPX_EXTENSION
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.app.MyAlarmReceiver
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
@@ -54,12 +53,13 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private val mapViewModel by viewModel<MapViewModel>()
     private val tracksTransferViewModel by viewModel<TrackTransferViewModel>()
     private val binding: FragmentMapsBinding by viewBinding()
-    private lateinit var googleMap: GoogleMap
+  //  private lateinit var googleMap: GoogleMap
     private lateinit var markerManager: MarkerManager
     private lateinit var userMarkerCollection: MarkerManager.Collection
     private lateinit var staticMarkerCollection: MarkerManager.Collection
     private lateinit var garminMarkerCollection: MarkerManager.Collection
     private var kmlLayer: KmlLayer? = null
+    private lateinit var googleMap: GoogleMap
 
     private fun init() {
         setupMap()
@@ -76,18 +76,24 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         startBackgroundWork()
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        mapFragment.getMapAsync(this@MapFragment)
     }
 
     override fun onMapReady(gMap: GoogleMap) {
+        Log.e(TAG, "onMapReady" )
         mapViewModel.turnToDefaultState()
         googleMap = gMap
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
-        init()
+        lifecycleScope.launch {
+            if (this@MapFragment.isAdded) {
+                init()
+            }
+        }
     }
 
     private fun markerStateObserver() {
@@ -98,7 +104,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
 
                 is MapState.DefaultState -> {
                     startMarkerObservers()
-                    binding.drawableSettings.closeDrawer(GravityCompat.END)
                     binding.ibMarkers.setBackgroundResource(R.drawable.img_map_show_markers)
                     mapViewModel.userMarkersLiveData.observe(viewLifecycleOwner) {
                         mapViewModel.createUsersMarkers(
@@ -329,7 +334,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         val point = projection.toScreenLocation(latLng)
         val mainPopupMenu = PopupWindow(requireContext())
         mainPopupMenu.contentView = layoutInflater.inflate(
-            R.layout.popup_map_long_click, binding.fragmentContainer as ViewGroup, false
+            R.layout.popup_map_long_click, binding.root as ViewGroup, false
         )
         mainPopupMenu.setBackgroundDrawable(
             ContextCompat.getDrawable(
@@ -349,12 +354,11 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
         requireContext().resources.displayMetrics.widthPixels
         mainPopupMenu.showAtLocation(
-            binding.fragmentContainer, Gravity.NO_GRAVITY, point.x, point.y
+            binding.root, Gravity.NO_GRAVITY, point.x, point.y
         )
     }
 
     private fun menuListenersSetup() {
-        binding.drawableSettings.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         binding.ibMapType.setOnClickListener {
             if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {
                 googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
@@ -416,7 +420,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     override fun onPause() {
         super.onPause()
         mapViewModel.compassDeActivate()
-        binding.drawableSettings.closeDrawers()
     }
 
     override fun onResume() {

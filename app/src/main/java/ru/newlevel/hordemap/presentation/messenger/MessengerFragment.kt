@@ -256,13 +256,19 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             setHasFixedSize(false)
             isNestedScrollingEnabled = false
             setOnScrollChangeListener { _, _, _, _, _ ->
-                if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0 && (binding.btnGoDown.translationX != 500F)) {
-                    showOrHideDownBtn(false)
-                } else if (binding.btnGoDown.translationX == 500F) {
+                if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0 ) {
                     handler.postDelayed({
-                        showOrHideDownBtn(true)
-                        binding.btnGoDown.visibility = VISIBLE
-                    },500)
+                        if (binding.btnGoDown.translationX != 500F) {
+                            showOrHideDownBtn(false)
+                        }
+                    }, 100)
+                } else {
+                    handler.postDelayed({
+                        if (binding.btnGoDown.translationX == 500F) {
+                            showOrHideDownBtn(true)
+                            binding.btnGoDown.visibility = VISIBLE
+                        }
+                    }, 500)
                 }
             }
         }

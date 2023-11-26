@@ -7,12 +7,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.drawerlayout.widget.DrawerLayout
-        android:id="@+id/drawable_settings"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white">
-
         <fragment
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -111,13 +105,5 @@
                 android:contentDescription="@string/todo" />
 
         </fragment>
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fragment_container"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"/>
-
-    </androidx.drawerlayout.widget.DrawerLayout>
 
 </FrameLayout>
