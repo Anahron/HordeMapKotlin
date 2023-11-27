@@ -3,6 +3,7 @@ package ru.newlevel.hordemap.di
 import com.google.android.gms.auth.api.identity.Identity
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.CompassInteractor
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
@@ -135,11 +136,14 @@ val domainModule = module {
     factory<SendUserToStorageUseCase> {
         SendUserToStorageUseCase(settingsRepository = get())
     }
+    factory<LogOutUseCase> {
+        LogOutUseCase(settingsRepository = get())
+    }
 
     single<GoogleAuthUiClient> {
         GoogleAuthUiClient(
             androidContext().applicationContext,
-            Identity.getSignInClient(androidContext().applicationContext)
+            Identity.getSignInClient(androidContext().applicationContext), logOutUseCase = get()
         )
     }
 

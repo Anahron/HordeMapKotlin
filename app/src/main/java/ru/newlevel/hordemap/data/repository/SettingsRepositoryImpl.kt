@@ -23,7 +23,10 @@ class SettingsRepositoryImpl(
 
     override fun getUserSetting(): UserDataModel = userLocalStorage.get()
 
-    override fun resetUser() = userLocalStorage.reset()
+    override fun resetUserSettings() = userLocalStorage.reset()
+    override suspend fun deleteUserDataRemote(deviceId: String) =
+       profileRemoteStorage.deleteUserDataRemote(deviceId)
+
 
     override fun saveAutoLoad(boolean: Boolean) = userLocalStorage.saveAutoLoad(boolean)
 

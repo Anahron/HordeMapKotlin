@@ -11,8 +11,9 @@ interface SettingsRepository {
 
     fun getUserSetting(): UserDataModel
 
-    fun resetUser()
+    fun resetUserSettings()
 
+    suspend fun deleteUserDataRemote(deviceId: String)
     fun saveAutoLoad(boolean: Boolean)
 
     suspend fun uploadProfilePhoto(uri: Uri, fileName: String): Result<Uri>

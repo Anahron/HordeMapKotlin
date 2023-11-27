@@ -129,6 +129,17 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         }
     }
 
+    override suspend fun deleteUserDataRemote(deviceId: String) {
+        databaseReference.child(USERS_PROFILES_PATH).child(deviceId)
+            .removeValue()
+            .addOnSuccessListener {
+                Log.e(TAG, "Profile deleted successfully")
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Failed to delete profile: ${it.message}")
+            }
+    }
+
     private fun updateAllUserMessages(userData: UserDataModel) {
         val deviceId = userData.deviceID
         databaseReference.child(MESSAGE_PATH).orderByChild("deviceID").equalTo(deviceId)
