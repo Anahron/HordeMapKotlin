@@ -13,7 +13,6 @@ import ru.newlevel.hordemap.app.getMyDeviceId
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
-import ru.newlevel.hordemap.presentation.MyResult
 
 class SignInViewModel(
     private val googleAuthUiClient: GoogleAuthUiClient,

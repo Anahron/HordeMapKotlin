@@ -32,9 +32,10 @@ import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.SHADOW_QUALITY
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
+import ru.newlevel.hordemap.app.hideShadowAnimate
+import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.databinding.FragmentSettingBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.presentation.DisplayLocationUi
@@ -300,7 +301,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     }
 
     private fun showUserPopupMenu(itemDotsView: View) {
-        showBackgroundShadow()
+        binding.shadow.showShadowAnimate()
         var onRenameClick = false
         val mainPopupMenu = PopupWindow(requireContext())
         mainPopupMenu.contentView = layoutInflater.inflate(
@@ -341,7 +342,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         mainPopupMenu.setOnDismissListener {
             Log.e(TAG, "onRenameClick = $onRenameClick")
             if (!onRenameClick)
-                hideBackgroundShadow()
+                binding.shadow.hideShadowAnimate()
         }
     }
 
@@ -369,7 +370,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         )
         alertDialog.show()
         alertDialog.setOnDismissListener {
-            hideBackgroundShadow()
+             binding.shadow.hideShadowAnimate()
         }
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
@@ -455,19 +456,6 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
         })
 
-    }
-
-    private fun showBackgroundShadow() {
-        val fadeInAnimation = ObjectAnimator.ofFloat(binding.shadow, "alpha", 0f, SHADOW_QUALITY)
-        fadeInAnimation.duration = 200
-        fadeInAnimation.start()
-    }
-
-    private fun hideBackgroundShadow() {
-        val fadeOutAnimation =
-            ObjectAnimator.ofFloat(binding.shadow, "alpha", binding.shadow.alpha, 0f)
-        fadeOutAnimation.duration = 200
-        fadeOutAnimation.start()
     }
 
     interface OnChangeSettings {

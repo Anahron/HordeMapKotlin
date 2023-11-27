@@ -21,6 +21,9 @@ import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.BuildConfig
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE
+import ru.newlevel.hordemap.app.REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.databinding.FragmentPermissionRequestBinding
 import ru.newlevel.hordemap.presentation.DisplayLocationUi
@@ -35,7 +38,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
 
     private val requestBatteryOptimizationLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            Log.e("AAA", result.toString())
+            Log.e(TAG, result.toString())
             permissionViewModel.turnToAddLocationState()
         }
 
@@ -226,10 +229,5 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
             Manifest.permission.ACCESS_BACKGROUND_LOCATION,
             ActivityOptionsCompat.makeBasic()
         )
-    }
-
-    companion object {
-        private const val REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE = 34
-        private const val REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE = 56
     }
 }

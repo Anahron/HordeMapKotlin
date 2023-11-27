@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentation
+package ru.newlevel.hordemap.presentation.sign_in
 
 /**
  * A generic class that holds a value with its loading status.

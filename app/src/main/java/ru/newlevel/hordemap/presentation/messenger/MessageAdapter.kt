@@ -155,14 +155,6 @@ class MessagesAdapter(
         }
     }
 
-    enum class NameColors(val resourceId: Int, val id: Int) {
-        RED(R.color.red, 0),
-        YELLOW(R.color.yellow, 1),
-        GREEN(R.color.green, 2),
-        BLUE(R.color.light_blue_900, 3),
-        PURPLE(R.color.purple, 4)
-    }
-
     class MessageDiffCallback(
         private val oldList: List<MessageDataModel>,
         private val newList: List<MessageDataModel>

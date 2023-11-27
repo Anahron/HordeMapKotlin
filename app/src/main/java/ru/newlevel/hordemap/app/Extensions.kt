@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.app
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
@@ -7,7 +8,7 @@ import android.location.Location
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.provider.Settings
-import android.widget.Toast
+import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
@@ -18,12 +19,9 @@ import java.io.File
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.math.roundToInt
 
-fun makeLongToast(text: String, context: Context) {
-    Toast.makeText(context, text, Toast.LENGTH_LONG).show()
-}
-
-fun Context.getFileNameFromUri(uri: Uri): String? {
+fun Context.getFileNameFromUri(uri: Uri): String {
     var fileName: String? = null
     val cursor = contentResolver.query(uri, null, null, null, null)
     cursor?.use {
@@ -33,11 +31,23 @@ fun Context.getFileNameFromUri(uri: Uri): String? {
     }
     if (fileName == null) {
         val file = uri.path?.let { File(it) }
-        fileName = file?.name
+        fileName = file?.name?: ""
     }
-    return fileName
+    return fileName?:""
 }
 
+fun Context.getFileSizeFromUri(uri: Uri): Long {
+    val cursor = contentResolver.query(uri, null, null, null, null)
+    return cursor?.use { c ->
+        val sizeIndex = c.getColumnIndex(OpenableColumns.SIZE)
+        if (sizeIndex != -1) {
+            c.moveToFirst()
+            c.getLong(sizeIndex)
+        } else {
+            0
+        }
+    } ?: 0
+}
 
 fun UserDataModel.mapToDomainModel(): UserDomainModel {
     return UserDomainModel(
@@ -79,7 +89,6 @@ fun Location.toMarker(userModel: UserModel): MarkerDataModel {
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
     val currentTime = LocalTime.now()
     val formattedTime = currentTime.format(timeFormatter)
-
     marker.latitude = this.latitude
     marker.longitude = this.longitude
     marker.userName = userModel.name
@@ -87,8 +96,12 @@ fun Location.toMarker(userModel: UserModel): MarkerDataModel {
     marker.timestamp = System.currentTimeMillis()
     marker.item = userModel.selectedMarker
     marker.title = formattedTime
-
     return marker
+}
+
+fun Context.convertDpToPx(dp: Int): Int {
+    val density: Float = resources.displayMetrics.density
+    return (dp.toFloat() * density).roundToInt()
 }
 
 fun Context.hasPermission(permission: String): Boolean {
@@ -96,3 +109,17 @@ fun Context.hasPermission(permission: String): Boolean {
         this, permission
     ) == PackageManager.PERMISSION_GRANTED
 }
+
+fun View.showShadowAnimate() {
+    ObjectAnimator.ofFloat(this, "alpha", 0f, SHADOW_QUALITY).apply {
+        duration = 200
+        start()
+    }
+}
+fun View.hideShadowAnimate() {
+    ObjectAnimator.ofFloat(this, "alpha", this.alpha, 0f).apply {
+        duration = 200
+        start()
+    }
+}
+

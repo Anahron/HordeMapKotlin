@@ -12,6 +12,7 @@ import android.os.Looper
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -22,7 +23,6 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.app.makeLongToast
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.presentation.map.MapFragment
 import ru.newlevel.hordemap.presentation.messenger.MessengerFragment
@@ -172,10 +172,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     override fun changeProfilePhoto(newPhotoUrl: Uri) {
         lifecycleScope.launch {
             googleAuthUiClient.profileUpdate(newUserPhoto = newPhotoUrl).errorMessage?.let {
-                makeLongToast(
-                    it,
-                    applicationContext
-                )
+                Toast.makeText(applicationContext, it, Toast.LENGTH_LONG).show()
             }
         }
     }

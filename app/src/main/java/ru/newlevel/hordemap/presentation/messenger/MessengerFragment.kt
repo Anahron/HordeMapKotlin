@@ -5,17 +5,17 @@ import android.animation.ObjectAnimator
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.View.GONE
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
 import android.widget.TextView.VISIBLE
@@ -42,8 +42,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.REQUEST_CODE_CAMERA_PERMISSION
+import ru.newlevel.hordemap.app.REQUEST_CODE_WRITE_EXTERNAL_STORAGE
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
+import ru.newlevel.hordemap.app.convertDpToPx
+import ru.newlevel.hordemap.app.getFileNameFromUri
+import ru.newlevel.hordemap.app.getFileSizeFromUri
+import ru.newlevel.hordemap.app.hasPermission
+import ru.newlevel.hordemap.app.hideShadowAnimate
+import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
@@ -63,6 +71,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var recyclerView: RecyclerView
     private lateinit var messageAdapter: MessagesAdapter
     private lateinit var messageLayoutManager: LinearLayoutManager
+    private lateinit var usersRecyclerView: RecyclerView
+    private lateinit var usersRecyclerViewAdapter: UsersAdapter
+    private lateinit var userLayoutManager: LinearLayoutManager
+    private lateinit var usersPopupMenu: PopupWindow
     private var file: File? = null
     private lateinit var photoUri: Uri
     private var isDownloadingState = false
@@ -77,8 +89,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             if (uri != null) {
                 val dialogFragment = SendFileDescriptionDialogFragment(
                     uri,
-                    getFileNameFromUri(uri),
-                    getFileSizeFromUri(uri),
+                    requireContext().getFileNameFromUri(uri),
+                    requireContext().getFileSizeFromUri(uri),
                     this,
                     false
                 )
@@ -89,8 +101,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             if (uri != null) {
                 val dialogFragment = SendFileDescriptionDialogFragment(
                     uri,
-                    getFileNameFromUri(uri),
-                    getFileSizeFromUri(uri),
+                    requireContext().getFileNameFromUri(uri),
+                    requireContext().getFileSizeFromUri(uri),
                     this,
                     true
                 )
@@ -102,8 +114,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 if (isSuccess) {
                     val dialogFragment = SendFileDescriptionDialogFragment(
                         photoUri,
-                        getFileNameFromUri(photoUri),
-                        getFileSizeFromUri(photoUri),
+                        requireContext().getFileNameFromUri(photoUri),
+                        requireContext().getFileSizeFromUri(photoUri),
                         this, true
                     )
                     dialogFragment.show(childFragmentManager, "photo_description_dialog")
@@ -119,26 +131,56 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         setupMessagesUpdates()
         showInputTextAnimation()
         createActivityRegisters()
+        setupUsersRecyclerView()
+        setupUsersCountButton()
     }
 
-    private fun showInputTextAnimation() {
-        val inputLayout = binding.inputLayout
-        inputLayout.translationY = 500f
-        val animator = ObjectAnimator.ofFloat(inputLayout, "translationY", 0f)
-        animator.duration = 500
-        animator.start()
+    private fun setupUsersCountButton() {
+        binding.tvUsersCount.setOnClickListener {
+            showMainPopupMenu(it)
+        }
     }
 
-    private fun requestWriteExternalStoragePermission() {
-        if (ContextCompat.checkSelfPermission(
-                requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                REQUEST_CODE_WRITE_EXTERNAL_STORAGE
+    private fun setupUsersRecyclerView() {
+        usersPopupMenu = PopupWindow(requireContext())
+        usersPopupMenu.contentView = layoutInflater.inflate(
+            R.layout.popup_users,
+            binding.tvUsersCount.rootView as ViewGroup,
+            false
+        )
+        usersPopupMenu.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
             )
+        )
+        usersPopupMenu.height = requireContext().convertDpToPx(200)
+        usersPopupMenu.elevation = 18f
+        usersPopupMenu.isFocusable = true
+        usersPopupMenu.contentView?.findViewById<RecyclerView>(R.id.rvUsersCount)?.let {
+            usersRecyclerView = it }
+        usersRecyclerViewAdapter = UsersAdapter()
+        userLayoutManager = LinearLayoutManager(requireContext()).apply {
+            stackFromEnd = false
+            initialPrefetchItemCount = 30
+        }
+        usersRecyclerView.apply {
+            layoutManager = userLayoutManager
+            adapter = usersRecyclerViewAdapter
+            setHasFixedSize(true)
+            isNestedScrollingEnabled = false
+        }
+    }
+
+    private fun showMainPopupMenu(itemDotsView: View) {
+        binding.shadow.showShadowAnimate()
+        usersPopupMenu.showAsDropDown(
+            itemDotsView,
+            -requireContext().convertDpToPx(104),
+            0
+        )
+        usersPopupMenu.setOnDismissListener {
+            binding.shadow.hideShadowAnimate()
         }
     }
 
@@ -180,6 +222,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     handleProgressUpdate(progress)
                 }
                 messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
+                    usersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }
             }
@@ -211,34 +254,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             }
         }
-    }
-
-    private fun getFileNameFromUri(uri: Uri): String {
-        val contentResolver = requireContext().contentResolver
-        val cursor = contentResolver.query(uri, null, null, null, null) ?: return ""
-        return cursor.use { c ->
-            val nameIndex = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            if (nameIndex != -1) {
-                c.moveToFirst()
-                c.getString(nameIndex)
-            } else {
-                ""
-            }
-        }
-    }
-
-    private fun getFileSizeFromUri(uri: Uri): Long {
-        val contentResolver = requireContext().contentResolver
-        val cursor = contentResolver.query(uri, null, null, null, null)
-        return cursor?.use { c ->
-            val sizeIndex = c.getColumnIndex(OpenableColumns.SIZE)
-            if (sizeIndex != -1) {
-                c.moveToFirst()
-                c.getLong(sizeIndex)
-            } else {
-                0
-            }
-        } ?: 0
     }
 
     private fun createTempImageFile(context: Context): File? {
@@ -338,10 +353,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     private fun setupAttackBtn() {
         binding.buttonSendFile.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(), Manifest.permission.CAMERA
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
+            if (!requireContext().hasPermission(Manifest.permission.CAMERA)) {
                 ActivityCompat.requestPermissions(
                     (context as Activity?)!!,
                     arrayOf(Manifest.permission.CAMERA),
@@ -416,7 +428,23 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             .into(imageView)
         dialog.show()
     }
+    private fun showInputTextAnimation() {
+        val inputLayout = binding.inputLayout
+        inputLayout.translationY = 500f
+        val animator = ObjectAnimator.ofFloat(inputLayout, "translationY", 0f)
+        animator.duration = 500
+        animator.start()
+    }
 
+    private fun requestWriteExternalStoragePermission() {
+        if (!requireContext().hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_CODE_WRITE_EXTERNAL_STORAGE
+            )
+        }
+    }
     override fun onFileDescriptionReceived(
         description: String,
         photoUri: Uri,
@@ -424,10 +452,5 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         fileSize: Long
     ) {
         messengerViewModel.sendFile(description, photoUri, fileName, fileSize)
-    }
-
-    companion object {
-        private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1010
-        private const val REQUEST_CODE_CAMERA_PERMISSION = 1011
     }
 }

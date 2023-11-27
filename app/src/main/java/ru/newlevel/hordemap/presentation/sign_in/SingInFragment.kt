@@ -27,11 +27,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.ResizeAnimation
 import ru.newlevel.hordemap.app.TAG
+import ru.newlevel.hordemap.app.convertDpToPx
 import ru.newlevel.hordemap.databinding.FragmentSingInBinding
 import ru.newlevel.hordemap.presentation.DisplayLocationUi
-import ru.newlevel.hordemap.presentation.MyResult
-import kotlin.math.roundToInt
-
 
 class SingInFragment : Fragment(R.layout.fragment_sing_in) {
 
@@ -155,7 +153,7 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
 
     private fun hideBtns() {
         val cardView = binding.cardView
-        val resizeAnimation = ResizeAnimation(cardView, cardView.height - convertDpToPx(126))
+        val resizeAnimation = ResizeAnimation(cardView, cardView.height - requireContext().convertDpToPx(126))
         resizeAnimation.duration = 600
         cardView.startAnimation(resizeAnimation)
         val inputLayout = binding.loginLinearAnonymous
@@ -180,7 +178,7 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
         val inputLayout2 = binding.loginLinearGoogle
         inputLayout.rotationX = 90f
         inputLayout2.rotationX = 90f
-        val resizeAnimation = ResizeAnimation(cardView, cardView.height + convertDpToPx(126))
+        val resizeAnimation = ResizeAnimation(cardView, cardView.height + requireContext().convertDpToPx(126))
         resizeAnimation.duration = 600
         cardView.startAnimation(resizeAnimation)
         handler.postDelayed({
@@ -205,11 +203,6 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
 
     private fun showLoginFailed(errorString: String?) {
         Toast.makeText(requireContext(), errorString, Toast.LENGTH_LONG).show()
-    }
-
-    private fun convertDpToPx(dp: Int): Int {
-        val density: Float = resources.displayMetrics.density
-        return (dp.toFloat() * density).roundToInt()
     }
 }
 

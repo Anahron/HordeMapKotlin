@@ -20,7 +20,6 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
-import ru.newlevel.hordemap.presentation.MyResult
 import java.util.concurrent.CancellationException
 
 class GoogleAuthUiClient(

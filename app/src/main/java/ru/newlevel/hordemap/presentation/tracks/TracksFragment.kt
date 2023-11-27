@@ -1,10 +1,10 @@
 package ru.newlevel.hordemap.presentation.tracks
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -26,10 +26,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.SHADOW_QUALITY
+import ru.newlevel.hordemap.app.convertDpToPx
+import ru.newlevel.hordemap.app.hideShadowAnimate
+import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentTracksBinding
-import kotlin.math.roundToInt
 
 class TracksFragment : Fragment(R.layout.fragment_tracks) {
 
@@ -151,7 +152,7 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
     }
 
     private fun showMainPopupMenu(itemDotsView: View) {
-        showBackgroundShadow()
+        binding.shadow.showShadowAnimate()
         val mainPopupMenu = PopupWindow(requireContext())
         mainPopupMenu.contentView = layoutInflater.inflate(
             R.layout.popup_track_main,
@@ -174,17 +175,14 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
                 }
             }
         mainPopupMenu.showAsDropDown(
-            itemDotsView,
-            -convertDpToPx(requireContext(), 135),
-            -convertDpToPx(requireContext(), 0)
-        )
+            itemDotsView, -requireContext().convertDpToPx(135), requireContext().convertDpToPx(0))
         mainPopupMenu.setOnDismissListener {
-            hideBackgroundShadow()
+            binding.shadow.hideShadowAnimate()
         }
     }
 
     private fun showCurrentItemPopupMenu(itemDotsView: View) {
-        showBackgroundShadow()
+        binding.shadow.showShadowAnimate()
         val currentItemPopupMenu = PopupWindow(requireContext())
         currentItemPopupMenu.contentView = layoutInflater.inflate(
             R.layout.popup_track_current,
@@ -222,18 +220,15 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
                 currentItemPopupMenu.dismiss()
             }
         currentItemPopupMenu.showAsDropDown(
-            itemDotsView,
-            -convertDpToPx(requireContext(), 104),
-            -convertDpToPx(requireContext(), 36)
-        )
+            itemDotsView, -requireContext().convertDpToPx(90), -requireContext().convertDpToPx(34), Gravity.BOTTOM)
         currentItemPopupMenu.setOnDismissListener {
-            hideBackgroundShadow()
+            binding.shadow.hideShadowAnimate()
         }
     }
 
 
     private fun showItemMenu(itemDotsView: View, sessionId: String) {
-        showBackgroundShadow()
+        binding.shadow.showShadowAnimate()
         val popupItemWindow = PopupWindow(requireContext())
         popupItemWindow.contentView = layoutInflater.inflate(
             R.layout.popup_track_item,
@@ -265,20 +260,12 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
                 tracksViewModel.deleteSessionLocations(sessionId = sessionId)
             }
         popupItemWindow.showAsDropDown(
-            itemDotsView,
-            -convertDpToPx(requireContext(), 104),
-            -convertDpToPx(requireContext(), 36)
-        )
-        popupItemWindow.setOnDismissListener { hideBackgroundShadow() }
-    }
-
-    private fun convertDpToPx(context: Context, dp: Int): Int {
-        val density: Float = context.resources.displayMetrics.density
-        return (dp.toFloat() * density).roundToInt()
+            itemDotsView, -requireContext().convertDpToPx(104), -requireContext().convertDpToPx(36), Gravity.BOTTOM)
+        popupItemWindow.setOnDismissListener {  binding.shadow.hideShadowAnimate() }
     }
 
     private fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
-        showBackgroundShadow()
+        binding.shadow.hideShadowAnimate()
         val customLayout = View.inflate(context, R.layout.rename_track_dialog, null)
         val editText = customLayout.findViewById<EditText>(R.id.description_edit_text)
         alertDialog = AlertDialog.Builder(context)
@@ -299,7 +286,7 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
         )
         alertDialog.show()
         alertDialog.setOnDismissListener {
-            hideBackgroundShadow()
+            binding.shadow.hideShadowAnimate()
         }
     }
 
@@ -320,17 +307,5 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
         handler.postDelayed({
             recyclerView.scrollToPosition(0)
         }, 500)
-    }
-    private fun showBackgroundShadow() {
-        val fadeInAnimation = ObjectAnimator.ofFloat(binding.shadow, "alpha", 0f, SHADOW_QUALITY)
-        fadeInAnimation.duration = 200
-        fadeInAnimation.start()
-    }
-
-    private fun hideBackgroundShadow() {
-        val fadeOutAnimation =
-            ObjectAnimator.ofFloat(binding.shadow, "alpha", binding.shadow.alpha, 0f)
-        fadeOutAnimation.duration = 200
-        fadeOutAnimation.start()
     }
 }

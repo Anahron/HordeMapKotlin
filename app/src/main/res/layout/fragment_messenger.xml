@@ -55,7 +55,7 @@
                 android:textSize="18sp"
                 android:fontFamily="@font/inter_medium"
                 android:textColor="@color/main_green_dialog"
-                android:text="Users:" />
+                android:text="@string/users" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvUsersCount"
@@ -184,6 +184,14 @@
             tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+    <View
+        android:id="@+id/shadow"
+        android:layout_marginTop="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:alpha="0">
+    </View>
 
     <include layout="@layout/messenger_choise_upload" />
 
