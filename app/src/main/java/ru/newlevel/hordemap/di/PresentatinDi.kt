@@ -18,7 +18,8 @@ val presentationModule = module {
             saveUserSettingsUseCase = get(),
             resetUserSettingsUseCase = get(),
             saveAutoLoadUseCase = get(),
-            loadProfilePhotoUseCase = get()
+            loadProfilePhotoUseCase = get(),
+            sendUserToStorageUseCase = get()
         )
     }
     viewModel<MapViewModel> {
@@ -33,7 +34,8 @@ val presentationModule = module {
         SignInViewModel(
             getUserSettingsUseCase = get(),
             saveUserSettingsUseCase = get(),
-            googleAuthUiClient = get()
+            googleAuthUiClient = get(),
+            sendUserToStorageUseCase = get()
         )
     }
     viewModel<TracksViewModel> {

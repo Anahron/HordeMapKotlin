@@ -9,15 +9,10 @@ import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.ItemMessageInBinding
-import ru.newlevel.hordemap.domain.models.UserDomainModel
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -27,18 +22,12 @@ class MessagesAdapter(
 ) : RecyclerView.Adapter<MessagesAdapter.MessageViewHolder>() {
 
     private var messageDataModels: ArrayList<MessageDataModel> = ArrayList()
-    private var profiles: ArrayList<UserDomainModel> = ArrayList()
 
     fun setMessages(newList: ArrayList<MessageDataModel>) {
-        val diffCallback = MessageDiffCallback(messageDataModels, newList, profiles)
+        val diffCallback = MessageDiffCallback(messageDataModels, newList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         messageDataModels = newList
         diffResult.dispatchUpdatesTo(this)
-    }
-
-    fun setNewProfilesList(profiles: List<UserDomainModel>?) {
-        this.profiles = profiles as ArrayList<UserDomainModel>
-        setMessages(messageDataModels)
     }
 
     override fun onCreateViewHolder(
@@ -57,21 +46,7 @@ class MessagesAdapter(
         val message = messageDataModels[position]
         var someUserMessage = false
         if (position > 1) if (messageDataModels[position - 1].deviceID == message.deviceID) someUserMessage = true
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val deferredUserData = async(Dispatchers.IO) {
-                profiles.find {
-                    it.deviceID == message.deviceID
-                }
-            }
-            val userData = deferredUserData.await()
-            userData?.let {
-                message.userProfilePhoto = it.profileImageUrl
-                message.userName = it.name
-                message.selectedMarker = it.selectedMarker
-            }
-            holder.bind(message, onButtonSaveClickListener, onImageClickListener, someUserMessage)
-        }
+        holder.bind(message, onButtonSaveClickListener, onImageClickListener, someUserMessage)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -122,8 +97,8 @@ class MessagesAdapter(
                 if (isSomeUser) {
                     textViewUsername.visibility = View.GONE
                     imvProfilePhoto.visibility = View.INVISIBLE
-                } else if (messageDataModel.userProfilePhoto.isNotEmpty()) {
-                    glide.load(messageDataModel.userProfilePhoto.toUri()).thumbnail(1f)
+                } else if (messageDataModel.profileImageUrl.isNotEmpty()) {
+                    glide.load(messageDataModel.profileImageUrl.toUri()).thumbnail(1f)
                         .timeout(30_000)
                         .placeholder(R.drawable.img_anonymous).into(imvProfilePhoto)
                 }
@@ -190,8 +165,7 @@ class MessagesAdapter(
 
     class MessageDiffCallback(
         private val oldList: List<MessageDataModel>,
-        private val newList: List<MessageDataModel>,
-        private val profiles: List<UserDomainModel>?
+        private val newList: List<MessageDataModel>
     ) : DiffUtil.Callback() {
         override fun getOldListSize() = oldList.size
         override fun getNewListSize() = newList.size
@@ -202,15 +176,10 @@ class MessagesAdapter(
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val oldMessage = oldList[oldItemPosition]
             val newMessage = newList[newItemPosition]
-            val userProfile = getUserProfile(newMessage.deviceID)
-
             return oldMessage.message == newMessage.message
-                    && oldMessage.userProfilePhoto == userProfile?.profileImageUrl
-                    && oldMessage.selectedMarker == userProfile.selectedMarker
-                    && oldMessage.userName == userProfile.name
-        }
-        private fun getUserProfile(deviceID: String): UserDomainModel? {
-            return profiles?.find { it.deviceID == deviceID }
+                    && oldMessage.profileImageUrl == newMessage.profileImageUrl
+                    && oldMessage.selectedMarker == newMessage.selectedMarker
+                    && oldMessage.userName == newMessage.userName
         }
     }
 

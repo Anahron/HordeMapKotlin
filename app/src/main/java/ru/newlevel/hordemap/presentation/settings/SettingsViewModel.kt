@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.ResetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveAutoLoadUseCase
@@ -26,7 +27,8 @@ class SettingsViewModel(
     private val saveUserSettingsUseCase: SaveUserSettingsUseCase,
     private val resetUserSettingsUseCase: ResetUserSettingsUseCase,
     private val saveAutoLoadUseCase: SaveAutoLoadUseCase,
-    private val loadProfilePhotoUseCase: LoadProfilePhotoUseCase
+    private val loadProfilePhotoUseCase: LoadProfilePhotoUseCase,
+    private val sendUserToStorageUseCase: SendUserToStorageUseCase
 ) : ViewModel() {
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
     val resultData: LiveData<UserDomainModel> = resultLiveDataMutable
@@ -55,7 +57,8 @@ class SettingsViewModel(
         return result.exceptionOrNull()
     }
 
-    fun saveUser(userDomainModel: UserDomainModel) {
+    suspend fun saveUser(userDomainModel: UserDomainModel) {
+        sendUserToStorageUseCase.execute(userDomainModel)
         saveUserSettingsUseCase.execute(userDomainModel)
         UserEntityProvider.userEntity = userDomainModel
         resultLiveDataMutable.value = userDomainModel

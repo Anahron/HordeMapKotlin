@@ -7,6 +7,8 @@ interface SettingsRepository {
 
     fun saveUserSetting(userDataModel: UserDataModel)
 
+    suspend fun sendUserToStorage(userDataModel: UserDataModel)
+
     fun getUserSetting(): UserDataModel
 
     fun resetUser()

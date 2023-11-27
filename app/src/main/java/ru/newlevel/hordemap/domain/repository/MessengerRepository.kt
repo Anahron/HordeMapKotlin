@@ -22,5 +22,4 @@ interface MessengerRepository {
     fun getDownloadProgress(): MutableLiveData<Int>
 
     fun getUsersProfiles(): MutableLiveData<List<UserDataModel>>
-    suspend fun sendUserData(userData: UserDataModel): Boolean
 }

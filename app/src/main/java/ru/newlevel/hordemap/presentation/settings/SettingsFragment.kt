@@ -187,11 +187,13 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         btnCleanMap.setOnClickListener {
             callback.onAutoLoadClick(false)
             callback.onClearMapClick()
-            settingsViewModel.saveUser(
-                currentUserSetting.copy(
-                    autoLoad = false
+            lifecycleScope.launch {
+                settingsViewModel.saveUser(
+                    currentUserSetting.copy(
+                        autoLoad = false
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -247,11 +249,13 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     }
 
     private fun saveUserSelectedMarker(selectedMarker: Int) {
-        settingsViewModel.saveUser(
-            currentUserSetting.copy(
-                selectedMarker = selectedMarker
+        lifecycleScope.launch {
+            settingsViewModel.saveUser(
+                currentUserSetting.copy(
+                    selectedMarker = selectedMarker
+                )
             )
-        )
+        }
     }
 
     private fun setupRadioButtonListeners() = with(binding) {
@@ -322,12 +326,16 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 onRenameClick = true
                 mainPopupMenu.dismiss()
                 showInputDialog(requireContext(), onConfirm = { enteredText ->
-                    settingsViewModel.saveUser(
-                        currentUserSetting.copy(
-                            name = enteredText
-                        )
+                    val newUser = currentUserSetting.copy(
+                        name = enteredText
                     )
+                    lifecycleScope.launch {
+                        settingsViewModel.saveUser(
+                            newUser
+                        )
+                    }
                 })
+
             }
         mainPopupMenu.showAsDropDown(itemDotsView)
         mainPopupMenu.setOnDismissListener {
@@ -406,11 +414,13 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                settingsViewModel.saveUser(
-                    currentUserSetting.copy(
-                        usersMarkerSize = slider.value.toInt()
+                lifecycleScope.launch {
+                    settingsViewModel.saveUser(
+                        currentUserSetting.copy(
+                            usersMarkerSize = slider.value.toInt()
+                        )
                     )
-                )
+                }
                 callback.onChangeMarkerSettings()
             }
         })
@@ -419,11 +429,13 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                settingsViewModel.saveUser(
-                    currentUserSetting.copy(
-                        staticMarkerSize = slider.value.toInt()
+                lifecycleScope.launch {
+                    settingsViewModel.saveUser(
+                        currentUserSetting.copy(
+                            staticMarkerSize = slider.value.toInt()
+                        )
                     )
-                )
+                }
                 callback.onChangeMarkerSettings()
             }
         })
@@ -433,11 +445,13 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                settingsViewModel.saveUser(
-                    currentUserSetting.copy(
-                        timeToSendData = slider.value.toInt()
+                lifecycleScope.launch {
+                    settingsViewModel.saveUser(
+                        currentUserSetting.copy(
+                            timeToSendData = slider.value.toInt()
+                        )
                     )
-                )
+                }
             }
         })
 

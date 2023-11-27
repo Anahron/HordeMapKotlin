@@ -14,5 +14,4 @@ interface MessageRemoteStorage {
     fun stopMessageUpdate()
 
     fun getProfilesInMessenger(): MutableLiveData<List<UserDataModel>>
-    suspend fun sendUserData(userData: UserDataModel): Boolean
 }

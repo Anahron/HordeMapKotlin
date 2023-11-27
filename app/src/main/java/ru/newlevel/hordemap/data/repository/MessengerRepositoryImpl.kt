@@ -35,9 +35,4 @@ class MessengerRepositoryImpl(private val messageRemoteStorage: MessageRemoteSto
 
 
     override fun getUsersProfiles(): MutableLiveData<List<UserDataModel>> = messageRemoteStorage.getProfilesInMessenger()
-    override suspend fun sendUserData(userData: UserDataModel): Boolean {
-     return messageRemoteStorage.sendUserData(userData)
-    }
-
-
 }

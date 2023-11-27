@@ -28,7 +28,6 @@ import androidx.core.content.FileProvider
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -47,7 +46,6 @@ import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
-import ru.newlevel.hordemap.domain.models.UserDomainModel
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -176,21 +174,13 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     delay(350)
                 messengerViewModel.startMessageUpdate()
                 messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
-                    Log.e(
-                        TAG,
-                        "messagesLiveData.observe{ messages -> = ${messages.toString()}"
-                    )
                     handleNewMessages(messages)
                 }
                 messengerViewModel.progressLiveData.observe(viewLifecycleOwner) { progress ->
                     handleProgressUpdate(progress)
                 }
                 messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
-                    Log.e(
-                        TAG,
-                        "usersProfileLiveData.observe{ profiles -> = ${profiles.toString()}"
-                    )
-                    handleNewProfiles(profiles)
+                   //TODO handleNewProfiles(profiles)
                 }
             }
             Log.e(
@@ -199,10 +189,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             )
             messengerViewModel.stopMessageUpdate()
         }
-    }
-
-    private fun handleNewProfiles(profiles: List<UserDomainModel>?) {
-        messageAdapter.setNewProfilesList(profiles)
     }
 
     private fun setupUIComponents() {

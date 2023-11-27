@@ -19,11 +19,12 @@ import ru.newlevel.hordemap.app.USERS_PROFILES_PATH
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
+import ru.newlevel.hordemap.data.storage.interfaces.ProfileRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
-class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
+class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRemoteStorage {
 
     private val databaseReference = FirebaseDatabase.getInstance().reference
     private val staticDatabaseReference = databaseReference.child(GEO_STATIC_MARKERS_PATH)
@@ -70,7 +71,8 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
         updates["$geoDataPath/message"] = text
         updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity.deviceID
         updates["$geoDataPath/timestamp"] = time
-        updates["$geoDataPath/userProfilePhoto"] = UserEntityProvider.userEntity.profileImageUrl
+        updates["$geoDataPath/selectedMarker"] = UserEntityProvider.userEntity.selectedMarker
+        updates["$geoDataPath/profileImageUrl"] = UserEntityProvider.userEntity.profileImageUrl
         databaseReference.updateChildren(updates)
     }
 
@@ -82,10 +84,11 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
         updates["$geoDataPath/message"] = text
         updates["$geoDataPath/url"] = downloadUrl
         updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity.deviceID
+        updates["$geoDataPath/selectedMarker"] = UserEntityProvider.userEntity.selectedMarker
         updates["$geoDataPath/timestamp"] = time
         updates["$geoDataPath/fileSize"] = fileSize
         updates["$geoDataPath/fileName"] = fileName
-        updates["$geoDataPath/userProfilePhoto"] = UserEntityProvider.userEntity.profileImageUrl
+        updates["$geoDataPath/profileImageUrl"] = UserEntityProvider.userEntity.profileImageUrl
         databaseReference.updateChildren(updates)
     }
 
@@ -109,7 +112,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
         return liveDataUsersProfiles
     }
 
-    override suspend fun sendUserData(userData: UserDataModel): Boolean {
+    override suspend fun sendUserData(userData: UserDataModel) {
         val geoDataPath = "$USERS_PROFILES_PATH/${userData.deviceID}"
         val updates: MutableMap<String, Any> = HashMap()
         updates["$geoDataPath/name"] = userData.name
@@ -118,23 +121,42 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
         updates["$geoDataPath/authName"] = userData.authName
         updates["$geoDataPath/selectedMarker"] = userData.selectedMarker
         updates["$geoDataPath/timeToSendData"] = userData.timeToSendData
-       return  withContext(Dispatchers.IO) {
-           val updateTask = databaseReference.updateChildren(updates)
-           updateTask.await()
-           updateTask.isSuccessful
-       }
+        return withContext(Dispatchers.IO) {
+            val updateTask = databaseReference.updateChildren(updates)
+            updateTask.await()
+            if (updateTask.isSuccessful)
+                updateAllUserMessages(userData)
+        }
     }
+
+    private fun updateAllUserMessages(userData: UserDataModel) {
+        val deviceId = userData.deviceID
+        databaseReference.child(MESSAGE_PATH).orderByChild("deviceID").equalTo(deviceId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    for (messageSnapshot in dataSnapshot.children) {
+                        messageSnapshot.ref.child("userName").setValue(userData.name)
+                        messageSnapshot.ref.child("selectedMarker").setValue(userData.selectedMarker)
+                        messageSnapshot.ref.child("profileImageUrl").setValue(userData.profileImageUrl)
+                    }
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e(TAG, "MyFirebaseDatabase updateAllUserMessages onCancelled = " + databaseError.message)
+                }
+            })
+    }
+
 
     private var valueUsersProfilesEventListener = object : ValueEventListener {
         override fun onDataChange(dataSnapshot: DataSnapshot) {
             val savedUsers: ArrayList<UserDataModel> = ArrayList()
             for (snapshot in dataSnapshot.children) {
                 try {
-                    val name = snapshot.child("name").getValue(String::class.java)?: ""
-                    val authName = snapshot.child("authName").getValue(String::class.java)?: ""
+                    val name = snapshot.child("name").getValue(String::class.java) ?: ""
+                    val authName = snapshot.child("authName").getValue(String::class.java) ?: ""
                     val selectedMarker = snapshot.child("selectedMarker").getValue(Int::class.java) ?: 0
-                    val deviceID = snapshot.child("deviceID").getValue(String::class.java)?: ""
-                    val profileImageUrl = snapshot.child("profileImageUrl").getValue(String::class.java)?: ""
+                    val deviceID = snapshot.child("deviceID").getValue(String::class.java) ?: ""
+                    val profileImageUrl = snapshot.child("profileImageUrl").getValue(String::class.java) ?: ""
                     val user = UserDataModel(
                         deviceID = deviceID,
                         name = name,
@@ -149,12 +171,10 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
             }
             liveDataUsersProfiles.postValue(savedUsers)
         }
+
         override fun onCancelled(error: DatabaseError) {
         }
     }
-
-
-
 
 
     private var valueUserEventListener = object : ValueEventListener {

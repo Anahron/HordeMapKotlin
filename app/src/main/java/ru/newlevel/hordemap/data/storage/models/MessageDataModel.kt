@@ -8,6 +8,6 @@ class MessageDataModel {
     var fileSize: Long = 0
     var fileName: String = ""
     var url: String = ""
-    var userProfilePhoto: String = ""
+    var profileImageUrl: String = ""
     var selectedMarker: Int = 0
 }

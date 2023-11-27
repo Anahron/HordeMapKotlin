@@ -26,12 +26,10 @@ class MessengerViewModel(
     val usersProfileLiveData get(): LiveData<List<UserDomainModel>> = usersProfileMutableLiveData
 
     suspend fun startMessageUpdate() {
-        val result = messengerUseCases.startMessageUpdateInteractor.sendUserData()
-        if (result) {
-            usersProfileMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getUsersProfiles()
-            messagesMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
-            progressMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getDownloadProgress()
-        }
+        usersProfileMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getUsersProfiles()
+        messagesMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
+        progressMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getDownloadProgress()
+
     }
 
     fun stopMessageUpdate() {
