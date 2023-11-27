@@ -19,10 +19,16 @@ import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.presentation.MyResult
 import java.util.concurrent.CancellationException
 
-class GoogleAuthUiClient(private val context: Context, private val oneTapClient: SignInClient ,private val logOutUseCase: LogOutUseCase) {
+class GoogleAuthUiClient(
+    private val context: Context,
+    private val oneTapClient: SignInClient,
+    private val logOutUseCase: LogOutUseCase,
+    private val getUserSettingsUseCase: GetUserSettingsUseCase
+) {
 
     private val auth = Firebase.auth
     suspend fun signInAnonymously(): SingInResult {
@@ -143,12 +149,15 @@ class GoogleAuthUiClient(private val context: Context, private val oneTapClient:
         }
     }
 
-    fun getSignedInUser(): UserData? = auth.currentUser?.run {
-        UserData(
-            userId = uid,
-            userName = displayName,
-            profileImageUrl = photoUrl?.toString()
-        )
+    fun getSignedInUser(): UserData? {
+        getUserSettingsUseCase.execute()
+        return auth.currentUser?.run {
+            UserData(
+                userId = uid,
+                userName = displayName,
+                profileImageUrl = photoUrl?.toString()
+            )
+        }
     }
 
     private fun buildSignInRequest(): BeginSignInRequest {

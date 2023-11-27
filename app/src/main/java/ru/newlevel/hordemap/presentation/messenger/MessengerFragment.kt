@@ -180,7 +180,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     handleProgressUpdate(progress)
                 }
                 messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
-                   //TODO handleNewProfiles(profiles)
+                    binding.tvUsersCount.text = profiles.size.toString()
                 }
             }
             Log.e(
