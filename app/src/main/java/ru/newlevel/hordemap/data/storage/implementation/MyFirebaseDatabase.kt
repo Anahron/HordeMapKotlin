@@ -6,17 +6,22 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.app.GEO_STATIC_MARKERS_PATH
 import ru.newlevel.hordemap.app.GEO_USER_MARKERS_PATH
 import ru.newlevel.hordemap.app.MESSAGE_PATH
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.TIMESTAMP_PATH
 import ru.newlevel.hordemap.app.TIME_TO_DELETE_USER_MARKER
+import ru.newlevel.hordemap.app.USERS_PROFILES_PATH
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
+import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
 class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
 
@@ -26,7 +31,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
     private val liveDataStaticMarkers = MutableLiveData<List<MarkerDataModel>>()
     private val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
     private val liveDataMessageDataModel = MutableLiveData<List<MessageDataModel>>()
-
+    private val liveDataUsersProfiles = MutableLiveData<List<UserDataModel>>()
     override fun deleteStaticMarker(key: String) {
         staticDatabaseReference.child(key).removeValue()
     }
@@ -94,7 +99,63 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage {
         Log.e(TAG, "stopMessageUpdate вызван")
         databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
             .removeEventListener(messageEventListener)
+        databaseReference.child(USERS_PROFILES_PATH).orderByChild("deviceID")
+            .removeEventListener(valueUsersProfilesEventListener)
     }
+
+    override fun getProfilesInMessenger(): MutableLiveData<List<UserDataModel>> {
+        databaseReference.child(USERS_PROFILES_PATH).orderByChild("deviceID")
+            .addValueEventListener(valueUsersProfilesEventListener)
+        return liveDataUsersProfiles
+    }
+
+    override suspend fun sendUserData(userData: UserDataModel): Boolean {
+        val geoDataPath = "$USERS_PROFILES_PATH/${userData.deviceID}"
+        val updates: MutableMap<String, Any> = HashMap()
+        updates["$geoDataPath/name"] = userData.name
+        updates["$geoDataPath/deviceID"] = userData.deviceID
+        updates["$geoDataPath/profileImageUrl"] = userData.profileImageUrl
+        updates["$geoDataPath/authName"] = userData.authName
+        updates["$geoDataPath/selectedMarker"] = userData.selectedMarker
+        updates["$geoDataPath/timeToSendData"] = userData.timeToSendData
+       return  withContext(Dispatchers.IO) {
+           val updateTask = databaseReference.updateChildren(updates)
+           updateTask.await()
+           updateTask.isSuccessful
+       }
+    }
+
+    private var valueUsersProfilesEventListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            val savedUsers: ArrayList<UserDataModel> = ArrayList()
+            for (snapshot in dataSnapshot.children) {
+                try {
+                    val name = snapshot.child("name").getValue(String::class.java)?: ""
+                    val authName = snapshot.child("authName").getValue(String::class.java)?: ""
+                    val selectedMarker = snapshot.child("selectedMarker").getValue(Int::class.java) ?: 0
+                    val deviceID = snapshot.child("deviceID").getValue(String::class.java)?: ""
+                    val profileImageUrl = snapshot.child("profileImageUrl").getValue(String::class.java)?: ""
+                    val user = UserDataModel(
+                        deviceID = deviceID,
+                        name = name,
+                        profileImageUrl = profileImageUrl,
+                        selectedMarker = selectedMarker,
+                        authName = authName,
+                    )
+                    savedUsers.add(user)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            liveDataUsersProfiles.postValue(savedUsers)
+        }
+        override fun onCancelled(error: DatabaseError) {
+        }
+    }
+
+
+
+
 
     private var valueUserEventListener = object : ValueEventListener {
         override fun onDataChange(dataSnapshot: DataSnapshot) {

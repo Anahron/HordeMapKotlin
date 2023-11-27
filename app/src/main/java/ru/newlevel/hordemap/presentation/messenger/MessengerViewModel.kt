@@ -9,10 +9,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
+import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 
 class MessengerViewModel(
-   private val messengerUseCases: MessengerUseCases
+    private val messengerUseCases: MessengerUseCases
 ) : ViewModel() {
 
     private var messagesMutableLiveData = MutableLiveData<List<MessageDataModel>>()
@@ -21,10 +22,16 @@ class MessengerViewModel(
     private var progressMutableLiveData = MutableLiveData<Int>()
     val progressLiveData get(): LiveData<Int> = progressMutableLiveData
 
+    private var usersProfileMutableLiveData = MutableLiveData<List<UserDomainModel>>()
+    val usersProfileLiveData get(): LiveData<List<UserDomainModel>> = usersProfileMutableLiveData
 
-    fun startMessageUpdate() {
-        messagesMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
-        progressMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getDownloadProgress()
+    suspend fun startMessageUpdate() {
+        val result = messengerUseCases.startMessageUpdateInteractor.sendUserData()
+        if (result) {
+            usersProfileMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getUsersProfiles()
+            messagesMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
+            progressMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getDownloadProgress()
+        }
     }
 
     fun stopMessageUpdate() {

@@ -9,4 +9,5 @@ class MessageDataModel {
     var fileName: String = ""
     var url: String = ""
     var userProfilePhoto: String = ""
+    var selectedMarker: Int = 0
 }

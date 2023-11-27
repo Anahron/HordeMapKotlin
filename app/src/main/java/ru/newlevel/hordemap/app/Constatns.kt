@@ -26,5 +26,7 @@ const val GEO_USER_MARKERS_PATH = "geoData0"
 const val GEO_STATIC_MARKERS_PATH = "geoMarkers0"
 const val TIME_TO_DELETE_USER_MARKER = 30 // в минутах
 const val MESSAGE_PATH = "messages0"
+const val USERS_PROFILES_PATH = "usersProfiles0"
 const val TIMESTAMP_PATH = "timestamp"
 const val LOCATION_DATABASE = "my_location_table"
+const val SHADOW_QUALITY = 0.2f

@@ -1,5 +1,6 @@
 package ru.newlevel.hordemap.presentation.tracks
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.SHADOW_QUALITY
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentTracksBinding
 import kotlin.math.roundToInt
@@ -37,7 +39,6 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
     private lateinit var recyclerView: RecyclerView
     private lateinit var trackAdapter: TracksAdapter
     private lateinit var alertDialog: AlertDialog
-    private var popupItemWindow: PopupWindow? = null
     private val handler = Handler(Looper.getMainLooper())
 
     private fun initDefault() {
@@ -149,24 +150,8 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
         }
     }
 
-    private fun setupItemMenu(viewGroup: ViewGroup) {
-        popupItemWindow = PopupWindow(requireContext())
-        popupItemWindow?.contentView = layoutInflater.inflate(
-            R.layout.popup_track_item,
-            viewGroup,
-            false
-        )
-        popupItemWindow?.setBackgroundDrawable(
-            ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.round_white
-            )
-        )
-        popupItemWindow?.elevation = 18f
-        popupItemWindow?.isFocusable = true
-    }
-
     private fun showMainPopupMenu(itemDotsView: View) {
+        showBackgroundShadow()
         val mainPopupMenu = PopupWindow(requireContext())
         mainPopupMenu.contentView = layoutInflater.inflate(
             R.layout.popup_track_main,
@@ -191,11 +176,15 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
         mainPopupMenu.showAsDropDown(
             itemDotsView,
             -convertDpToPx(requireContext(), 135),
-            -convertDpToPx(requireContext(), 40)
+            -convertDpToPx(requireContext(), 0)
         )
+        mainPopupMenu.setOnDismissListener {
+            hideBackgroundShadow()
+        }
     }
 
     private fun showCurrentItemPopupMenu(itemDotsView: View) {
+        showBackgroundShadow()
         val currentItemPopupMenu = PopupWindow(requireContext())
         currentItemPopupMenu.contentView = layoutInflater.inflate(
             R.layout.popup_track_current,
@@ -237,16 +226,32 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
             -convertDpToPx(requireContext(), 104),
             -convertDpToPx(requireContext(), 36)
         )
+        currentItemPopupMenu.setOnDismissListener {
+            hideBackgroundShadow()
+        }
     }
 
 
     private fun showItemMenu(itemDotsView: View, sessionId: String) {
-        if (popupItemWindow == null) {
-            setupItemMenu(itemDotsView.rootView as ViewGroup)
-        }
-        popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnRename)
+        showBackgroundShadow()
+        val popupItemWindow = PopupWindow(requireContext())
+        popupItemWindow.contentView = layoutInflater.inflate(
+            R.layout.popup_track_item,
+            itemDotsView.rootView as ViewGroup,
+            false
+        )
+        popupItemWindow.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
+            )
+        )
+        popupItemWindow.elevation = 18f
+        popupItemWindow.isFocusable = true
+
+        popupItemWindow.contentView?.findViewById<MaterialButton>(R.id.btnRename)
             ?.setOnClickListener {
-                popupItemWindow?.dismiss()
+                popupItemWindow.dismiss()
                 showInputDialog(requireContext(), onConfirm = { enteredText ->
                     tracksViewModel.renameTrackNameForSession(
                         sessionId = sessionId,
@@ -254,17 +259,17 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
                     )
                 })
             }
-        popupItemWindow?.contentView?.findViewById<MaterialButton>(R.id.btnDelete)
+        popupItemWindow.contentView?.findViewById<MaterialButton>(R.id.btnDelete)
             ?.setOnClickListener {
-                popupItemWindow?.dismiss()
+                popupItemWindow.dismiss()
                 tracksViewModel.deleteSessionLocations(sessionId = sessionId)
             }
-
-        popupItemWindow?.showAsDropDown(
+        popupItemWindow.showAsDropDown(
             itemDotsView,
             -convertDpToPx(requireContext(), 104),
             -convertDpToPx(requireContext(), 36)
         )
+        popupItemWindow.setOnDismissListener { hideBackgroundShadow() }
     }
 
     private fun convertDpToPx(context: Context, dp: Int): Int {
@@ -273,6 +278,7 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
     }
 
     private fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
+        showBackgroundShadow()
         val customLayout = View.inflate(context, R.layout.rename_track_dialog, null)
         val editText = customLayout.findViewById<EditText>(R.id.description_edit_text)
         alertDialog = AlertDialog.Builder(context)
@@ -292,6 +298,9 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
             )
         )
         alertDialog.show()
+        alertDialog.setOnDismissListener {
+            hideBackgroundShadow()
+        }
     }
 
     private fun setupSegmentButtons(checkedId: Int) {
@@ -311,5 +320,17 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
         handler.postDelayed({
             recyclerView.scrollToPosition(0)
         }, 500)
+    }
+    private fun showBackgroundShadow() {
+        val fadeInAnimation = ObjectAnimator.ofFloat(binding.shadow, "alpha", 0f, SHADOW_QUALITY)
+        fadeInAnimation.duration = 200
+        fadeInAnimation.start()
+    }
+
+    private fun hideBackgroundShadow() {
+        val fadeOutAnimation =
+            ObjectAnimator.ofFloat(binding.shadow, "alpha", binding.shadow.alpha, 0f)
+        fadeOutAnimation.duration = 200
+        fadeOutAnimation.start()
     }
 }

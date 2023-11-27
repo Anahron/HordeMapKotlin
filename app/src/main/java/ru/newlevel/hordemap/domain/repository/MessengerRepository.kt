@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
+import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
 interface MessengerRepository {
     fun sendMessage(text: String)
@@ -19,4 +20,7 @@ interface MessengerRepository {
     fun downloadFile(context: Context, uri: Uri, fileName: String?)
 
     fun getDownloadProgress(): MutableLiveData<Int>
+
+    fun getUsersProfiles(): MutableLiveData<List<UserDataModel>>
+    suspend fun sendUserData(userData: UserDataModel): Boolean
 }

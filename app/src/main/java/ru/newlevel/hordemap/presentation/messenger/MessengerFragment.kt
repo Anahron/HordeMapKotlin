@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.View.GONE
@@ -27,6 +28,7 @@ import androidx.core.content.FileProvider
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -42,8 +44,10 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
+import ru.newlevel.hordemap.domain.models.UserDomainModel
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -70,8 +74,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var takePicture: ActivityResultLauncher<Uri>
     private lateinit var viewBehavior: View
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private fun createActivityRegisters() {
         activityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
             if (uri != null) {
                 val dialogFragment = SendFileDescriptionDialogFragment(
@@ -116,10 +119,11 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         requestWriteExternalStoragePermission()
         setupRecyclerView()
         setupMessagesUpdates()
-        showAnimation()
+        showInputTextAnimation()
+        createActivityRegisters()
     }
 
-    private fun showAnimation() {
+    private fun showInputTextAnimation() {
         val inputLayout = binding.inputLayout
         inputLayout.translationY = 500f
         val animator = ObjectAnimator.ofFloat(inputLayout, "translationY", 0f)
@@ -172,14 +176,33 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     delay(350)
                 messengerViewModel.startMessageUpdate()
                 messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
+                    Log.e(
+                        TAG,
+                        "messagesLiveData.observe{ messages -> = ${messages.toString()}"
+                    )
                     handleNewMessages(messages)
                 }
                 messengerViewModel.progressLiveData.observe(viewLifecycleOwner) { progress ->
                     handleProgressUpdate(progress)
                 }
+                messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
+                    Log.e(
+                        TAG,
+                        "usersProfileLiveData.observe{ profiles -> = ${profiles.toString()}"
+                    )
+                    handleNewProfiles(profiles)
+                }
             }
+            Log.e(
+                TAG,
+                " messengerViewModel.stopMessageUpdate()"
+            )
             messengerViewModel.stopMessageUpdate()
         }
+    }
+
+    private fun handleNewProfiles(profiles: List<UserDomainModel>?) {
+        messageAdapter.setNewProfilesList(profiles)
     }
 
     private fun setupUIComponents() {
@@ -256,19 +279,15 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             setHasFixedSize(false)
             isNestedScrollingEnabled = false
             setOnScrollChangeListener { _, _, _, _, _ ->
-                if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0 ) {
-                    handler.postDelayed({
+                if (!recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollOffset() > 0) {
                         if (binding.btnGoDown.translationX != 500F) {
                             showOrHideDownBtn(false)
                         }
-                    }, 100)
                 } else {
-                    handler.postDelayed({
-                        if (binding.btnGoDown.translationX == 500F) {
-                            showOrHideDownBtn(true)
-                            binding.btnGoDown.visibility = VISIBLE
-                        }
-                    }, 500)
+                    if (binding.btnGoDown.translationX == 500F) {
+                        showOrHideDownBtn(true)
+                        binding.btnGoDown.visibility = VISIBLE
+                    }
                 }
             }
         }

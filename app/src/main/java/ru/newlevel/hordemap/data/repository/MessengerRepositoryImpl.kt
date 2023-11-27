@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MessageDataModel
+import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.repository.MessengerRepository
 
 class MessengerRepositoryImpl(private val messageRemoteStorage: MessageRemoteStorage, private val messageFilesStorage: MessageFilesStorage) : MessengerRepository {
@@ -17,24 +18,26 @@ class MessengerRepositoryImpl(private val messageRemoteStorage: MessageRemoteSto
         messageRemoteStorage.sendMessage(text, downloadUrl, fileSize, fileName)
     }
 
-    override fun getMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
-        return messageRemoteStorage.getMessageUpdate()
-    }
+    override fun getMessageUpdate(): MutableLiveData<List<MessageDataModel>> = messageRemoteStorage.getMessageUpdate()
+
 
     override fun stopMessageUpdate() {
         messageRemoteStorage.stopMessageUpdate()
     }
 
-    override suspend fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long): String {
-        return messageFilesStorage.sendFile(message, uri, fileName, fileSize)
+    override suspend fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long): String = messageFilesStorage.sendFile(message, uri, fileName, fileSize)
+
+
+    override fun downloadFile(context: Context, uri: Uri, fileName: String?) = messageFilesStorage.downloadFile(context, uri, fileName)
+
+
+    override fun getDownloadProgress(): MutableLiveData<Int> = messageFilesStorage.getDownloadProgress()
+
+
+    override fun getUsersProfiles(): MutableLiveData<List<UserDataModel>> = messageRemoteStorage.getProfilesInMessenger()
+    override suspend fun sendUserData(userData: UserDataModel): Boolean {
+     return messageRemoteStorage.sendUserData(userData)
     }
 
-    override fun downloadFile(context: Context, uri: Uri, fileName: String?) {
-         messageFilesStorage.downloadFile(context, uri, fileName)
-    }
-
-    override fun getDownloadProgress(): MutableLiveData<Int> {
-       return messageFilesStorage.getDownloadProgress()
-    }
 
 }
