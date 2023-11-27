@@ -32,6 +32,7 @@ import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.SHADOW_QUALITY
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.databinding.FragmentSettingBinding
@@ -72,9 +73,9 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             if (uri != null) {
                 lifecycleScope.launch {
                     activityListener?.changeProfilePhoto(newPhotoUrl = uri)
-                   settingsViewModel.loadProfilePhoto(uri, requireContext())?.let {
-                       Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
-                   }
+                    settingsViewModel.loadProfilePhoto(uri, requireContext())?.let {
+                        Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }
@@ -131,6 +132,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         super.onResume()
         Log.e(TAG, "onResume")
     }
+
     private fun changeUiToLoadMap() {
         Log.e(TAG, "changeUiToLoadMap()")
         val pixels = requireContext().resources.displayMetrics.widthPixels
@@ -280,9 +282,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         if (cardViewLoadMap.translationX.toInt() != 0)
             cardViewLoadMap.translationX = pixels.toFloat()
     }
-    override fun onStart() {
-        super.onStart()
-    }
+
     private fun setUpLogOutButton() {
         binding.btnSettingsPopUp.setOnClickListener {
             showUserPopupMenu(it)
@@ -296,6 +296,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     }
 
     private fun showUserPopupMenu(itemDotsView: View) {
+        showBackgroundShadow()
+        var onRenameClick = false
         val mainPopupMenu = PopupWindow(requireContext())
         mainPopupMenu.contentView = layoutInflater.inflate(
             R.layout.popup_user_settings,
@@ -317,6 +319,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
         mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserRename)
             ?.setOnClickListener {
+                onRenameClick = true
                 mainPopupMenu.dismiss()
                 showInputDialog(requireContext(), onConfirm = { enteredText ->
                     settingsViewModel.saveUser(
@@ -327,6 +330,11 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 })
             }
         mainPopupMenu.showAsDropDown(itemDotsView)
+        mainPopupMenu.setOnDismissListener {
+            Log.e(TAG, "onRenameClick = $onRenameClick")
+            if (!onRenameClick)
+                hideBackgroundShadow()
+        }
     }
 
     private fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
@@ -352,6 +360,9 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             )
         )
         alertDialog.show()
+        alertDialog.setOnDismissListener {
+            hideBackgroundShadow()
+        }
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
             }
@@ -429,6 +440,20 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 )
             }
         })
+
+    }
+
+    private fun showBackgroundShadow() {
+        val fadeInAnimation = ObjectAnimator.ofFloat(binding.shadow, "alpha", 0f, SHADOW_QUALITY)
+        fadeInAnimation.duration = 200
+        fadeInAnimation.start()
+    }
+
+    private fun hideBackgroundShadow() {
+        val fadeOutAnimation =
+            ObjectAnimator.ofFloat(binding.shadow, "alpha", binding.shadow.alpha, 0f)
+        fadeOutAnimation.duration = 200
+        fadeOutAnimation.start()
     }
 
     interface OnChangeSettings {
