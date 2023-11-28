@@ -1,6 +1,5 @@
 package ru.newlevel.hordemap.presentation.settings
 
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
@@ -9,7 +8,9 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.GestureDetector
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -28,10 +29,12 @@ import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.SWIPE_THRESHOLD
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.hideShadowAnimate
@@ -39,7 +42,9 @@ import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.databinding.FragmentSettingBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.presentation.DisplayLocationUi
+import kotlin.math.abs
 import kotlin.properties.Delegates
+
 
 class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layout.fragment_setting) {
 
@@ -47,6 +52,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     private val settingsViewModel: SettingsViewModel by viewModel()
     private var checkedRadioButton by Delegates.notNull<Int>()
     private lateinit var currentUserSetting: UserDomainModel
+    private lateinit var gestureDetector: GestureDetector
+    private lateinit var toggleGroupBtn: MaterialButtonToggleGroup
 
     private var activityListener: DisplayLocationUi? = null
 
@@ -59,10 +66,9 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?): Unit = with(binding) {
-        Log.e(TAG, "onViewCreated()")
         super.onViewCreated(view, savedInstanceState)
-        setupUIComponents()
         setupRadioButtonListeners()
         setupGoBackListener()
         setupSeekBarListeners()
@@ -81,6 +87,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
         }
 
+        this@SettingsFragment.toggleGroupBtn = toggleGroup
         toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 settingsViewModel.setState(checkedId)
@@ -117,48 +124,41 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 when (state) {
                     is UiState.SettingsState -> {
                         setupSegmentButtons(R.id.btnToggleSettings)
-                        changeUiToSettings()
+                        if (binding.switcher.currentView.id == binding.cardViewLoadMap.id) changeUiToSettings()
                     }
 
                     is UiState.LoadMapState -> {
                         setupSegmentButtons(R.id.btnToggleLoadMap)
-                        changeUiToLoadMap()
+                        if (binding.switcher.currentView.id == binding.cardViewSettings.id) changeUiToLoadMap()
                     }
                 }
             }
         }
+        gestureDetector = GestureDetector(requireContext(), MyGestureListener())
+        binding.switcher.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
+        binding.cardViewSettings.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event)
+            true}
+        binding.cardViewLoadMap.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event)
+            true}
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.e(TAG, "onResume")
+    override fun onPause() {
+        super.onPause()
+        settingsViewModel.setState(binding.btnToggleSettings.id)
     }
 
     private fun changeUiToLoadMap() {
+        binding.switcher.setInAnimation(requireContext(), R.anim.slide_in_right)
+        binding.switcher.setOutAnimation(requireContext(), R.anim.slide_out_left)
+        binding.switcher.showNext()
         Log.e(TAG, "changeUiToLoadMap()")
-        val pixels = requireContext().resources.displayMetrics.widthPixels
-        val cardViewSettings = binding.cardViewSettings
-        val cardViewLoadMap = binding.cardViewLoadMap
-        val animator = ObjectAnimator.ofFloat(cardViewSettings, "translationX", -pixels.toFloat())
-        animator.duration = 500
-        animator.start()
-        val animator2 = ObjectAnimator.ofFloat(cardViewLoadMap, "translationX", 0f)
-        animator2.duration = 500
-        animator2.start()
     }
 
     private fun changeUiToSettings() {
+        binding.switcher.setInAnimation(requireContext(), R.anim.slide_in_left)
+        binding.switcher.setOutAnimation(requireContext(), R.anim.slide_out_right)
+        binding.switcher.showPrevious()
         Log.e(TAG, "changeUiToSettings")
-        val cardViewSettings = binding.cardViewSettings
-        val cardViewLoadMap = binding.cardViewLoadMap
-        val pixels = requireContext().resources.displayMetrics.widthPixels
-        val animator = ObjectAnimator.ofFloat(cardViewSettings, "translationX", 0f)
-        animator.duration = 500
-        animator.start()
-        val animator2 = ObjectAnimator.ofFloat(cardViewLoadMap, "translationX", pixels.toFloat())
-        animator2.duration = 500
-        animator2.start()
-
     }
 
     private fun setUpLoadingMapListeners() = with(binding) {
@@ -235,18 +235,9 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun setupUIComponents() {
-        binding.cardViewLoadMap.translationX = requireContext().resources.displayMetrics.widthPixels.toFloat()
-    }
-
     private fun loadImageIntoProfile() {
-        if (currentUserSetting.profileImageUrl.isNotEmpty())
-            Glide.with(requireContext())
-                .load(currentUserSetting.profileImageUrl)
-                .thumbnail(0.1f)
-                .timeout(30_000)
-                .into(binding.circleImageView)
+        if (currentUserSetting.profileImageUrl.isNotEmpty()) Glide.with(requireContext())
+            .load(currentUserSetting.profileImageUrl).thumbnail(0.1f).timeout(30_000).into(binding.circleImageView)
     }
 
     private fun saveUserSelectedMarker(selectedMarker: Int) {
@@ -282,10 +273,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         val cardViewSettings = binding.cardViewSettings
         val cardViewLoadMap = binding.cardViewLoadMap
         val pixels = requireContext().resources.displayMetrics.widthPixels
-        if (cardViewSettings.translationX.toInt() != 0)
-            cardViewSettings.translationX = -pixels.toFloat()
-        if (cardViewLoadMap.translationX.toInt() != 0)
-            cardViewLoadMap.translationX = pixels.toFloat()
+        if (cardViewSettings.translationX.toInt() != 0) cardViewSettings.translationX = -pixels.toFloat()
+        if (cardViewLoadMap.translationX.toInt() != 0) cardViewLoadMap.translationX = pixels.toFloat()
     }
 
     private fun setUpLogOutButton() {
@@ -305,53 +294,45 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         var onRenameClick = false
         val mainPopupMenu = PopupWindow(requireContext())
         mainPopupMenu.contentView = layoutInflater.inflate(
-            R.layout.popup_user_settings,
-            itemDotsView.rootView as ViewGroup,
-            false
+            R.layout.popup_user_settings, itemDotsView.rootView as ViewGroup, false
         )
         mainPopupMenu.setBackgroundDrawable(
             ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.round_white
+                requireContext(), R.drawable.round_white
             )
         )
         mainPopupMenu.elevation = 18f
         mainPopupMenu.isFocusable = true
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserLogPut)
-            ?.setOnClickListener {
-                mainPopupMenu.dismiss()
-                activityListener?.logOut()
-            }
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserRename)
-            ?.setOnClickListener {
-                onRenameClick = true
-                mainPopupMenu.dismiss()
-                showInputDialog(requireContext(), onConfirm = { enteredText ->
-                    val newUser = currentUserSetting.copy(
-                        name = enteredText
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserLogPut)?.setOnClickListener {
+            mainPopupMenu.dismiss()
+            activityListener?.logOut()
+        }
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserRename)?.setOnClickListener {
+            onRenameClick = true
+            mainPopupMenu.dismiss()
+            showInputDialog(requireContext(), onConfirm = { enteredText ->
+                val newUser = currentUserSetting.copy(
+                    name = enteredText
+                )
+                lifecycleScope.launch {
+                    settingsViewModel.saveUser(
+                        newUser
                     )
-                    lifecycleScope.launch {
-                        settingsViewModel.saveUser(
-                            newUser
-                        )
-                    }
-                })
+                }
+            })
 
-            }
+        }
         mainPopupMenu.showAsDropDown(itemDotsView)
         mainPopupMenu.setOnDismissListener {
             Log.e(TAG, "onRenameClick = $onRenameClick")
-            if (!onRenameClick)
-                binding.shadow.hideShadowAnimate()
+            if (!onRenameClick) binding.shadow.hideShadowAnimate()
         }
     }
 
     private fun showInputDialog(context: Context, onConfirm: (String) -> Unit) {
         val customLayout = View.inflate(context, R.layout.rename_user_dialog, null)
         val editText = customLayout.findViewById<EditText>(R.id.description_edit_text)
-        val alertDialog = AlertDialog.Builder(context)
-            .setView(customLayout)
-            .create()
+        val alertDialog = AlertDialog.Builder(context).setView(customLayout).create()
         val confirmButton = customLayout.findViewById<AppCompatButton>(R.id.btnUserSettingsSaveUserName)
         confirmButton.isEnabled = false
         confirmButton.alpha = 0.4f
@@ -364,13 +345,12 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         }
         alertDialog.window?.setBackgroundDrawable(
             ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.round_white
+                requireContext(), R.drawable.round_white
             )
         )
         alertDialog.show()
         alertDialog.setOnDismissListener {
-             binding.shadow.hideShadowAnimate()
+            binding.shadow.hideShadowAnimate()
         }
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
@@ -378,10 +358,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 confirmButton.isEnabled = s.toString().trim().length >= 3
-                if (confirmButton.isEnabled)
-                    confirmButton.alpha = 1f
-                else
-                    confirmButton.alpha = 0.4f
+                if (confirmButton.isEnabled) confirmButton.alpha = 1f
+                else confirmButton.alpha = 0.4f
             }
 
             override fun afterTextChanged(s: Editable) {
@@ -455,7 +433,6 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 }
             }
         })
-
     }
 
     interface OnChangeSettings {
@@ -465,5 +442,37 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         fun onLoadMapFromServerClick()
         fun onAutoLoadClick(isAutoLoad: Boolean)
         fun onClearMapClick()
+    }
+
+    inner class MyGestureListener : GestureDetector.SimpleOnGestureListener() {
+
+        override fun onDown(e: MotionEvent): Boolean {
+            Log.e(TAG, " onDown")
+            return true
+        }
+
+        override fun onSingleTapUp(e: MotionEvent): Boolean {
+            Log.e(TAG, " onSingleTapUp")
+            return super.onSingleTapUp(e)
+        }
+
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+            Log.e(TAG, " onFling")
+            val distanceX = e2.x.minus(e1?.x ?: 0f)
+            val distanceY = e2.y.minus(e1?.y ?: 0f)
+            if (abs(distanceX) > abs(distanceY) && abs(distanceX) > SWIPE_THRESHOLD) {
+                if (distanceX > 0) {
+                    // Свайп влево
+                    settingsViewModel.setState(binding.btnToggleSettings.id)
+                    toggleGroupBtn.check(binding.btnToggleSettings.id)
+                } else {
+                    // Свайп вправо
+                    settingsViewModel.setState(binding.btnToggleLoadMap.id)
+                    toggleGroupBtn.check(binding.btnToggleLoadMap.id)
+                }
+                return true
+            }
+            return false
+        }
     }
 }
