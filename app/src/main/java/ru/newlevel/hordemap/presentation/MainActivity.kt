@@ -180,6 +180,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     override fun displayLocationUI() {
         handler.postDelayed({
             checkPermissionAndShowMap()
+            currentFragment = mainFragment
             navView.selectedItemId = R.id.mapFragment
         }, 150)
     }

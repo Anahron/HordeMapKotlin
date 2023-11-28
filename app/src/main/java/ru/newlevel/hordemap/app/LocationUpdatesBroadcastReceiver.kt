@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
-import ru.newlevel.hordemap.data.db.MyLocationDatabase
+import ru.newlevel.hordemap.data.db.MyDatabase
 import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
@@ -44,7 +44,7 @@ class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinCompone
         Log.e(TAG, "Location result = $location")
         Log.e(TAG, "Location size = ${locations.size}")
         CoroutineScope(Dispatchers.IO).launch {
-            val locationDao = getKoin().get<MyLocationDatabase>().locationDao()
+            val locationDao = getKoin().get<MyDatabase>().locationDao()
             locations.forEach { location ->
                 if (location.accuracy < 25)
                     locationDao.addLocation(
@@ -56,7 +56,7 @@ class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinCompone
                         )
                     )
             }
-            userEntity?.let {
+            userEntity.let {
                 getKoin().get<MarkersRemoteStorage>()
                     .sendUserMarker(location.toMarker(it))
             }

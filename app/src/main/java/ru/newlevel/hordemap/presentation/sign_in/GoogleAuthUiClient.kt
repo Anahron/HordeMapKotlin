@@ -132,10 +132,14 @@ class GoogleAuthUiClient(
             )
         }
     }
+    suspend fun deleteUserFromDatabase(){
+        logOutUseCase.execute()
+    }
+
 
     suspend fun signOut() {
         try {
-            logOutUseCase.execute()
+            deleteUserFromDatabase()
             val currentUser = auth.currentUser
             Log.e(TAG, currentUser.toString())
             if (auth.currentUser?.isAnonymous == true)

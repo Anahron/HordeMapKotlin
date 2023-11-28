@@ -8,6 +8,7 @@ import android.location.Location
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -77,8 +78,10 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
     )
 }
 
+@SuppressLint("HardwareIds")
 fun Context.getMyDeviceId(): String {
-    @SuppressLint("HardwareIds") val androidId = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
+    val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+    Log.e(TAG, "androidId = " + androidId )
     return androidId ?: UUID.randomUUID().toString()
 }
 

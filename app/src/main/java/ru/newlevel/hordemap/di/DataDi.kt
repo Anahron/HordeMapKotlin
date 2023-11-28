@@ -6,7 +6,7 @@ import androidx.room.Room.databaseBuilder
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import ru.newlevel.hordemap.data.db.MyLocationDao
-import ru.newlevel.hordemap.data.db.MyLocationDatabase
+import ru.newlevel.hordemap.data.db.MyDatabase
 import ru.newlevel.hordemap.data.repository.*
 import ru.newlevel.hordemap.data.storage.implementation.FilesLocalStorage
 import ru.newlevel.hordemap.data.storage.implementation.FilesUtils
@@ -20,10 +20,10 @@ import ru.newlevel.hordemap.domain.repository.*
 
 val databaseModule = module {
 
-    single<MyLocationDatabase> {
+    single<MyDatabase> {
         databaseBuilder(
             androidContext(),
-            MyLocationDatabase::class.java,
+            MyDatabase::class.java,
             "my-location-database"
         )
             .build()
@@ -33,7 +33,7 @@ val databaseModule = module {
 val dataModule = module {
 
     single<MyLocationDao> {
-        val database = get<MyLocationDatabase>()
+        val database = get<MyDatabase>()
         database.locationDao()
     }
 

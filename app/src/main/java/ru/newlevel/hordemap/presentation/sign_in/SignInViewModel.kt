@@ -2,13 +2,11 @@ package ru.newlevel.hordemap.presentation.sign_in
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.getMyDeviceId
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
@@ -25,7 +23,6 @@ class SignInViewModel(
 
     fun onSingInResult(result: SingInResult) {
         _state.update {
-            Log.e(TAG, "result.data != null = " + (result.data != null).toString())
             it.copy(
                 isSingSuccess = result.data != null, signInError = result.errorMessage
             )
@@ -34,13 +31,17 @@ class SignInViewModel(
 
     suspend fun saveUser(userData: UserData?, newUserName: String, context: Context) {
         val user = getUserSettingsUseCase.execute()
-        val authName = userData?.userName?: context.getString(R.string.hintAnonim)
-        val deviceID =  if (userData?.isAnonymous == false) userData.userId else context.getMyDeviceId()
-        val userPhoto = user.profileImageUrl.ifEmpty { userData?.profileImageUrl?: "" }
+        val authName = userData?.userName ?: context.getString(R.string.hintAnonim)
+        val newDeviceID =
+            if (userData?.userName != null)
+                userData.userId
+            else
+                context.getMyDeviceId()
+        val userPhoto = user.profileImageUrl.ifEmpty { userData?.profileImageUrl ?: "" }
         val newUser = user.copy(
             authName = authName,
             profileImageUrl = userPhoto,
-            deviceID = deviceID,
+            deviceID = newDeviceID,
             name = newUserName
         )
         userData?.userId.let {
@@ -51,7 +52,7 @@ class SignInViewModel(
 
     fun getSignedInUser(): UserData? = googleAuthUiClient.getSignedInUser()
     suspend fun signInFromIntent(intent: Intent): SingInResult = googleAuthUiClient.signInFromIntent(intent)
-    suspend fun signInAnonymously(): SingInResult  = googleAuthUiClient.signInAnonymously()
+    suspend fun signInAnonymously(): SingInResult = googleAuthUiClient.signInAnonymously()
     suspend fun signIn(): MyResult<*> = googleAuthUiClient.signIn()
 
 }
