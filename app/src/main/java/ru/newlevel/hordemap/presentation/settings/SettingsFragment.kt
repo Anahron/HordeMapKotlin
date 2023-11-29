@@ -9,6 +9,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -27,7 +28,6 @@ import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -48,9 +48,24 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     private val settingsViewModel: SettingsViewModel by viewModel()
     private var checkedRadioButton by Delegates.notNull<Int>()
     private lateinit var currentUserSetting: UserDomainModel
-    private lateinit var toggleGroupBtn: MaterialButtonToggleGroup
-
     private var activityListener: DisplayLocationUi? = null
+    private var move = false
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null) {
+            lifecycleScope.launch {
+                settingsViewModel.loadProfilePhoto(uri, requireContext()).onSuccess {
+                    activityListener?.changeProfilePhoto(it)
+                }.onFailure {
+                    Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+    private val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
+        result?.let {
+            callback.onSelectFileClick(it)
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -70,30 +85,12 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         setUpLogOutButton()
         setUpLoadingMapListeners()
         setUpResetButton()
+        setUpCircleImageListener()
+        setUpDataObservers()
+        cardViewDragListeners()
+    }
 
-        val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            if (uri != null) {
-                lifecycleScope.launch {
-                    settingsViewModel.loadProfilePhoto(uri, requireContext()).onSuccess {
-                        activityListener?.changeProfilePhoto(it)
-                    }.onFailure {
-                        Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-        }
-
-        this@SettingsFragment.toggleGroupBtn = toggleGroup
-        toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                settingsViewModel.setState(checkedId)
-            }
-        }
-
-        circleImageView.setOnClickListener {
-            pickImage.launch("image/*")
-        }
-
+    private fun setUpDataObservers() = with(binding) {
         settingsViewModel.resultData.observe(viewLifecycleOwner) { user ->
             currentUserSetting = user
             loadImageIntoProfile()
@@ -130,13 +127,25 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 }
             }
         }
+    }
 
+    private fun setUpCircleImageListener() {
+        binding.circleImageView.setOnClickListener {
+            pickImage.launch("image/*")
+        }
+    }
 
+    private fun cardViewDragListeners() {
+        binding.toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                settingsViewModel.setState(checkedId)
+            }
+        }
         binding.cardViewSettings.setOnCardDragListener(object : DraggableCardView.OnCardDragListener {
             override fun onCardSwiped(next: Boolean) {
                 if (next) {
                     settingsViewModel.setState(binding.btnToggleLoadMap.id)
-                    toggleGroupBtn.check(binding.btnToggleLoadMap.id)
+                    binding.toggleGroup.check(binding.btnToggleLoadMap.id)
                 }
             }
         })
@@ -144,15 +153,10 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             override fun onCardSwiped(next: Boolean) {
                 if (!next) {
                     settingsViewModel.setState(binding.btnToggleSettings.id)
-                    toggleGroupBtn.check(binding.btnToggleSettings.id)
+                    binding.toggleGroup.check(binding.btnToggleSettings.id)
                 }
             }
         })
-    }
-
-    override fun onPause() {
-        super.onPause()
-        settingsViewModel.setState(binding.btnToggleSettings.id)
     }
 
     private fun changeUiToLoadMap() {
@@ -169,43 +173,56 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         Log.e(TAG, "changeUiToSettings")
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setUpLoadingMapListeners() = with(binding) {
-        checkBox.setOnClickListener {
-            settingsViewModel.saveAutoLoad(checkBox.isChecked)
-            callback.onAutoLoadClick(checkBox.isChecked)
-        }
-
-        btnFromServer.setOnClickListener {
-            callback.onLoadMapFromServerClick()
-        }
-
-        val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
-            result?.let {
-                callback.onSelectFileClick(it)
+        checkBox.setOnTouchListener { _, event ->
+            if (touchHandler(event, cardViewLoadMap)) {
+                Log.e(TAG, "!move" + !move)
+                checkBox.isChecked = !checkBox.isChecked
+                settingsViewModel.saveAutoLoad(checkBox.isChecked)
+                callback.onAutoLoadClick(checkBox.isChecked)
             }
+            true
         }
 
-        btnFromFiles.setOnClickListener {
-            activityLauncher.launch("application/*")
-        }
-        btnLastSaved.setOnClickListener {
-            Log.e(TAG, "   btnLastSaved.setOnClickListener clicked ")
-            callback.onLoadLastGameMapClick()
+        btnFromServer.setOnTouchListener { _, event ->
+            if (touchHandler(event, cardViewLoadMap)) {
+                callback.onLoadMapFromServerClick()
+            }
+            true
         }
 
-        btnCleanMap.setOnClickListener {
-            callback.onAutoLoadClick(false)
-            callback.onClearMapClick()
-            lifecycleScope.launch {
-                settingsViewModel.saveUser(
-                    currentUserSetting.copy(
-                        autoLoad = false
+        btnFromFiles.setOnTouchListener { _, event ->
+            if (touchHandler(event, cardViewLoadMap)) {
+                activityLauncher.launch("application/*")
+            }
+            true
+        }
+
+        btnLastSaved.setOnTouchListener { _, event ->
+            if (touchHandler(event, cardViewLoadMap)) {
+                callback.onLoadLastGameMapClick()
+            }
+            true
+        }
+
+        btnCleanMap.setOnTouchListener { v, event ->
+            if (touchHandler(event, cardViewLoadMap)) {
+                callback.onAutoLoadClick(false)
+                callback.onClearMapClick()
+                lifecycleScope.launch {
+                    settingsViewModel.saveUser(
+                        currentUserSetting.copy(
+                            autoLoad = false
+                        )
                     )
-                )
+                }
             }
+            true
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupSegmentButtons(checkedId: Int) {
         val defaultColor = ContextCompat.getColor(requireContext(), R.color.slate_800)
         val selectedColor = ContextCompat.getColor(requireContext(), R.color.white)
@@ -261,22 +278,56 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             )
         }
     }
+    private fun touchHandler(event: MotionEvent, targetView: DraggableCardView): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                move = false
+                targetView.onTouch(targetView, event)
+            }
 
+            MotionEvent.ACTION_MOVE -> {
+                move = true
+                targetView.onTouch(targetView, event)
+                return false
+            }
+
+            MotionEvent.ACTION_UP -> {
+                if (!move) {
+                    return true
+                }
+            }
+
+            else -> targetView.onTouch(targetView, event)
+        }
+        return false
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupRadioButtonListeners() = with(binding) {
-        radioButton0.setOnClickListener {
-            saveUserSelectedMarker(it.tag.toString().toInt())
+        radioButton0.setOnTouchListener { v, event ->
+            if (touchHandler(event, binding.cardViewSettings))
+                saveUserSelectedMarker(v.tag.toString().toInt())
+            true
         }
-        radioButton1.setOnClickListener {
-            saveUserSelectedMarker(it.tag.toString().toInt())
+        radioButton1.setOnTouchListener { v, event ->
+            if (touchHandler(event, binding.cardViewSettings))
+                saveUserSelectedMarker(v.tag.toString().toInt())
+            true
         }
-        radioButton2.setOnClickListener {
-            saveUserSelectedMarker(it.tag.toString().toInt())
+        radioButton2.setOnTouchListener { v, event ->
+            if (touchHandler(event, binding.cardViewSettings))
+                saveUserSelectedMarker(v.tag.toString().toInt())
+            true
         }
-        radioButton3.setOnClickListener {
-            saveUserSelectedMarker(it.tag.toString().toInt())
+        radioButton3.setOnTouchListener { v, event ->
+            if (touchHandler(event, binding.cardViewSettings))
+                saveUserSelectedMarker(v.tag.toString().toInt())
+            true
         }
-        radioButton4.setOnClickListener {
-            saveUserSelectedMarker(it.tag.toString().toInt())
+        radioButton4.setOnTouchListener { v, event ->
+            if (touchHandler(event, binding.cardViewSettings))
+                saveUserSelectedMarker(v.tag.toString().toInt())
+            true
         }
     }
 

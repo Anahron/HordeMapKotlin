@@ -130,6 +130,16 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         setupUsersRecyclerView()
         setupUsersCountButton()
     }
+    private fun setupUIComponents() {
+        setupBottomSheetBehavior()
+        setupEditTextMessage()
+        setupSendMessageButton()
+        setupAttachBtn()
+        setupCloseMessengerButton()
+        setupProgressBar()
+        setupScrollDownButton()
+        setupBottomBehaviorListeners()
+    }
 
     private fun setupUsersCountButton() {
         binding.tvUsersCount.setOnClickListener {
@@ -230,17 +240,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             )
             messengerViewModel.stopMessageUpdate()
         }
-    }
-
-    private fun setupUIComponents() {
-        setupBottomSheetBehavior()
-        setupEditTextMessage()
-        setupSendMessageButton()
-        setupAttachBtn()
-        setupCloseMessengerButton()
-        setupProgressBar()
-        setupScrollDownButton()
-        setupBottomBehaviorListeners()
     }
 
     private fun setupBottomSheetBehavior() {
@@ -440,12 +439,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
     }
 
-    override fun onFileDescriptionReceived(
-        description: String,
-        photoUri: Uri,
-        fileName: String,
-        fileSize: Long
-    ) {
+    override fun onFileDescriptionReceived(description: String, photoUri: Uri, fileName: String, fileSize: Long) {
         messengerViewModel.sendFile(description, photoUri, fileName, fileSize)
     }
 }

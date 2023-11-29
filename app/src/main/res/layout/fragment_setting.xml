@@ -46,12 +46,13 @@
 
 
     </androidx.appcompat.widget.LinearLayoutCompat>
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="40dp"
-        android:scrollbars="vertical"
-        android:background="@color/main_green_middle_transparent">
+        android:background="@color/main_green_middle_transparent"
+        android:scrollbars="vertical">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -72,8 +73,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.099"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                 />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageButton
                 android:id="@+id/btnSettingsPopUp"
@@ -223,7 +223,7 @@
                     android:elevation="16dp"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="8dp"
-                    tools:visibility="visible">
+                    tools:visibility="gone">
 
                     <androidx.appcompat.widget.LinearLayoutCompat
                         android:layout_width="match_parent"
@@ -325,7 +325,6 @@
 
                         </androidx.appcompat.widget.LinearLayoutCompat>
 
-
                         <androidx.appcompat.widget.LinearLayoutCompat
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -384,13 +383,13 @@
 
                         <ImageView
                             android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            android:src="@drawable/arrows"
+                            android:layout_height="30dp"
                             android:contentDescription="@string/todo"
-                            />
+                            android:src="@drawable/swipe_right" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                 </ru.newlevel.hordemap.presentation.settings.DraggableCardView>
+
                 <ru.newlevel.hordemap.presentation.settings.DraggableCardView
                     android:id="@+id/cardViewSettings"
                     android:layout_width="match_parent"
@@ -452,7 +451,7 @@
                                 android:id="@+id/sb_timeToSendData"
                                 style="@style/MySliderTheme"
                                 android:layout_width="0dp"
-                                android:layout_height="30dp"
+                                android:layout_height="20dp"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
                                 android:contentDescription="@string/Distance"
@@ -492,7 +491,7 @@
                                 android:id="@+id/sb_users_marker_size"
                                 style="@style/MySliderTheme"
                                 android:layout_width="0dp"
-                                android:layout_height="30dp"
+                                android:layout_height="20dp"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
                                 android:contentDescription="@string/Distance"
@@ -534,7 +533,7 @@
                                 android:id="@+id/sb_static_marker_size"
                                 style="@style/MySliderTheme"
                                 android:layout_width="0dp"
-                                android:layout_height="30dp"
+                                android:layout_height="20dp"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
                                 android:contentDescription="@string/Distance"
@@ -647,22 +646,22 @@
 
                         <ImageView
                             android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            android:src="@drawable/arrows"
+                            android:layout_height="30dp"
                             android:contentDescription="@string/todo"
-                            />
+                            android:src="@drawable/swipe_left" />
 
                     </androidx.appcompat.widget.LinearLayoutCompat>
                 </ru.newlevel.hordemap.presentation.settings.DraggableCardView>
+
             </ViewFlipper>
+
             <View
                 android:layout_width="0dp"
                 android:layout_height="20dp"
                 android:background="@color/transparent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/switcher">
-            </View>
+                app:layout_constraintTop_toBottomOf="@+id/switcher"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -670,11 +669,11 @@
 
     <View
         android:id="@+id/shadow"
-        android:clickable="false"
-        android:focusable="false"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="40dp"
         android:alpha="0"
-        android:background="@color/black"/>
+        android:background="@color/black"
+        android:clickable="false"
+        android:focusable="false" />
 </FrameLayout>
