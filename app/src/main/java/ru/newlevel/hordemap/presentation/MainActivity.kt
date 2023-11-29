@@ -2,7 +2,6 @@ package ru.newlevel.hordemap.presentation
 
 import android.Manifest
 import android.animation.ObjectAnimator
-import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -30,6 +29,7 @@ import ru.newlevel.hordemap.presentation.permissions.PermissionRequestFragment
 import ru.newlevel.hordemap.presentation.settings.SettingsFragment
 import ru.newlevel.hordemap.presentation.sign_in.GoogleAuthUiClient
 import ru.newlevel.hordemap.presentation.sign_in.SingInFragment
+import ru.newlevel.hordemap.presentation.sign_in.UserData
 import ru.newlevel.hordemap.presentation.tracks.TracksFragment
 
 
@@ -49,13 +49,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         super.onCreate(savedInstanceState)
         UserEntityProvider.sessionId = System.currentTimeMillis()
         windowSettings()
-        onConfigurationChanged(Configuration())
         setupNavView()
         navView.visibility = ViewGroup.GONE
-        if (googleAuthUiClient.getSignedInUser() != null)
-            checkPermissionAndShowMap()
-        else
-            logOut()
+        var signedUser: UserData?
+        lifecycleScope.launch {
+            signedUser = googleAuthUiClient.getSignedInUser()
+            if (signedUser != null) {
+                checkPermissionAndShowMap()
+            } else {
+                logOut()
+            }
+        }
         onBackPressedListener()
     }
 

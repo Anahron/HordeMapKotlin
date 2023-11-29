@@ -12,11 +12,15 @@ import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
+import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.models.UserModel
 import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -101,7 +105,10 @@ fun Location.toMarker(userModel: UserModel): MarkerDataModel {
     marker.title = formattedTime
     return marker
 }
-
+fun MessageDataModel.mapToDaoEntity(): MyMessageEntity{
+    return MyMessageEntity(
+       timestamp =  timestamp, userName = userName, message = message, deviceID = deviceID, fileSize = fileSize, fileName = fileName, url =  url, profileImageUrl = profileImageUrl, selectedMarker = selectedMarker)
+}
 fun Context.convertDpToPx(dp: Int): Int {
     val density: Float = resources.displayMetrics.density
     return (dp.toFloat() * density).roundToInt()
@@ -113,6 +120,18 @@ fun Context.hasPermission(permission: String): Boolean {
     ) == PackageManager.PERMISSION_GRANTED
 }
 
+
+fun Context.createTempImageFile(): File? {
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    val imageFileName = "JPEG_" + timeStamp + "_"
+    val storageDir = filesDir
+    try {
+        return File.createTempFile(imageFileName, ".jpg", storageDir)
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+    return null
+}
 fun View.showShadowAnimate() {
     ObjectAnimator.ofFloat(this, "alpha", 0f, SHADOW_QUALITY).apply {
         duration = 200

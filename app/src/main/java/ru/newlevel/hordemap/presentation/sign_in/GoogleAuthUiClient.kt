@@ -152,7 +152,10 @@ class GoogleAuthUiClient(
         }
     }
 
-    fun getSignedInUser(): UserData? {
+   suspend fun getSignedInUser(): UserData? {
+       withContext(Dispatchers.IO) {
+           getUserSettingsUseCase.execute()
+       }
         getUserSettingsUseCase.execute()
         return auth.currentUser?.run {
             UserData(

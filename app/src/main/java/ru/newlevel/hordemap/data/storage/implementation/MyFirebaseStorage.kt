@@ -32,7 +32,6 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
 
     private val storageReference = FirebaseStorage.getInstance().reference
     private val gsReference = storageReference.storage.getReferenceFromUrl(MAP_URL)
-
     private val progressLiveData = MutableLiveData<Int>()
 
     override suspend fun loadGameMapFromServer(context: Context): Uri? {
@@ -50,7 +49,7 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
         }
     }
 
-    override suspend fun sendFile(
+    override suspend fun uploadFile(
         message: String, uri: Uri, fileName: String?, fileSize: Long
     ): String {
         return withContext(Dispatchers.IO) {
@@ -100,47 +99,7 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
             e.printStackTrace()
             Result.failure(e)
         }
-
-//        var result: Result<Uri>? = null
-//        return try {
-//            withContext(Dispatchers.IO) {
-//                messageFilesStorage.putFile(uri).await()
-//                messageFilesStorage.downloadUrl.addOnSuccessListener {
-//                    CoroutineScope(Dispatchers.IO).launch {
-//                        val downloadUrl = messageFilesStorage.downloadUrl.await()
-//                        result = Result.success(downloadUrl)
-//                    }
-//                }.addOnFailureListener {
-//                    result = Result.failure(Throwable(it))
-//                }
-//                result ?: Result.failure(Throwable("Failed to upload file"))
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            return Result.failure(e)
-//        }
     }
-
-
-//        return withContext(Dispatchers.IO) {
-//            val messageFilesStorage = storageReference.child("$PROFILE_PHOTO_FOLDER/$fileName")
-//            val uploadTask = messageFilesStorage.putFile(uri)
-//            val resultDeferred = CompletableDeferred<String?>()
-//            uploadTask.addOnCompleteListener { task: Task<UploadTask.TaskSnapshot?> ->
-//                if (task.isSuccessful) {
-//                    messageFilesStorage.downloadUrl.addOnSuccessListener { uri: Uri ->
-//                        val downloadUrl = uri.toString()
-//                        resultDeferred.complete(downloadUrl)
-//                    }.addOnFailureListener {
-//                        resultDeferred.complete("")
-//                    }
-//                } else {
-//                    resultDeferred.complete("")
-//                }
-//            }
-//            val result = resultDeferred.await().toString()
-//           if (result.isNotEmpty()) Result.success(Uri.parse(result)) else Result.failure(Throwable("Fail"))
-//        }
 
 
     override fun getDownloadProgress(): MutableLiveData<Int> {

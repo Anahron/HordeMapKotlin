@@ -5,9 +5,7 @@ import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
 interface MessageRemoteStorage {
-    fun sendMessage(text: String)
-
-    fun sendMessage(text: String, downloadUrl: String, fileSize: Long, fileName: String)
+    fun sendMessage(message: MessageDataModel)
 
     fun getMessageUpdate(): MutableLiveData<List<MessageDataModel>>
 

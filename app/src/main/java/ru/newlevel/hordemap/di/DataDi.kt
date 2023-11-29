@@ -5,6 +5,7 @@ import android.hardware.SensorManager
 import androidx.room.Room.databaseBuilder
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.newlevel.hordemap.data.db.MessageDao
 import ru.newlevel.hordemap.data.db.MyLocationDao
 import ru.newlevel.hordemap.data.db.MyDatabase
 import ru.newlevel.hordemap.data.repository.*
@@ -35,6 +36,10 @@ val dataModule = module {
     single<MyLocationDao> {
         val database = get<MyDatabase>()
         database.locationDao()
+    }
+    single<MessageDao> {
+        val database = get<MyDatabase>()
+        database.messageDao()
     }
 
     //Device
@@ -102,6 +107,6 @@ val dataModule = module {
     }
 
     single<MessengerRepository> {
-        MessengerRepositoryImpl(messageRemoteStorage = get(), messageFilesStorage = get())
+        MessengerRepositoryImpl(messageRemoteStorage = get(), messageFilesStorage = get(), messageDao = get())
     }
 }

@@ -16,7 +16,6 @@ import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.TIMESTAMP_PATH
 import ru.newlevel.hordemap.app.TIME_TO_DELETE_USER_MARKER
 import ru.newlevel.hordemap.app.USERS_PROFILES_PATH
-import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfileRemoteStorage
@@ -63,35 +62,21 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         staticDatabaseReference.child(markerModel.timestamp.toString()).setValue(markerModel)
     }
 
-    override fun sendMessage(text: String) {
+    override fun sendMessage(message: MessageDataModel) {
         val time = System.currentTimeMillis()
         val geoDataPath = "$MESSAGE_PATH/$time"
         val updates: MutableMap<String, Any> = HashMap()
-        updates["$geoDataPath/userName"] = UserEntityProvider.userEntity.name
-        updates["$geoDataPath/message"] = text
-        updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity.deviceID
-        updates["$geoDataPath/timestamp"] = time
-        updates["$geoDataPath/selectedMarker"] = UserEntityProvider.userEntity.selectedMarker
-        updates["$geoDataPath/profileImageUrl"] = UserEntityProvider.userEntity.profileImageUrl
+        updates["$geoDataPath/userName"] = message.userName
+        updates["$geoDataPath/message"] = message.message
+        updates["$geoDataPath/deviceID"] = message.deviceID
+        updates["$geoDataPath/timestamp"] = message.timestamp
+        updates["$geoDataPath/fileSize"] = message.fileSize
+        updates["$geoDataPath/fileName"] = message.fileName
+        updates["$geoDataPath/url"] = message.url
+        updates["$geoDataPath/selectedMarker"] = message.selectedMarker
+        updates["$geoDataPath/profileImageUrl"] = message.profileImageUrl
         databaseReference.updateChildren(updates)
     }
-
-    override fun sendMessage(text: String, downloadUrl: String, fileSize: Long, fileName: String) {
-        val time = System.currentTimeMillis()
-        val geoDataPath = "$MESSAGE_PATH/$time"
-        val updates: MutableMap<String, Any> = HashMap()
-        updates["$geoDataPath/userName"] = UserEntityProvider.userEntity.name
-        updates["$geoDataPath/message"] = text
-        updates["$geoDataPath/url"] = downloadUrl
-        updates["$geoDataPath/deviceID"] = UserEntityProvider.userEntity.deviceID
-        updates["$geoDataPath/selectedMarker"] = UserEntityProvider.userEntity.selectedMarker
-        updates["$geoDataPath/timestamp"] = time
-        updates["$geoDataPath/fileSize"] = fileSize
-        updates["$geoDataPath/fileName"] = fileName
-        updates["$geoDataPath/profileImageUrl"] = UserEntityProvider.userEntity.profileImageUrl
-        databaseReference.updateChildren(updates)
-    }
-
     override fun stopMarkerUpdates() {
         Log.e(TAG, "stopMarkerUpdates in StorageImpl вызван")
         userDatabaseReference.removeEventListener(valueUserEventListener)

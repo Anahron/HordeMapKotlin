@@ -23,7 +23,7 @@ import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateIntera
 import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.messengerCases.DownloadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
-import ru.newlevel.hordemap.domain.usecases.messengerCases.SendFileUseCase
+import ru.newlevel.hordemap.domain.usecases.messengerCases.UploadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.SendMessageUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.StartMessageUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.messengerCases.StopMessageUpdateInteractor
@@ -85,8 +85,8 @@ val domainModule = module {
     factory<LoadGameMapFromServerUseCase> {
         LoadGameMapFromServerUseCase(gameMapRepository = get())
     }
-    factory<SendFileUseCase> {
-        SendFileUseCase(messengerRepository = get())
+    factory<UploadFileUseCase> {
+        UploadFileUseCase(messengerRepository = get())
     }
     factory<SaveAutoLoadUseCase> {
         SaveAutoLoadUseCase(settingsRepository = get())
@@ -176,7 +176,7 @@ val domainModule = module {
             startMessageUpdateInteractor = get(),
             stopMessageUpdateInteractor = get(),
             sendMessageUseCase = get(),
-            sendFileUseCase = get(),
+            uploadFileUseCase = get(),
             downloadFileUseCase = get()
         )
     }

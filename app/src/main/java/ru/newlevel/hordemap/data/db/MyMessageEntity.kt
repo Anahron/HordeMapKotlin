@@ -6,7 +6,7 @@ import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 
 @Entity(tableName = "messages")
 data class MyMessageEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     var timestamp: Long = 0,
     var userName: String = "",
     var message: String = "",

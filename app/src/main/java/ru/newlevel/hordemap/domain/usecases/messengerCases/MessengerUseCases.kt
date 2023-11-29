@@ -4,6 +4,6 @@ data class MessengerUseCases(
     val stopMessageUpdateInteractor: StopMessageUpdateInteractor,
     val startMessageUpdateInteractor: StartMessageUpdateInteractor,
     val sendMessageUseCase: SendMessageUseCase,
-    val sendFileUseCase: SendFileUseCase,
+    val uploadFileUseCase: UploadFileUseCase,
     val downloadFileUseCase: DownloadFileUseCase
 )

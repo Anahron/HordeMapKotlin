@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 
@@ -16,8 +15,7 @@ class MessengerViewModel(
     private val messengerUseCases: MessengerUseCases
 ) : ViewModel() {
 
-    private var messagesMutableLiveData = MutableLiveData<List<MessageDataModel>>()
-    val messagesLiveData get(): LiveData<List<MessageDataModel>> = messagesMutableLiveData
+    var messagesLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
 
     private var progressMutableLiveData = MutableLiveData<Int>()
     val progressLiveData get(): LiveData<Int> = progressMutableLiveData
@@ -27,22 +25,21 @@ class MessengerViewModel(
 
     suspend fun startMessageUpdate() {
         usersProfileMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getUsersProfiles()
-        messagesMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
         progressMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getDownloadProgress()
-
+        messengerUseCases.startMessageUpdateInteractor.startMessageUpdate()
     }
 
     fun stopMessageUpdate() {
         messengerUseCases.stopMessageUpdateInteractor.execute()
     }
 
-    fun sendMessage(text: String) {
+    suspend fun sendMessage(text: String) {
         messengerUseCases.sendMessageUseCase.execute(text)
     }
 
     fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long) {
         CoroutineScope(Dispatchers.IO).launch {
-            messengerUseCases.sendFileUseCase.execute(message, uri, fileName, fileSize)
+            messengerUseCases.uploadFileUseCase.execute(message, uri, fileName, fileSize)
         }
     }
 

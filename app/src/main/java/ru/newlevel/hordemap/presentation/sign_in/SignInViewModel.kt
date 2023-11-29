@@ -50,7 +50,7 @@ class SignInViewModel(
         }
     }
 
-    fun getSignedInUser(): UserData? = googleAuthUiClient.getSignedInUser()
+    suspend fun getSignedInUser(): UserData? = googleAuthUiClient.getSignedInUser()
     suspend fun signInFromIntent(intent: Intent): SingInResult = googleAuthUiClient.signInFromIntent(intent)
     suspend fun signInAnonymously(): SingInResult = googleAuthUiClient.signInAnonymously()
     suspend fun signIn(): MyResult<*> = googleAuthUiClient.signIn()
