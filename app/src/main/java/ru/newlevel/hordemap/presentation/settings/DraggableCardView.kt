@@ -2,12 +2,10 @@ package ru.newlevel.hordemap.presentation.settings
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.cardview.widget.CardView
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.TAG
 import kotlin.math.abs
 
 class DraggableCardView @JvmOverloads constructor(
@@ -37,8 +35,7 @@ class DraggableCardView @JvmOverloads constructor(
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
-        Log.e(TAG, "onTouch")
-        val threshold = context.resources.displayMetrics.widthPixels / 8
+        val threshold = context.resources.displayMetrics.widthPixels / 9
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 newX = 0f
@@ -49,7 +46,6 @@ class DraggableCardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
-                Log.e(TAG, "ACTION_MOVE")
                 if (isDragging) {
                     newX = event.rawX - startX
                     if (view.id == R.id.cardViewSettings && newX < 0)

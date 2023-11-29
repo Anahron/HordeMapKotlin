@@ -169,8 +169,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 
     private fun windowSettings() {
-        window.statusBarColor = Color.TRANSPARENT // Прозрачный цвет строки состояния
-        supportActionBar?.hide()                  // Скрыть акшн бар
+        window.statusBarColor = Color.TRANSPARENT
+        supportActionBar?.hide()
     }
 
     override fun changeProfilePhoto(newPhotoUrl: Uri) {

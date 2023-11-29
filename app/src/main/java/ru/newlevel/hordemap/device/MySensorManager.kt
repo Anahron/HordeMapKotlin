@@ -27,7 +27,9 @@ class MySensorManager(private val sensorManager: SensorManager) : SensorEventLis
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
-            mutableLiveDataEvent.postValue(event)
+            event.let {
+                mutableLiveDataEvent.postValue(it)
+            }
         }
     }
 

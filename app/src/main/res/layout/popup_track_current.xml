@@ -20,7 +20,8 @@
                 android:layout_marginVertical="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_weight="0"
-                app:srcCompat="@drawable/vector_edit" />
+                app:srcCompat="@drawable/vector_edit"
+                android:contentDescription="@string/todo"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveCurrentTrack"
@@ -52,7 +53,8 @@
                 android:layout_marginVertical="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_weight="0"
-                app:srcCompat="@drawable/vector_delete" />
+                app:srcCompat="@drawable/vector_delete"
+                android:contentDescription="@string/todo"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCleanCurrentTrack"

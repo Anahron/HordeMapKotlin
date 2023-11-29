@@ -41,8 +41,6 @@ class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinCompone
     private fun saveLocation(locations: List<Location>) {
         val userEntity = UserEntityProvider.userEntity
         val location = locations[locations.lastIndex]
-        Log.e(TAG, "Location result = $location")
-        Log.e(TAG, "Location size = ${locations.size}")
         CoroutineScope(Dispatchers.IO).launch {
             val locationDao = getKoin().get<MyDatabase>().locationDao()
             locations.forEach { location ->
@@ -61,10 +59,5 @@ class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinCompone
                     .sendUserMarker(location.toMarker(it))
             }
         }
-    }
-    companion object {
-        const val ACTION_PROCESS_UPDATES =
-            "ru.newlevel.hordemap.app.action." +
-                    "PROCESS_UPDATES"
     }
 }

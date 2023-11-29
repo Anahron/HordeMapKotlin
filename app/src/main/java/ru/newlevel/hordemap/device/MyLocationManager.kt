@@ -11,6 +11,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.ACTION_PROCESS_UPDATES
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -28,7 +29,7 @@ class MyLocationManager : Service() {
 
     private val locationUpdatePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, LocationUpdatesBroadcastReceiver::class.java)
-        intent.action = LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES
+        intent.action = ACTION_PROCESS_UPDATES
         PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
     }
 
@@ -80,7 +81,7 @@ class MyLocationManager : Service() {
         locationRequest =
             LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData)
                 //TODO 0 для теста установить 10
-                .setMinUpdateDistanceMeters(0F)
+                .setMinUpdateDistanceMeters(12F)
                 .setMinUpdateIntervalMillis(6000L)
                 .setMaxUpdateAgeMillis(Long.MAX_VALUE)
                 .setMaxUpdateDelayMillis(UserEntityProvider.userEntity.timeToSendData.times(1000L))

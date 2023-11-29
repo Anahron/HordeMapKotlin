@@ -8,7 +8,7 @@ import ru.newlevel.hordemap.app.GPX_EXTENSION
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import java.io.File
 
-class LoadLastGameMapUseCase() {
+class LoadLastGameMapUseCase {
     fun execute(context: Context): Result<Uri> {
         var filename = BASE_LAST_MAP_FILENAME + KMZ_EXTENSION
         var file = File(context.filesDir, filename)

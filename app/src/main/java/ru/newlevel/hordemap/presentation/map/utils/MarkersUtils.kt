@@ -111,7 +111,7 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
     fun createStaticMarkers(
         markersModel: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
     ) {
-        val userEntity = UserEntityProvider.userEntity ?: return
+        val userEntity = UserEntityProvider.userEntity
         MARKER_SIZE_STATIC = userEntity.staticMarkerSize
         for (markerModel in markersModel) {
             if (markerModel.title != "Маркер" && markerModel.title.isNotEmpty()) createStaticTextMarker(
@@ -154,7 +154,7 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
     fun createUsersMarkers(
         markersModels: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
     ) {
-        val userEntity = UserEntityProvider.userEntity ?: return
+        val userEntity = UserEntityProvider.userEntity
         MARKER_SIZE_USERS = userEntity.usersMarkerSize
 
         markerCollection.markers.forEach { marker ->

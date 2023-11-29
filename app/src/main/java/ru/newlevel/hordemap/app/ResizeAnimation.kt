@@ -6,9 +6,9 @@ import android.view.animation.Transformation
 
 
 class ResizeAnimation(view: View, targetWidth: Int) : Animation() {
-    val startHeight: Int
-    val targetHeight: Int
-    var view: View
+    private val startHeight: Int
+    private val targetHeight: Int
+    private var view: View
 
     init {
         this.view = view
@@ -20,10 +20,6 @@ class ResizeAnimation(view: View, targetWidth: Int) : Animation() {
         val newHeight = (startHeight + (targetHeight - startHeight) * interpolatedTime).toInt()
         view.layoutParams.height = newHeight
         view.requestLayout()
-    }
-
-    override fun initialize(width: Int, height: Int, parentWidth: Int, parentHeight: Int) {
-        super.initialize(width, height, parentWidth, parentHeight)
     }
 
     override fun willChangeBounds(): Boolean {

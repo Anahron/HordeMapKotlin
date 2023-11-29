@@ -196,7 +196,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             val onDown = !recyclerView.canScrollVertically(1)
                     //&& recyclerView.computeVerticalScrollRange() > recyclerView.height
             messageAdapter.setMessages(messages as ArrayList<MessageDataModel>)
-            Log.e(TAG, "onDown = " + onDown)
             if (!onDown) {
                 recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
             }
@@ -368,11 +367,11 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 )
             }
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            takePicture.launch(photoUri) // Фотографирование с камеры
+            takePicture.launch(photoUri)
         }
         viewBehavior.findViewById<ImageButton>(R.id.btn_bottom_gallery).setOnClickListener {
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            pickImage.launch("image/*") // Выбор из галереи
+            pickImage.launch("image/*")
         }
         viewBehavior.findViewById<ImageButton>(R.id.btn_bottom_file).setOnClickListener {
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN

@@ -61,14 +61,12 @@ class MessengerRepositoryImpl(
             }
         }
     }
-
-
     override fun stopMessageUpdate() {
         messageRemoteStorage.stopMessageUpdate()
     }
 
-    override suspend fun uploadFile(message: String, uri: Uri, fileName: String?, fileSize: Long): String =
-        messageFilesStorage.uploadFile(message, uri, fileName, fileSize)
+    override suspend fun uploadFile(uri: Uri, fileName: String?): String =
+        messageFilesStorage.uploadFile(uri, fileName)
 
 
     override fun downloadFile(context: Context, uri: Uri, fileName: String?) =

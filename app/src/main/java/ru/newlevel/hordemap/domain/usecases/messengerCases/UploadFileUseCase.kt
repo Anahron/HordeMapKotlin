@@ -7,7 +7,7 @@ import ru.newlevel.hordemap.domain.repository.MessengerRepository
 
 class UploadFileUseCase(private val messengerRepository: MessengerRepository) {
     suspend fun execute(text: String, uri: Uri, fileName: String?, fileSize: Long) {
-        val remoteUri = messengerRepository.uploadFile(text, uri, fileName, fileSize)
+        val remoteUri = messengerRepository.uploadFile(uri, fileName)
         val user = UserEntityProvider.userEntity
         val messageEntity = MyMessageEntity(
             timestamp = System.currentTimeMillis(),

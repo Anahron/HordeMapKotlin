@@ -11,11 +11,12 @@ import java.util.zip.ZipOutputStream
 
 class FilesUtils {
     fun replaceKMLInKMZ(oldKmzFile: Uri, newKmzFile: File, newKMLContent: String, context: Context) {
-        context.contentResolver.openInputStream(oldKmzFile).use {
-            ZipInputStream(it).use { zipInputStream ->
+        context.contentResolver.openInputStream(oldKmzFile).use { inputStream ->
+            ZipInputStream(inputStream).use { zipInputStream ->
                 ZipOutputStream(FileOutputStream(newKmzFile)).use { zipOutputStream ->
                     var entry: ZipEntry?
-                    while (zipInputStream.nextEntry.also { entry = it } != null) {
+                    while (zipInputStream.nextEntry.also {
+                            entry = it } != null) {
                         if (entry?.name?.endsWith(KML_EXTENSION) == true) {
                             zipOutputStream.putNextEntry(ZipEntry(entry?.name))
                             zipOutputStream.write(newKMLContent.toByteArray())
@@ -40,13 +41,15 @@ class FilesUtils {
 
             val buffer = ByteArray(10024)
             val stringBuilder = StringBuilder()
-            context.contentResolver.openInputStream(uri).use {
-                ZipInputStream(it).use { zipInputStream ->
+            context.contentResolver.openInputStream(uri).use { inputStream ->
+                ZipInputStream(inputStream).use { zipInputStream ->
                     var entry: ZipEntry?
-                    while (zipInputStream.nextEntry.also { entry = it } != null) {
+                    while (zipInputStream.nextEntry.also { zipEntry->
+                            entry = zipEntry } != null) {
                         if (entry?.name?.endsWith(KML_EXTENSION) == true) {
                             var bytesRead: Int
-                            while (zipInputStream.read(buffer).also { bytesRead = it } != -1) {
+                            while (zipInputStream.read(buffer).also {
+                                    bytesRead = it } != -1) {
                                 stringBuilder.append(buffer.decodeToString(0, bytesRead))
                             }
                             zipInputStream.closeEntry()

@@ -16,7 +16,7 @@ interface MessengerRepository {
 
     suspend fun startMessageUpdate()
 
-    suspend fun uploadFile(message: String, uri: Uri, fileName: String?, fileSize: Long): String
+    suspend fun uploadFile(uri: Uri, fileName: String?): String
 
     fun downloadFile(context: Context, uri: Uri, fileName: String?)
 

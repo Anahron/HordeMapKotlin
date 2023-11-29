@@ -13,17 +13,16 @@ import ru.newlevel.hordemap.di.domainModule
 import ru.newlevel.hordemap.di.presentationModule
 import java.io.File
 
-class MyApplication: Application() {
+class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         val dexOutputDir: File = codeCacheDir
         dexOutputDir.setReadOnly()
-        startKoin{
+        startKoin {
             androidLogger(Level.ERROR)
             androidContext(this@MyApplication)
             modules(listOf(presentationModule, domainModule, dataModule, databaseModule))
         }
-        FirebaseApp.initializeApp(this);
-
+        FirebaseApp.initializeApp(applicationContext)
     }
 }

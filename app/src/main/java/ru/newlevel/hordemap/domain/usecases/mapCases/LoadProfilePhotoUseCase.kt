@@ -15,8 +15,9 @@ class LoadProfilePhotoUseCase(private val settingsRepository: SettingsRepository
         val compressedImage = withContext(Dispatchers.IO) {
             imageCompressor.compressImageAndSaveToFile(context, uri, 300, 300, 60)
         }
-        val filename = context.getFileNameFromUri(uri)
-            ?: ("JPEG_" + UserEntityProvider.userEntity.authName + System.currentTimeMillis() + ".jpg")
+        var filename = context.getFileNameFromUri(uri)
+        if (filename.isEmpty())
+            filename = "JPEG_" + UserEntityProvider.userEntity.authName + System.currentTimeMillis() + ".jpg"
         return compressedImage?.let { settingsRepository.uploadProfilePhoto(uri = it, fileName = filename) }
             ?: settingsRepository.uploadProfilePhoto(uri = uri, fileName = filename)
     }

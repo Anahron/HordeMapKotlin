@@ -206,7 +206,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             true
         }
 
-        btnCleanMap.setOnTouchListener { v, event ->
+        btnCleanMap.setOnTouchListener { _, event ->
             if (touchHandler(event, cardViewLoadMap)) {
                 callback.onAutoLoadClick(false)
                 callback.onClearMapClick()

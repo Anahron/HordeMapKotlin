@@ -41,113 +41,113 @@ import ru.newlevel.hordemap.presentation.sign_in.GoogleAuthUiClient
 
 val domainModule = module {
 
-    factory<StartMessageUpdateInteractor> {
+    factory {
         StartMessageUpdateInteractor(messengerRepository = get())
     }
 
-    factory<StopMessageUpdateInteractor> {
+    factory {
         StopMessageUpdateInteractor(messengerRepository = get())
     }
-    factory<SendMessageUseCase> {
+    factory {
         SendMessageUseCase(messengerRepository = get())
     }
-    factory<CreateRouteUseCase> {
+    factory {
         CreateRouteUseCase()
     }
 
-    factory<CompassInteractor> {
+    factory {
         CompassInteractor(sensorRepository = get())
     }
 
-    factory<GetUserSettingsUseCase> {
+    factory {
         GetUserSettingsUseCase(settingsRepository = get())
     }
-    factory<SaveUserSettingsUseCase> {
+    factory {
         SaveUserSettingsUseCase(settingsRepository = get())
     }
-    factory<ResetUserSettingsUseCase> {
+    factory {
         ResetUserSettingsUseCase(settingsRepository = get())
     }
-    factory<DeleteMarkerUseCase> {
+    factory {
         DeleteMarkerUseCase(geoDataRepository = get())
     }
 
-    factory<LoadLastGameMapUseCase> {
+    factory {
         LoadLastGameMapUseCase()
     }
 
-    factory<DownloadFileUseCase> {
+    factory {
         DownloadFileUseCase(messengerRepository = get())
     }
-    factory<SaveGameMapToFileUseCase> {
+    factory {
         SaveGameMapToFileUseCase(gameMapRepository = get())
     }
-    factory<LoadGameMapFromServerUseCase> {
+    factory {
         LoadGameMapFromServerUseCase(gameMapRepository = get())
     }
-    factory<UploadFileUseCase> {
+    factory {
         UploadFileUseCase(messengerRepository = get())
     }
-    factory<SaveAutoLoadUseCase> {
+    factory {
         SaveAutoLoadUseCase(settingsRepository = get())
     }
-    factory<SendStaticMarkerUseCase> {
+    factory {
         SendStaticMarkerUseCase(geoDataRepository = get())
     }
-    factory<StartMarkerUpdateInteractor> {
+    factory {
         StartMarkerUpdateInteractor(geoDataRepository = get())
     }
-    factory<StopMarkerUpdateInteractor> {
+    factory {
         StopMarkerUpdateInteractor(geoDataRepository = get())
     }
 
-    factory<GetSessionLocationsUseCase> {
+    factory {
         GetSessionLocationsUseCase(locationRepository = get())
     }
 
-    factory<DeleteSessionLocationUseCase> {
+    factory {
         DeleteSessionLocationUseCase(locationRepository = get())
     }
 
-    factory<LocationUpdatesInteractor> {
+    factory {
         LocationUpdatesInteractor(locationRepository = get())
     }
-    factory<RenameTrackNameForSessionUseCase> {
+    factory {
         RenameTrackNameForSessionUseCase(locationRepository = get())
     }
-    factory<SetFavouriteTrackForSessionUseCase> {
+    factory {
         SetFavouriteTrackForSessionUseCase(locationRepository = get())
     }
-    factory<LoadProfilePhotoUseCase> {
+    factory {
         LoadProfilePhotoUseCase(settingsRepository = get())
     }
-    factory<SaveCurrentTrackUseCase> {
+    factory {
         SaveCurrentTrackUseCase(locationRepository = get())
     }
-    factory<DeleteAllTracksUseCase> {
+    factory {
         DeleteAllTracksUseCase(locationRepository = get())
     }
-    factory<MarkersUtils> {
+    factory {
         MarkersUtils(garminGpxParser = get())
     }
-    factory<GarminGpxParser> {
+    factory {
         GarminGpxParser()
     }
-    factory<SendUserToStorageUseCase> {
+    factory {
         SendUserToStorageUseCase(settingsRepository = get())
     }
-    factory<LogOutUseCase> {
+    factory {
         LogOutUseCase(settingsRepository = get())
     }
 
-    single<GoogleAuthUiClient> {
+    single {
         GoogleAuthUiClient(
             androidContext().applicationContext,
             Identity.getSignInClient(androidContext().applicationContext), logOutUseCase = get(), getUserSettingsUseCase = get()
         )
     }
 
-    single<MapUseCases> {
+    single {
         MapUseCases(
             deleteMarkerUseCase = get(),
             saveGameMapToFileUseCase = get(),
@@ -161,7 +161,7 @@ val domainModule = module {
             locationUpdatesInteractor = get()
         )
     }
-    single<TracksUseCases> {
+    single {
         TracksUseCases(
             getSessionLocationsUseCase = get(),
             deleteSessionLocationUseCase = get(),
@@ -171,7 +171,7 @@ val domainModule = module {
             deleteAllTracksUseCase = get(),
         )
     }
-    single<MessengerUseCases> {
+    single {
         MessengerUseCases(
             startMessageUpdateInteractor = get(),
             stopMessageUpdateInteractor = get(),

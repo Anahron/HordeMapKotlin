@@ -185,11 +185,11 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             if (uri != null) {
                 val mimeType = requireContext().getFileNameFromUri(uri)
                 when {
-                    mimeType?.endsWith(KMZ_EXTENSION) == true -> {
+                    mimeType.endsWith(KMZ_EXTENSION) -> {
                         loadKmlToMap(uri)
                     }
 
-                    mimeType?.endsWith(GPX_EXTENSION) == true -> {
+                    mimeType.endsWith(GPX_EXTENSION) -> {
                         loadGpxToMap(uri)
                     }
                 }

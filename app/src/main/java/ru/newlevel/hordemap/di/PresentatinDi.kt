@@ -12,7 +12,7 @@ import ru.newlevel.hordemap.presentation.tracks.TracksViewModel
 
 
 val presentationModule = module {
-    viewModel<SettingsViewModel> {
+    viewModel {
         SettingsViewModel(
             getUserSettingsUseCase = get(),
             saveUserSettingsUseCase = get(),
@@ -22,7 +22,7 @@ val presentationModule = module {
             sendUserToStorageUseCase = get()
         )
     }
-    viewModel<MapViewModel> {
+    viewModel {
         MapViewModel(
             mapUseCases = get(),
             markersUtils = get(),
@@ -30,7 +30,7 @@ val presentationModule = module {
         )
     }
 
-    viewModel<SignInViewModel>() {
+    viewModel {
         SignInViewModel(
             getUserSettingsUseCase = get(),
             saveUserSettingsUseCase = get(),
@@ -38,20 +38,20 @@ val presentationModule = module {
             sendUserToStorageUseCase = get()
         )
     }
-    viewModel<TracksViewModel> {
+    viewModel {
         TracksViewModel(
             tracksUseCases = get()
         )
     }
-    viewModel<PermissionViewModel> {
+    viewModel {
         PermissionViewModel()
     }
 
-    single<TrackTransferViewModel> {
+    single {
         TrackTransferViewModel()
     }
 
-    viewModel<MessengerViewModel> {
+    viewModel {
         MessengerViewModel(
             messengerUseCases = get()
         )

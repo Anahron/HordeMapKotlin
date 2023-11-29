@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/transparent">
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/activityRoot"
@@ -16,7 +15,7 @@
             android:id="@+id/topPanel"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:background="@color/main_green_dark"
+            android:background="@drawable/vertical_gradient_small"
             android:orientation="horizontal"
             android:paddingStart="12dp"
             app:layout_constraintEnd_toEndOf="parent"

@@ -1,12 +1,8 @@
 <resources>
     <string name="app_name">Horde Map</string>
-    <string name="action_settings" />
     <string name="Distance">Дистанция</string>
     <string name="load_map">Полигон</string>
-    <string name="options">Настройки</string>
     <string name="show_distance">Показать дистанцию</string>
-    <string name="relog">Сбросить логин</string>
-    <string name="exit">Закрыть</string>
     <string name="info_button">Информация</string>
     <string name="clear_path">Очистить путь</string>
     <string name="show_path">Показать путь</string>
@@ -35,9 +31,7 @@
     <string name="fine_permission_denied_explanation">Вы запретили сбор данных, но он необходим для корректной работы приложения, пожалуйста предоставьте разрешение.</string>
     <string name="back_location_access_rationale_title_text">\t Доступ к геоданным в фоновом режиме.</string>
     <string name="back_location_permission_rationale_details_text">\tФоновый сбор гео данных необходим для корректной работы приложения, пожалуйста предоставьте разрешение. \n  \n \tВыберите \"Allow all the time\" (Разрешить в любое время)</string>
-    <string name="name_rationale_title_text">\t Установить позывной.</string>
     <string name="name_rationale_details_text">\tПожалуйста введите свой позывной.</string>
-    <string name="ok">OK</string>
     <string name="background_permission_denied_explanation">Вы запретили фоновый сбор данных, но он необходим для корректной работы приложения, пожалуйста предоставьте разрешение вручную.</string>
     <string name="fine_location_access_rationale_title_text">\t Доступ к геоданным.</string>
     <string name="fine_location_access_rationale_details_text">\t Пожалуйста разрешите приложению доступ к геоданным. \n \n\ \t Оно необходим для корректной работы приложения</string>
@@ -49,7 +43,6 @@
     <string name="back_working_details_text">\t Пожалуйста разрешите приложению работать в фоновом режиме.  \n \n\t Это необходимо для фонового сбора данных.</string>
     <string name="i_accept">Я ПОНИМАЮ</string>
     <string name="enable_fine_location_button_text">РАЗРЕШИТЬ ПЕРЕДАЧУ</string>
-    <string name="enable_background_location_button_text">РАЗРЕШИТЬ ФОНОВУЮ ПЕРЕДАЧУ</string>
     <string name="cancel">Отмена</string>
     <string name="number09">Введите номер точки 0–9</string>
     <string name="entry_text">Введите название</string>
@@ -67,8 +60,6 @@
     <string name="added_image">Отправить изображение:</string>
     <string name="descriptions">Описание</string>
     <string name="send_as_file">Отправить как файл:</string>
-    <string name="show_current_path">Показать текущий путь</string>
-    <string name="put_saved_path">Выбрать сохраненный путь</string>
     <string name="my_track">Мой трек</string>
     <string name="my_tracks">Мои треки</string>
     <string name="my_current_track">Текущий трек</string>
@@ -99,7 +90,6 @@
     <string name="load_map_filed">Загрузка прервалась</string>
     <string name="load_map_started">Загрузка началась, пожалуйста подождите…</string>
     <string name="wrong_format_file">Не верный формат файла</string>
-    <string name="file_wrong">Проблема с файлом или некорректный формат</string>
     <string name="change_name">Сменить имя</string>
     <string name="map_empty">Нет сохраненной карты</string>
     <string name="logout">Выйти</string>
