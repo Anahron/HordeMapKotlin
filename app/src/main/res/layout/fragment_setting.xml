@@ -214,7 +214,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/toggleGroup">
 
-                <androidx.cardview.widget.CardView
+                <ru.newlevel.hordemap.presentation.settings.DraggableCardView
                     android:id="@+id/cardViewLoadMap"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -390,8 +390,8 @@
                             />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
-                </androidx.cardview.widget.CardView>
-                <androidx.cardview.widget.CardView
+                </ru.newlevel.hordemap.presentation.settings.DraggableCardView>
+                <ru.newlevel.hordemap.presentation.settings.DraggableCardView
                     android:id="@+id/cardViewSettings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -653,7 +653,7 @@
                             />
 
                     </androidx.appcompat.widget.LinearLayoutCompat>
-                </androidx.cardview.widget.CardView>
+                </ru.newlevel.hordemap.presentation.settings.DraggableCardView>
             </ViewFlipper>
             <View
                 android:layout_width="0dp"

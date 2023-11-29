@@ -44,7 +44,7 @@ class SettingsViewModel(
 
     }
 
-    suspend fun loadProfilePhoto(uri: Uri, context: Context): Throwable? {
+    suspend fun loadProfilePhoto(uri: Uri, context: Context): Result<Uri> {
         val result = loadProfilePhotoUseCase.execute(uri, context)
         result.onSuccess {
             val user = getUserSettings()
@@ -54,7 +54,7 @@ class SettingsViewModel(
                 )
             )
         }
-        return result.exceptionOrNull()
+        return result
     }
 
     suspend fun saveUser(userDomainModel: UserDomainModel) {

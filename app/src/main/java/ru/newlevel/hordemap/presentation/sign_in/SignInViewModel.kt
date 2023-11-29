@@ -37,7 +37,7 @@ class SignInViewModel(
                 userData.userId
             else
                 context.getMyDeviceId()
-        val userPhoto = user.profileImageUrl.ifEmpty { userData?.profileImageUrl ?: "" }
+        val userPhoto = if (user.profileImageUrl.isEmpty()) userData?.profileImageUrl?: "" else ""
         val newUser = user.copy(
             authName = authName,
             profileImageUrl = userPhoto,

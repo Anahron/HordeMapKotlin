@@ -62,7 +62,6 @@ class GoogleAuthUiClient(
             val profileUpdates = UserProfileChangeRequest.Builder()
                 .setPhotoUri(newUserPhoto)
                 .build()
-
             val resultDeferred = CompletableDeferred<SingInResult>()
             user?.updateProfile(profileUpdates)?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -132,7 +131,7 @@ class GoogleAuthUiClient(
             )
         }
     }
-    suspend fun deleteUserFromDatabase(){
+    private suspend fun deleteUserFromDatabase(){
         logOutUseCase.execute()
     }
 

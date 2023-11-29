@@ -85,7 +85,7 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
 @SuppressLint("HardwareIds")
 fun Context.getMyDeviceId(): String {
     val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-    Log.e(TAG, "androidId = " + androidId )
+    Log.e(TAG, "androidId = $androidId")
     return androidId ?: UUID.randomUUID().toString()
 }
 

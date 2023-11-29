@@ -8,9 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.GestureDetector
 import android.view.KeyEvent
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -34,7 +32,6 @@ import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.SWIPE_THRESHOLD
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.hideShadowAnimate
@@ -42,7 +39,6 @@ import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.databinding.FragmentSettingBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.presentation.DisplayLocationUi
-import kotlin.math.abs
 import kotlin.properties.Delegates
 
 
@@ -52,7 +48,6 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     private val settingsViewModel: SettingsViewModel by viewModel()
     private var checkedRadioButton by Delegates.notNull<Int>()
     private lateinit var currentUserSetting: UserDomainModel
-    private lateinit var gestureDetector: GestureDetector
     private lateinit var toggleGroupBtn: MaterialButtonToggleGroup
 
     private var activityListener: DisplayLocationUi? = null
@@ -79,8 +74,9 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
                 lifecycleScope.launch {
-                    activityListener?.changeProfilePhoto(newPhotoUrl = uri)
-                    settingsViewModel.loadProfilePhoto(uri, requireContext())?.let {
+                    settingsViewModel.loadProfilePhoto(uri, requireContext()).onSuccess {
+                        activityListener?.changeProfilePhoto(it)
+                    }.onFailure {
                         Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
                     }
                 }
@@ -134,12 +130,24 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 }
             }
         }
-        gestureDetector = GestureDetector(requireContext(), MyGestureListener())
-        binding.switcher.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
-        binding.cardViewSettings.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event)
-            true}
-        binding.cardViewLoadMap.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event)
-            true}
+
+
+        binding.cardViewSettings.setOnCardDragListener(object : DraggableCardView.OnCardDragListener {
+            override fun onCardSwiped(next: Boolean) {
+                if (next) {
+                    settingsViewModel.setState(binding.btnToggleLoadMap.id)
+                    toggleGroupBtn.check(binding.btnToggleLoadMap.id)
+                }
+            }
+        })
+        binding.cardViewLoadMap.setOnCardDragListener(object : DraggableCardView.OnCardDragListener {
+            override fun onCardSwiped(next: Boolean) {
+                if (!next) {
+                    settingsViewModel.setState(binding.btnToggleSettings.id)
+                    toggleGroupBtn.check(binding.btnToggleSettings.id)
+                }
+            }
+        })
     }
 
     override fun onPause() {
@@ -237,7 +245,11 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
 
     private fun loadImageIntoProfile() {
         if (currentUserSetting.profileImageUrl.isNotEmpty()) Glide.with(requireContext())
-            .load(currentUserSetting.profileImageUrl).thumbnail(0.1f).timeout(30_000).into(binding.circleImageView)
+            .load(currentUserSetting.profileImageUrl)
+            .thumbnail(0.1f)
+            .timeout(30_000)
+            .placeholder(R.drawable.img_anonymous)
+            .into(binding.circleImageView)
     }
 
     private fun saveUserSelectedMarker(selectedMarker: Int) {
@@ -442,37 +454,5 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         fun onLoadMapFromServerClick()
         fun onAutoLoadClick(isAutoLoad: Boolean)
         fun onClearMapClick()
-    }
-
-    inner class MyGestureListener : GestureDetector.SimpleOnGestureListener() {
-
-        override fun onDown(e: MotionEvent): Boolean {
-            Log.e(TAG, " onDown")
-            return true
-        }
-
-        override fun onSingleTapUp(e: MotionEvent): Boolean {
-            Log.e(TAG, " onSingleTapUp")
-            return super.onSingleTapUp(e)
-        }
-
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-            Log.e(TAG, " onFling")
-            val distanceX = e2.x.minus(e1?.x ?: 0f)
-            val distanceY = e2.y.minus(e1?.y ?: 0f)
-            if (abs(distanceX) > abs(distanceY) && abs(distanceX) > SWIPE_THRESHOLD) {
-                if (distanceX > 0) {
-                    // Свайп влево
-                    settingsViewModel.setState(binding.btnToggleSettings.id)
-                    toggleGroupBtn.check(binding.btnToggleSettings.id)
-                } else {
-                    // Свайп вправо
-                    settingsViewModel.setState(binding.btnToggleLoadMap.id)
-                    toggleGroupBtn.check(binding.btnToggleLoadMap.id)
-                }
-                return true
-            }
-            return false
-        }
     }
 }

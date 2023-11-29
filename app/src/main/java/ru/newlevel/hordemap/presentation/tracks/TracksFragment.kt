@@ -92,9 +92,9 @@ class TracksFragment : Fragment(R.layout.fragment_tracks) {
         }
         tracksViewModel.trackItemAll.observe(viewLifecycleOwner) {
             if (it != null) {
-                val newlist = it.toMutableList()
-                tracksViewModel.currentTrack.value?.let { it1 -> newlist.add(0, it1) }
-                trackAdapter.setTracks(newlist as ArrayList)
+                val newList = it.toMutableList()
+                tracksViewModel.currentTrack.value?.let { it1 -> newList.add(0, it1) }
+                trackAdapter.setTracks(newList as ArrayList)
             }
         }
 
