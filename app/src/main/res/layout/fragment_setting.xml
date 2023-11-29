@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginBottom="55dp">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/linearLayoutCompat"
@@ -173,11 +174,10 @@
                 android:id="@+id/toggleGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="35dp"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="6dp"
                 app:checkedButton="@id/btnDate"
-                app:layout_constraintTop_toBottomOf="@+id/circleImageView"
+                app:layout_constraintTop_toBottomOf="@+id/topCard"
                 app:selectionRequired="true"
                 app:singleSelection="true"
                 tools:layout_editor_absoluteX="0dp">
@@ -384,7 +384,7 @@
 
                         <ImageView
                             android:layout_width="match_parent"
-                            android:layout_height="50dp"
+                            android:layout_height="40dp"
                             android:src="@drawable/arrows"
                             android:contentDescription="@string/todo"
                             />
@@ -647,7 +647,7 @@
 
                         <ImageView
                             android:layout_width="match_parent"
-                            android:layout_height="50dp"
+                            android:layout_height="40dp"
                             android:src="@drawable/arrows"
                             android:contentDescription="@string/todo"
                             />
@@ -655,10 +655,9 @@
                     </androidx.appcompat.widget.LinearLayoutCompat>
                 </androidx.cardview.widget.CardView>
             </ViewFlipper>
-
             <View
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="20dp"
                 android:background="@color/transparent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
