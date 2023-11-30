@@ -80,7 +80,6 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
 
     override suspend fun uploadProfilePhoto(uri: Uri, fileName: String): Result<Uri> {
         val messageFilesStorage = storageReference.child("$PROFILE_PHOTO_FOLDER/$fileName")
-
         return try {
             withContext(Dispatchers.IO) {
                 val uploadTask = messageFilesStorage.putFile(uri).await()

@@ -24,7 +24,7 @@
         <ImageButton
             android:id="@+id/btnGoBackSettings"
             android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_height="40dp"
             android:layout_gravity="center_vertical"
             android:background="@color/transparent"
             android:contentDescription="@string/todo"
@@ -60,6 +60,18 @@
             android:background="@color/transparent"
             android:orientation="vertical">
 
+            <ImageView
+                android:id="@+id/img_loading"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/todo"
+                android:elevation="20dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/switcher"
+                app:srcCompat="@drawable/img_marker_red" />
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/circleImageView"
@@ -177,32 +189,31 @@
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="6dp"
                 app:checkedButton="@id/btnDate"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/topCard"
                 app:selectionRequired="true"
-                app:singleSelection="true"
-                tools:layout_editor_absoluteX="0dp">
+                app:singleSelection="true">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnToggleSettings"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:maxWidth="200dp"
                     android:text="@string/settings"
                     app:shapeAppearanceOverlay="@style/RoundedButton"
                     app:textAllCaps="false"
-                    tools:ignore="TextContrastCheck" />
+                    tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnToggleLoadMap"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:maxWidth="200dp"
                     android:text="@string/load_map"
                     app:shapeAppearanceOverlay="@style/RoundedButton"
                     app:textAllCaps="false"
-                    tools:ignore="TextContrastCheck" />
+                    tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -264,7 +275,8 @@
                                 android:text="@string/from_server"
                                 android:textAppearance="@style/MyHintText"
                                 android:textColor="@color/main_green"
-                                android:textSize="18sp" />
+                                android:textSize="18sp"
+                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
                         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -293,7 +305,8 @@
                                 android:text="@string/from_files"
                                 android:textAppearance="@style/MyHintText"
                                 android:textColor="@color/main_green"
-                                android:textSize="18sp" />
+                                android:textSize="18sp"
+                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
                         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -321,7 +334,8 @@
                                 android:text="@string/last_saved_map"
                                 android:textAppearance="@style/MyHintText"
                                 android:textColor="@color/main_green"
-                                android:textSize="18sp" />
+                                android:textSize="18sp"
+                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
                         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -349,7 +363,8 @@
                                 android:text="@string/clean_map"
                                 android:textAppearance="@style/MyHintText"
                                 android:textColor="@color/main_green"
-                                android:textSize="18sp" />
+                                android:textSize="18sp"
+                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
                         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -371,13 +386,14 @@
                                 android:id="@+id/checkBox"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_gravity="center"
                                 android:checked="false"
-                                android:minHeight="40dp"
+                                android:gravity="center"
                                 android:padding="5dp"
                                 android:text="@string/auto_load_map"
                                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                                 android:textColor="@color/text_green_dark"
-                                tools:ignore="VisualLintButtonSize" />
+                                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
 
                         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -656,12 +672,13 @@
             </ViewFlipper>
 
             <View
+                android:id="@+id/view3"
                 android:layout_width="0dp"
                 android:layout_height="20dp"
                 android:background="@color/transparent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/switcher"/>
+                app:layout_constraintTop_toBottomOf="@+id/switcher" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

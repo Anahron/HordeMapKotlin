@@ -35,6 +35,7 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.hideShadowAnimate
+import ru.newlevel.hordemap.app.loadAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.databinding.FragmentSettingBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
@@ -53,10 +54,17 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             lifecycleScope.launch {
+                val progress = binding.imgLoading
+                progress.visibility = View.VISIBLE
+                val anim = progress.loadAnimation()
                 settingsViewModel.loadProfilePhoto(uri, requireContext()).onSuccess {
                     activityListener?.changeProfilePhoto(it)
+                    anim.cancel()
+                    progress.visibility = View.GONE
                 }.onFailure {
                     Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
+                    anim.cancel()
+                    progress.visibility = View.GONE
                 }
             }
         }
