@@ -33,8 +33,8 @@ class MessengerViewModel(
         messengerUseCases.stopMessageUpdateInteractor.execute()
     }
 
-    suspend fun sendMessage(text: String) {
-        messengerUseCases.sendMessageUseCase.execute(text)
+    suspend fun sendMessage(text: String, replyId: String) {
+        messengerUseCases.sendMessageUseCase.execute(text, replyId)
     }
 
     fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long) {

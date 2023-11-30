@@ -3,7 +3,9 @@ package ru.newlevel.hordemap.device
 import android.app.*
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -35,7 +37,7 @@ class MyLocationManager : Service() {
 
 
     private fun startLocationUpdates() {
-        Log.e("AAA", "startLocationUpdates()" )
+        Log.e("AAA", "startLocationUpdates()")
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationUpdatePendingIntent)
         } catch (permissionRevoked: SecurityException) {
@@ -74,19 +76,25 @@ class MyLocationManager : Service() {
     }
 
     private fun startService() {
-        Log.e("AAA", "startService()" )
+        Log.e("AAA", "startService()")
         val notification = createNotification()
         startForeground(1, notification)
-        timeToSendData = UserEntityProvider.userEntity.timeToSendData.times(1000L)
-        locationRequest =
-            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData)
-                //TODO 0 для теста установить 10
-                .setMinUpdateDistanceMeters(12F)
-                .setMinUpdateIntervalMillis(6000L)
-                .setMaxUpdateAgeMillis(Long.MAX_VALUE)
-                .setMaxUpdateDelayMillis(UserEntityProvider.userEntity.timeToSendData.times(1000L))
-                .build()
-        startLocationUpdates()
+        handler.postDelayed({
+            timeToSendData = try {
+                UserEntityProvider.userEntity.timeToSendData.times(1000L)
+            } catch (e: Exception){
+                30000
+            }
+            locationRequest =
+                LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData)
+                    //TODO 0 для теста установить 10
+                    .setMinUpdateDistanceMeters(12F)
+                    .setMinUpdateIntervalMillis(6000L)
+                    .setMaxUpdateAgeMillis(Long.MAX_VALUE)
+                    .setMaxUpdateDelayMillis(timeToSendData)
+                    .build()
+            startLocationUpdates()
+        }, 10000)
     }
 
     private fun stopService() {
@@ -96,8 +104,9 @@ class MyLocationManager : Service() {
         stopSelf()
     }
 
+    private val handler = Handler(Looper.getMainLooper())
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e("AAA", "onStartCommand c " + intent?.action.toString() )
+        Log.e("AAA", "onStartCommand c " + intent?.action.toString())
         when (intent?.action) {
             ACTION_START -> startService()
             ACTION_STOP -> stopService()

@@ -28,6 +28,7 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.ResizeAnimation
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.convertDpToPx
+import ru.newlevel.hordemap.app.loadAnimation
 import ru.newlevel.hordemap.databinding.FragmentSingInBinding
 import ru.newlevel.hordemap.presentation.DisplayLocationUi
 
@@ -49,7 +50,7 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val loadingProgressBar = binding.loading
+        val loadingProgressBar = binding.imgLoading
         val launcher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 lifecycleScope.launch {
@@ -109,7 +110,9 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
             setButtonsNoEnabled()
             lifecycleScope.launch {
                 loadingProgressBar.visibility = View.VISIBLE
+                val anim = loadingProgressBar.loadAnimation()
                 val signInResult = signInViewModel.signInAnonymously()
+                anim.cancel()
                 loadingProgressBar.visibility = View.GONE
                 signInViewModel.onSingInResult(signInResult)
             }
@@ -118,7 +121,9 @@ class SingInFragment : Fragment(R.layout.fragment_sing_in) {
             setButtonsNoEnabled()
             lifecycleScope.launch {
                 loadingProgressBar.visibility = View.VISIBLE
+                val anim = loadingProgressBar.loadAnimation()
                 val singInResult = signInViewModel.signIn()
+                anim.cancel()
                 loadingProgressBar.visibility = View.GONE
                 when (singInResult) {
                     is MyResult.Success -> {

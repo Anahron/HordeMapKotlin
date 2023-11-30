@@ -89,10 +89,12 @@
     <string name="nickname">Позывной:</string>
     <string name="load_map_filed">Загрузка прервалась</string>
     <string name="load_map_started">Загрузка началась, пожалуйста подождите…</string>
+    <string name="file_wrong">Проблема с файлом или не корректный формат</string>
     <string name="wrong_format_file">Не верный формат файла</string>
     <string name="change_name">Сменить имя</string>
     <string name="map_empty">Нет сохраненной карты</string>
     <string name="logout">Выйти</string>
     <string name="no_gps_connection">Нет GPS соединения</string>
     <string name="users">Users:</string>
+    <string name="reply_to">Ответить:</string>
 </resources>

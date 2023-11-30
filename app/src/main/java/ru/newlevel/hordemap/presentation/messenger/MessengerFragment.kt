@@ -6,12 +6,15 @@ import android.app.Activity
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
@@ -51,14 +54,15 @@ import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.getFileSizeFromUri
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideShadowAnimate
+import ru.newlevel.hordemap.app.blinkAndHideShadow
+import ru.newlevel.hordemap.app.loadAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
 
 class MessengerFragment : Fragment(R.layout.fragment_messenger),
-    MessagesAdapter.OnButtonSaveClickListener,
-    MessagesAdapter.OnImageClickListener,
+    MessagesAdapter.OnMessageItemClickListener,
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
 
     private val binding: FragmentMessengerBinding by viewBinding()
@@ -71,6 +75,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var usersRecyclerViewAdapter: UsersAdapter
     private lateinit var userLayoutManager: LinearLayoutManager
     private lateinit var usersPopupMenu: PopupWindow
+    private var anim: ObjectAnimator? = null
     private var file: File? = null
     private lateinit var photoUri: Uri
     private var isDownloadingState = false
@@ -123,22 +128,23 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         super.onViewCreated(view, savedInstanceState)
         setupUIComponents()
         requestWriteExternalStoragePermission()
-        setupRecyclerView()
         setupMessagesUpdates()
         showInputTextAnimation()
         createActivityRegisters()
-        setupUsersRecyclerView()
-        setupUsersCountButton()
     }
+
     private fun setupUIComponents() {
+        setupUsersRecyclerView()
+        setupRecyclerView()
+        setupUsersCountButton()
         setupBottomSheetBehavior()
         setupEditTextMessage()
         setupSendMessageButton()
         setupAttachBtn()
         setupCloseMessengerButton()
-        setupProgressBar()
         setupScrollDownButton()
         setupBottomBehaviorListeners()
+        setUpCloseReplyButton()
     }
 
     private fun setupUsersCountButton() {
@@ -161,8 +167,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             )
         )
         usersPopupMenu.height = requireContext().convertDpToPx(200)
-        usersPopupMenu.elevation = 18f
         usersPopupMenu.isFocusable = true
+        usersPopupMenu.elevation = 18f
         usersPopupMenu.contentView?.findViewById<RecyclerView>(R.id.rvUsersCount)?.let {
             usersRecyclerView = it
         }
@@ -192,26 +198,24 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun handleNewMessages(messages: List<MyMessageEntity>) {
-        if (messageAdapter.itemCount < messages.size) {
-            val onDown = !recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
-            Log.e(TAG, "onDown = $onDown")
-            messageAdapter.setMessages(messages as ArrayList<MyMessageEntity>)
-            if (onDown) {
-                recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
-            }
+        val onDown =
+            !recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
+        Log.e(TAG, "onDown = $onDown")
+        messageAdapter.setMessages(messages as ArrayList<MyMessageEntity>)
+        if (onDown) {
+            recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
         }
     }
 
     private fun handleProgressUpdate(progress: Int) {
         if (progress < 1000) {
+            binding.imgLoading.visibility = View.VISIBLE
+            anim = binding.imgLoading.loadAnimation()
             isDownloadingState = true
-            binding.progressBar.visibility = VISIBLE
-            binding.progressBar.setProgress(progress, true)
-            binding.progressText.visibility = VISIBLE
         } else {
             isDownloadingState = false
-            binding.progressBar.visibility = GONE
-            binding.progressText.visibility = GONE
+            binding.imgLoading.visibility = GONE
+            anim?.cancel()
         }
     }
 
@@ -226,7 +230,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     handleNewMessages(messages)
                 }
                 messengerViewModel.progressLiveData.observe(viewLifecycleOwner) { progress ->
-                    handleProgressUpdate(progress)
+                    if (progress == 1000)
+                        handleProgressUpdate(progress)
                 }
                 messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
                     usersRecyclerViewAdapter.setMessages(profiles)
@@ -253,7 +258,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupRecyclerView() {
-        messageAdapter = MessagesAdapter(this, this)
+        messageAdapter = MessagesAdapter(this, requireContext())
         messageLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = true
             initialPrefetchItemCount = 30
@@ -265,8 +270,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             isNestedScrollingEnabled = false
             setOnScrollChangeListener { _, _, _, _, _ ->
                 if (!recyclerView.canScrollVertically(1)
-                 //   && recyclerView.computeVerticalScrollRange() > recyclerView.height
-                    ) {
+                //   && recyclerView.computeVerticalScrollRange() > recyclerView.height
+                ) {
                     if (binding.btnGoDown.translationX != 500F) {
                         showOrHideDownBtn(false)
                     }
@@ -318,12 +323,15 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         binding.editTextMessage.setOnEditorActionListener(OnEditorActionListener { _: TextView?, actionId: Int, _: KeyEvent? ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val text = binding.editTextMessage.text.toString()
-                if (text.isNotEmpty())
+                if (text.isNotEmpty()) {
+                    val replyOn = binding.replyName.tag.toString()
                     lifecycleScope.launch(Dispatchers.IO) {
-                        messengerViewModel.sendMessage(text)
+                        messengerViewModel.sendMessage(text, replyOn)
                     }
+                }
                 binding.editTextMessage.setText("")
                 binding.editTextMessage.requestFocus()
+                closeReply()
                 return@OnEditorActionListener true
             }
             false
@@ -333,10 +341,13 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private fun setupSendMessageButton() {
         binding.buttonSend.setOnClickListener {
             val text = binding.editTextMessage.text.toString().trim()
-            if (text.isNotEmpty())
+            if (text.isNotEmpty()) {
+                val replyOn = binding.replyName.tag.toString()
                 lifecycleScope.launch(Dispatchers.IO) {
-                    messengerViewModel.sendMessage(text)
+                    messengerViewModel.sendMessage(text, replyOn)
                 }
+            }
+            closeReply()
             binding.editTextMessage.setText("")
             binding.editTextMessage.requestFocus()
         }
@@ -385,20 +396,15 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
     }
-
-    private fun setupProgressBar() {
-        binding.progressText.visibility = View.INVISIBLE
-        binding.progressBar.visibility = View.INVISIBLE
-    }
-
     override fun onButtonSaveClick(uri: String, fileName: String) {
         if (!isDownloadingState) {
             isDownloadingState = true
+            handleProgressUpdate(1)
             lifecycleScope.launch(Dispatchers.IO) {
                 messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName)
             }
         } else {
-            Toast.makeText(requireContext(), "${R.string.wait_download}", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), requireContext().resources.getString(R.string.wait_download), Toast.LENGTH_LONG).show()
             return
         }
     }
@@ -420,6 +426,41 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         dialog.show()
     }
 
+    private fun setUpCloseReplyButton() {
+        binding.btnReplyClose.setOnClickListener {
+            closeReply()
+        }
+    }
+
+    private fun closeReply() {
+        binding.rootLinearReply.visibility = GONE
+        binding.replyTextMessage.text = ""
+        binding.replyName.text = ""
+        binding.replyName.tag = ""
+    }
+
+    override fun onItemClick(message: MyMessageEntity) {
+        binding.rootLinearReply.visibility = VISIBLE
+        binding.replyTextMessage.text = message.message
+        val userName = requireContext().getString(R.string.reply_to) + " ${message.userName}"
+        binding.replyName.text = userName
+        binding.replyName.tag = message.timestamp
+        NameColors.values().find { it.id == message.selectedMarker }?.let {
+            binding.replyName.setTextColor(ContextCompat.getColor(requireContext(), it.resourceId))
+        }
+    }
+
+    override fun onReplyClick(message: MyMessageEntity) {
+        val handler = Handler(Looper.getMainLooper())
+        Log.e(TAG, " onReplyClick ")
+        val position = messageAdapter.getPosition(message)
+        recyclerView.smoothScrollToPosition(position - 1)
+        handler.postDelayed({
+            messageLayoutManager.findViewByPosition(position)?.findViewById<FrameLayout>(R.id.rootFrame)
+                ?.blinkAndHideShadow()
+        }, 200)
+    }
+
     private fun showInputTextAnimation() {
         val inputLayout = binding.inputLayout
         inputLayout.translationY = requireContext().convertDpToPx(55).toFloat()
@@ -439,6 +480,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     override fun onFileDescriptionReceived(description: String, photoUri: Uri, fileName: String, fileSize: Long) {
+        handleProgressUpdate(1)
         messengerViewModel.sendFile(description, photoUri, fileName, fileSize)
     }
 }

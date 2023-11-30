@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,43 +26,45 @@ class MessengerRepositoryImpl(
     }
 
     private val messages: LiveData<List<MyMessageEntity>> = messageDao.getAllMessagesLiveData()
+    private var observer: Observer<in List<MyMessageEntity>> = Observer { firebaseMessages ->
+        for (firebaseMessage in firebaseMessages) {
+            val existingRoomMessage = messages.value?.find { it.timestamp == firebaseMessage.timestamp }
+            if (existingRoomMessage != null) {
+                if (firebaseMessage.userName != existingRoomMessage.userName || firebaseMessage.selectedMarker != existingRoomMessage.selectedMarker || firebaseMessage.profileImageUrl != existingRoomMessage.profileImageUrl) {
+                    val newMessage = existingRoomMessage.copy(
+                        userName = firebaseMessage.userName,
+                        selectedMarker = firebaseMessage.selectedMarker,
+                        profileImageUrl = firebaseMessage.profileImageUrl
+                    )
+                    CoroutineScope(Dispatchers.IO).launch {
+                        messageDao.updateMessage(newMessage)
+                    }
+                }
+            } else CoroutineScope(Dispatchers.IO).launch {
+                messageDao.insertMessage(firebaseMessage)
+            }
+        }
+        if (messages.value != null)
+            for (roomMessage in messages.value!!) {
+                if (firebaseMessages.none { it.timestamp == roomMessage.timestamp }) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        messageDao.deleteMessage(roomMessage)
+                    }
+                }
+            }
+    }
+
     override fun getLocalMessageUpdate(): LiveData<List<MyMessageEntity>> = messages
 
     override suspend fun startMessageUpdate() {
         CoroutineScope(Dispatchers.Main).launch {
-            messageRemoteStorage.getMessageUpdate().observeForever { firebaseMessages ->
-                for (firebaseMessage in firebaseMessages) {
-                    val existingRoomMessage = messages.value?.find { it.timestamp == firebaseMessage.timestamp }
-                    if (existingRoomMessage != null) {
-                        if (firebaseMessage.userName != existingRoomMessage.userName || firebaseMessage.selectedMarker != existingRoomMessage.selectedMarker || firebaseMessage.profileImageUrl != existingRoomMessage.profileImageUrl)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                messageDao.updateMessage(
-                                    existingRoomMessage.copy(
-                                        userName = firebaseMessage.userName,
-                                        selectedMarker = firebaseMessage.selectedMarker,
-                                        profileImageUrl = firebaseMessage.profileImageUrl
-                                    )
-                                )
-                            }
-                    } else {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            messageDao.insertMessage(firebaseMessage)
-                        }
-                    }
-                }
-                if (messages.value != null)
-                    for (roomMessage in messages.value!!) {
-                        if (firebaseMessages.none { it.timestamp == roomMessage.timestamp }) {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                messageDao.deleteMessage(roomMessage)
-                            }
-                        }
-                    }
-            }
+            messageRemoteStorage.getMessageUpdate().observeForever(observer)
         }
     }
+
     override fun stopMessageUpdate() {
         messageRemoteStorage.stopMessageUpdate()
+        messageRemoteStorage.getMessageUpdate().removeObserver(observer)
     }
 
     override suspend fun uploadFile(uri: Uri, fileName: String?): String =

@@ -1,17 +1,21 @@
 package ru.newlevel.hordemap.app
 
+import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
+import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
@@ -34,9 +38,9 @@ fun Context.getFileNameFromUri(uri: Uri): String {
     }
     if (fileName == null) {
         val file = uri.path?.let { File(it) }
-        fileName = file?.name?: ""
+        fileName = file?.name ?: ""
     }
-    return fileName?:""
+    return fileName ?: ""
 }
 
 fun Context.getFileSizeFromUri(uri: Uri): Long {
@@ -103,6 +107,7 @@ fun Location.toMarker(userModel: UserModel): MarkerDataModel {
     marker.title = formattedTime
     return marker
 }
+
 fun Context.convertDpToPx(dp: Int): Int {
     val density: Float = resources.displayMetrics.density
     return (dp.toFloat() * density).roundToInt()
@@ -126,15 +131,43 @@ fun Context.createTempImageFile(): File? {
     }
     return null
 }
+
 fun View.showShadowAnimate() {
     ObjectAnimator.ofFloat(this, "alpha", 0f, SHADOW_QUALITY).apply {
         duration = 200
         start()
     }
 }
+
 fun View.hideShadowAnimate() {
     ObjectAnimator.ofFloat(this, "alpha", this.alpha, 0f).apply {
         duration = 200
+        start()
+    }
+}
+
+
+fun View.loadAnimation(): ObjectAnimator {
+   return ObjectAnimator.ofFloat(this, "rotationY", 0f, 360f).apply {
+        duration = 2000
+        repeatCount = ObjectAnimator.INFINITE
+        interpolator = AccelerateDecelerateInterpolator()
+        start()
+    }
+}
+
+
+fun View.blinkAndHideShadow() {
+    val colorFrom = this.context.getColor(R.color.main_green_dark)
+    val colorTo = Color.TRANSPARENT
+    ObjectAnimator.ofObject(
+        this,
+        "backgroundColor",
+        ArgbEvaluator(),
+        colorFrom,
+        colorTo
+    ).apply {
+        duration = 2000
         start()
     }
 }

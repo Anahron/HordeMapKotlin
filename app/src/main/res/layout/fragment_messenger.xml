@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -45,28 +46,31 @@
                 android:text="@string/horde_chat"
                 android:textColor="@color/main_green_dialog"
                 android:textSize="20sp" />
-        <LinearLayout
-            android:id="@+id/ibUsers"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/vector_users"
-                android:background="@color/transparent"/>
 
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvUsersCount"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginEnd="8dp"
-                android:gravity="center"
-                android:fontFamily="@font/inter_medium"
-                android:textColor="@color/main_green_dialog"
-                android:textSize="18sp"
-                tools:text="1" />
-        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/ibUsers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@color/transparent"
+                    android:src="@drawable/vector_users"
+                    android:contentDescription="@string/todo"/>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvUsersCount"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="8dp"
+                    android:fontFamily="@font/inter_medium"
+                    android:gravity="center"
+                    android:textColor="@color/main_green_dialog"
+                    android:textSize="18sp"
+                    tools:text="1" />
+            </LinearLayout>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -75,39 +79,87 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:background="@color/main_green_middle_transparent"
-            android:paddingHorizontal="8dp"
-            android:paddingTop="0dp"
             android:paddingBottom="15dp"
             android:scrollbars="vertical"
-            app:layout_constraintBottom_toTopOf="@+id/inputLayout"
+            app:layout_constraintBottom_toTopOf="@+id/rootLinearReply"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/topPanel" />
 
-        <androidx.core.widget.ContentLoadingProgressBar
-            android:id="@+id/progressBar"
-            style="@style/CustomProgressBar"
-            android:layout_width="0dp"
-            android:layout_height="25dp"
-            android:max="100"
-            android:progress="0"
+        <TableRow
+            android:id="@+id/rootLinearReply"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@color/white"
+            android:orientation="horizontal"
             android:visibility="gone"
+            android:paddingTop="4dp"
             app:layout_constraintBottom_toTopOf="@+id/inputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:ignore="MissingConstraints"
-            tools:progress="50"
-            tools:visibility="visible" />
+            tools:visibility="visible">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/progressText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/wait_download"
-            android:textColor="@color/black"
-            app:layout_constraintBottom_toBottomOf="@+id/progressBar"
-            app:layout_constraintEnd_toEndOf="@+id/progressBar"
-            app:layout_constraintStart_toStartOf="@+id/progressBar"
-            app:layout_constraintTop_toTopOf="@+id/progressBar" />
+            <ImageView
+                android:id="@+id/reply"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="5dp"
+                android:background="@color/transparent"
+                android:contentDescription="@string/todo"
+                android:padding="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/vector_reply_cloud"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_gravity="center"
+                android:layout_height="55dp"
+                android:gravity="center_vertical"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_background_reply"
+                android:orientation="vertical">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/replyName"
+                    style="@style/MyEditText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="6dp"
+                    android:fontFamily="@font/inter_medium"
+                    android:maxLines="1"
+                    android:tag="0"
+                    android:textSize="15sp"
+                    tools:ignore="VisualLintTextFieldSize" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/replyTextMessage"
+                    style="@style/MyEditText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="6dp"
+                    android:fontFamily="@font/inter"
+                    android:maxLines="1"
+                    android:textSize="15sp"
+                    tools:ignore="VisualLintTextFieldSize" />
+            </TableLayout>
+
+            <ImageView
+                android:id="@+id/btnReplyClose"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="5dp"
+                android:background="@color/transparent"
+                android:contentDescription="@string/todo"
+                android:elevation="5dp"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/vector_close"
+                tools:ignore="TouchTargetSizeCheck" />
+
+        </TableRow>
 
         <LinearLayout
             android:id="@+id/inputLayout"
@@ -161,7 +213,6 @@
                 android:padding="5dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/vector_send"
-                android:visibility="gone"
                 tools:ignore="TouchTargetSizeCheck" />
 
         </LinearLayout>
@@ -171,7 +222,7 @@
             android:layout_width="50dp"
             android:layout_height="57dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="70dp"
+            android:layout_marginBottom="100dp"
             android:background="@drawable/img_messenger_down"
             android:contentDescription="@string/todo"
             android:elevation="5dp"
@@ -181,16 +232,29 @@
             tools:ignore="TouchTargetSizeCheck,ImageContrastCheck,DuplicateSpeakableTextCheck"
             tools:visibility="visible" />
 
+        <ImageView
+            android:id="@+id/img_loading"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginBottom="25dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/recyclerViewMessages"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/img_marker_red"
+            android:contentDescription="@string/todo"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <View
         android:id="@+id/shadow"
-        android:layout_marginTop="40dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:alpha="0"
         android:background="@color/black"
-        android:alpha="0">
-    </View>
+        app:layout_anchor="@+id/activityRoot"
+        app:layout_anchorGravity="center" />
 
-    <include layout="@layout/messenger_choise_upload" />
+            <include layout="@layout/messenger_choise_upload" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

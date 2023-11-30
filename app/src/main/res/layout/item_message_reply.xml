@@ -1,72 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootFrame"
-    android:paddingEnd="8dp"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    tools:ignore="RtlSymmetry">
-
+    android:clickable="true"
+    android:focusable="true"
+    android:layout_marginTop="6dp"
+    android:layout_marginHorizontal="8dp"
+    android:background="@color/transparent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imvProfilePhoto"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:elevation="2dp"
-        android:layout_gravity="end"
-        android:layout_marginStart="4dp"
-        android:src="@drawable/img_anonymous"
-        app:civ_border_color="@color/white"
-        app:civ_border_width="1dp">
-
-    </de.hdodenhof.circleimageview.CircleImageView>
+        android:visibility="gone"/>
 
     <TableLayout
         android:id="@+id/rootLinear"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="40dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginVertical="3dp"
-        android:elevation="2dp"
         android:layout_gravity="end"
-        android:background="@drawable/rounded_background_lightblue"
+        android:background="@drawable/rounded_background_reply"
         android:orientation="vertical">
+
+        <TableRow
+            android:layout_gravity="end"
+            android:gravity="end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@android:color/transparent">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/textViewUsername"
                 android:layout_marginEnd="16dp"
                 android:paddingTop="2dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_semibold"
+                android:fontFamily="@font/inter_medium"
                 android:paddingHorizontal="10dp"
                 android:textStyle="bold"
                 android:textColor="@color/red"
-                android:textSize="15sp"
+                android:textSize="12sp"
                 tools:text="Username" />
 
+            <ImageView
+                android:layout_width="14dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_height="14dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginHorizontal="10dp"
+                android:src="@drawable/vector_reply"
+                android:contentDescription="@string/todo"/>
+
+        </TableRow>
         <FrameLayout
             android:id="@+id/replyView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:background="@color/transparent"
             android:visibility="gone"/>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/download_button"
             android:layout_width="wrap_content"
-            android:layout_height="28sp"
+            android:layout_height="20sp"
+            android:clickable="false"
+            android:focusable="false"
             android:layout_marginHorizontal="10dp"
             android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
+            android:layout_marginBottom="4dp"
             android:background="@drawable/border_dark"
             android:paddingHorizontal="6dp"
             android:text="@string/download_file"
             android:textColor="@color/main_green_dialog"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:visibility="visible"
             tools:ignore="TouchTargetSizeCheck" />
 
@@ -74,6 +88,8 @@
             android:id="@+id/imageView"
             android:layout_width="wrap_content"
             android:layout_height="235dp"
+            android:clickable="false"
+            android:focusable="false"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
             android:contentDescription="@string/todo"
@@ -81,42 +97,27 @@
             android:visibility="gone"
             tools:visibility="gone" />
 
-        <TableRow
-            android:layout_gravity="end"
-            android:gravity="end"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:orientation="horizontal">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/textViewMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:gravity="start"
+                android:clickable="false"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="2dp"
                 android:layout_weight="1"
-                android:autoLink="web"
                 android:background="@android:color/transparent"
                 android:paddingHorizontal="10dp"
-                android:fontFamily="@font/inter_medium"
                 android:textColor="@color/black"
-                android:textSize="15sp"
+                android:textSize="12sp"
                 android:visibility="visible"
                 tools:text="Message" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/textViewTime"
-                android:layout_margin="1dp"
-                android:layout_gravity="end|bottom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="5dp"
-                android:textColor="@color/slate_500"
-                android:textSize="12sp"
-                tools:text="Time" />
-
-        </TableRow>
+                android:visibility="gone"/>
 
     </TableLayout>
 

@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.tasks.Task
 import com.google.firebase.storage.FirebaseStorage
@@ -22,6 +23,7 @@ import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.app.MAP_URL
 import ru.newlevel.hordemap.app.MESSAGE_FILE_FOLDER
 import ru.newlevel.hordemap.app.PROFILE_PHOTO_FOLDER
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfilePhotoStorage
@@ -105,6 +107,7 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
     }
 
     override fun downloadFile(context: Context, uri: Uri, fileName: String?) {
+        Log.e(TAG,  "downloadFile(context: Context, uri: Uri, fileName: String?) = " + this)
         try {
             val request = DownloadManager.Request(uri)
             request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
@@ -139,10 +142,11 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
                             when (it.getInt(columnIndexStatus)) {
                                 DownloadManager.STATUS_SUCCESSFUL, DownloadManager.STATUS_FAILED -> {
                                     downloading = false
-                                    progressLiveData.value = 1000
+                                    Log.e(TAG,  " DownloadManager.STATUS_SUCCESSFUL, DownloadManager.STATUS_FAILED " + this)
+                                    progressLiveData.postValue( 1000)
                                 }
 
-                                else -> {
+                                DownloadManager.STATUS_RUNNING  -> {
                                     val columnIndexBytesDownloaded =
                                         it.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
                                     val columnIndexBytesTotal = it.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
@@ -150,7 +154,8 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
                                         val bytesDownloaded = it.getInt(columnIndexBytesDownloaded)
                                         val bytesTotal = cursor.getInt(columnIndexBytesTotal)
                                         val percent = bytesDownloaded * 100.0f / bytesTotal
-                                        progressLiveData.value = percent.toInt()
+                                        Log.e(TAG,  " Download percent " + percent)
+                                        progressLiveData.postValue(percent.toInt())
                                     }
                                 }
                             }

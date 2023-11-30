@@ -1,12 +1,8 @@
 <resources>
     <string name="app_name">Horde Map</string>
-    <string name="action_settings" />
     <string name="Distance">Distance</string>
     <string name="load_map">Load Polygon</string>
-    <string name="options">Options</string>
     <string name="show_distance">Show Distance</string>
-    <string name="relog">Reset Login</string>
-    <string name="exit">Close</string>
     <string name="info_button">Information</string>
     <string name="clear_path">Clear Path</string>
     <string name="show_path">Show Path</string>
@@ -35,9 +31,7 @@
     <string name="fine_permission_denied_explanation">You have denied data collection, but it is necessary for the proper functioning of the application, please grant permission.</string>
     <string name="back_location_access_rationale_title_text">Background Geodata Access.</string>
     <string name="back_location_permission_rationale_details_text">Background geodata collection is necessary for the proper functioning of the application, please grant permission. \n \n \tChoose "Allow all the time".</string>
-    <string name="name_rationale_title_text">Set Name.</string>
     <string name="name_rationale_details_text">\tPlease enter your Name.</string>
-    <string name="ok">OK</string>
     <string name="background_permission_denied_explanation">You have denied background data collection, but it is necessary for the proper functioning of the application, please grant permission manually.</string>
     <string name="fine_location_access_rationale_title_text">Geodata Access.</string>
     <string name="fine_location_access_rationale_details_text">Please grant the app access to geodata. \n \n \tIt is necessary for the proper functioning of the application.</string>
@@ -48,7 +42,6 @@
     <string name="back_working_details_text">Please allow the application to work in the background. \n \n \tThis is necessary for background data collection.</string>
     <string name="i_accept">I UNDERSTAND</string>
     <string name="enable_fine_location_button_text">ALLOW TRANSMISSION</string>
-    <string name="enable_background_location_button_text">ALLOW BACKGROUND TRANSMISSION</string>
     <string name="cancel">Cancel</string>
     <string name="number09">Enter point number 0–9</string>
     <string name="entry_text">Enter title</string>
@@ -66,8 +59,6 @@
     <string name="added_image">Send Image:</string>
     <string name="descriptions">Description</string>
     <string name="send_as_file">Send as File:</string>
-    <string name="show_current_path">Show Current Path</string>
-    <string name="put_saved_path">Select Saved Path</string>
     <string name="my_track">My Track</string>
     <string name="my_tracks">My Tracks</string>
     <string name="my_current_track">Current Track</string>
@@ -105,4 +96,5 @@
     <string name="map_empty">No saved map</string>
     <string name="no_gps_connection">No GPS connection</string>
     <string name="users">Users:</string>
+    <string name="reply_to">Reply to:</string>
 </resources>

@@ -14,5 +14,6 @@ data class MyMessageEntity(
     var fileName: String = "",
     var url: String = "",
     var profileImageUrl: String = "",
-    var selectedMarker: Int = 0
+    var selectedMarker: Int = 0,
+    var replyOn: Long = 0
 )

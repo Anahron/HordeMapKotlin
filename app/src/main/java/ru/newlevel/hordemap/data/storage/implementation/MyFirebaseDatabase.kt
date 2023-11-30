@@ -22,6 +22,8 @@ import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfileRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
+import java.time.Instant
+import java.util.Date
 
 class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRemoteStorage {
 
@@ -63,19 +65,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     }
 
     override fun sendMessage(message: MyMessageEntity) {
-        val time = System.currentTimeMillis()
-        val geoDataPath = "$MESSAGE_PATH/$time"
-        val updates: MutableMap<String, Any> = HashMap()
-        updates["$geoDataPath/userName"] = message.userName
-        updates["$geoDataPath/message"] = message.message
-        updates["$geoDataPath/deviceID"] = message.deviceID
-        updates["$geoDataPath/timestamp"] = message.timestamp
-        updates["$geoDataPath/fileSize"] = message.fileSize
-        updates["$geoDataPath/fileName"] = message.fileName
-        updates["$geoDataPath/url"] = message.url
-        updates["$geoDataPath/selectedMarker"] = message.selectedMarker
-        updates["$geoDataPath/profileImageUrl"] = message.profileImageUrl
-        databaseReference.updateChildren(updates)
+        databaseReference.child("$MESSAGE_PATH/${message.timestamp}").setValue(message)
     }
     override fun stopMarkerUpdates() {
         Log.e(TAG, "stopMarkerUpdates in StorageImpl вызван")
@@ -230,10 +220,13 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
 
     private val messageEventListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
+            var countMessage = 0
             Log.e(TAG, "startMessageUpdate пришло обновление сообщений")
             val messages = ArrayList<MyMessageEntity>()
             for (snap in snapshot.children) {
                 val message: MyMessageEntity? = snap.getValue(MyMessageEntity::class.java)
+                Log.e(TAG, "Date message:$countMessage = " + Date.from(message?.timestamp?.let { Instant.ofEpochMilli(it) }))
+                countMessage++
                 if (message != null) {
                     messages.add(message)
                 }
