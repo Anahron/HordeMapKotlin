@@ -12,9 +12,7 @@ import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.models.UserModel
@@ -104,10 +102,6 @@ fun Location.toMarker(userModel: UserModel): MarkerDataModel {
     marker.item = userModel.selectedMarker
     marker.title = formattedTime
     return marker
-}
-fun MessageDataModel.mapToDaoEntity(): MyMessageEntity{
-    return MyMessageEntity(
-       timestamp =  timestamp, userName = userName, message = message, deviceID = deviceID, fileSize = fileSize, fileName = fileName, url =  url, profileImageUrl = profileImageUrl, selectedMarker = selectedMarker)
 }
 fun Context.convertDpToPx(dp: Int): Int {
     val density: Float = resources.displayMetrics.density

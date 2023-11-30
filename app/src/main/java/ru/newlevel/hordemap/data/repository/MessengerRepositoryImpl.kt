@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import ru.newlevel.hordemap.app.mapToDaoEntity
 import ru.newlevel.hordemap.data.db.MessageDao
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
@@ -21,7 +20,7 @@ class MessengerRepositoryImpl(
     private val messageDao: MessageDao
 ) : MessengerRepository {
     override suspend fun sendMessage(message: MyMessageEntity) {
-        messageRemoteStorage.sendMessage(message = MyMessageEntity.fromEntity(message))
+        messageRemoteStorage.sendMessage(message = message)
         messageDao.insertMessage(message = message)
     }
 
@@ -46,7 +45,7 @@ class MessengerRepositoryImpl(
                             }
                     } else {
                         CoroutineScope(Dispatchers.IO).launch {
-                            messageDao.insertMessage(firebaseMessage.mapToDaoEntity())
+                            messageDao.insertMessage(firebaseMessage)
                         }
                     }
                 }

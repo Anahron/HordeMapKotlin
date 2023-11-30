@@ -52,7 +52,7 @@ import ru.newlevel.hordemap.app.getFileSizeFromUri
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideShadowAnimate
 import ru.newlevel.hordemap.app.showShadowAnimate
-import ru.newlevel.hordemap.data.storage.models.MessageDataModel
+import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
 
@@ -191,12 +191,12 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
     }
 
-    private fun handleNewMessages(messages: List<MessageDataModel>) {
+    private fun handleNewMessages(messages: List<MyMessageEntity>) {
         if (messageAdapter.itemCount < messages.size) {
-            val onDown = !recyclerView.canScrollVertically(1)
-                    //&& recyclerView.computeVerticalScrollRange() > recyclerView.height
-            messageAdapter.setMessages(messages as ArrayList<MessageDataModel>)
-            if (!onDown) {
+            val onDown = !recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
+            Log.e(TAG, "onDown = $onDown")
+            messageAdapter.setMessages(messages as ArrayList<MyMessageEntity>)
+            if (onDown) {
                 recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
             }
         }

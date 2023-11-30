@@ -16,11 +16,11 @@ import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.TIMESTAMP_PATH
 import ru.newlevel.hordemap.app.TIME_TO_DELETE_USER_MARKER
 import ru.newlevel.hordemap.app.USERS_PROFILES_PATH
+import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfileRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
-import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
 class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRemoteStorage {
@@ -30,7 +30,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     private val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
     private val liveDataStaticMarkers = MutableLiveData<List<MarkerDataModel>>()
     private val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
-    private val liveDataMessageDataModel = MutableLiveData<List<MessageDataModel>>()
+    private val liveDataMessageDataModel = MutableLiveData<List<MyMessageEntity>>()
     private val liveDataUsersProfiles = MutableLiveData<List<UserDataModel>>()
     override fun deleteStaticMarker(key: String) {
         staticDatabaseReference.child(key).removeValue()
@@ -41,7 +41,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
-    override fun getMessageUpdate(): MutableLiveData<List<MessageDataModel>> {
+    override fun getMessageUpdate(): MutableLiveData<List<MyMessageEntity>> {
         Log.e(TAG, "startMessageUpdate() вызван")
         databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
             .addValueEventListener(messageEventListener)
@@ -62,7 +62,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         staticDatabaseReference.child(markerModel.timestamp.toString()).setValue(markerModel)
     }
 
-    override fun sendMessage(message: MessageDataModel) {
+    override fun sendMessage(message: MyMessageEntity) {
         val time = System.currentTimeMillis()
         val geoDataPath = "$MESSAGE_PATH/$time"
         val updates: MutableMap<String, Any> = HashMap()
@@ -231,9 +231,9 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     private val messageEventListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             Log.e(TAG, "startMessageUpdate пришло обновление сообщений")
-            val messages = ArrayList<MessageDataModel>()
+            val messages = ArrayList<MyMessageEntity>()
             for (snap in snapshot.children) {
-                val message: MessageDataModel? = snap.getValue(MessageDataModel::class.java)
+                val message: MyMessageEntity? = snap.getValue(MyMessageEntity::class.java)
                 if (message != null) {
                     messages.add(message)
                 }

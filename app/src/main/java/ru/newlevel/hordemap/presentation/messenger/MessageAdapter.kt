@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.data.storage.models.MessageDataModel
 import ru.newlevel.hordemap.databinding.ItemMessageInBinding
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -21,9 +21,9 @@ class MessagesAdapter(
     private val onButtonSaveClickListener: OnButtonSaveClickListener, private val onImageClickListener: OnImageClickListener
 ) : RecyclerView.Adapter<MessagesAdapter.MessageViewHolder>() {
 
-    private var messageDataModels: ArrayList<MessageDataModel> = ArrayList()
+    private var messageDataModels: ArrayList<MyMessageEntity> = ArrayList()
 
-    fun setMessages(newList: ArrayList<MessageDataModel>) {
+    fun setMessages(newList: ArrayList<MyMessageEntity>) {
         val diffCallback = MessageDiffCallback(messageDataModels, newList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         messageDataModels = newList
@@ -80,7 +80,7 @@ class MessagesAdapter(
         }
 
         fun bind(
-            messageDataModel: MessageDataModel,
+            messageDataModel: MyMessageEntity,
             onButtonSaveClickListener: OnButtonSaveClickListener,
             onImageClickListener: OnImageClickListener,
             isSomeUser: Boolean
@@ -125,7 +125,7 @@ class MessagesAdapter(
         }
 
         private fun setUpItemWithUrl(
-            messageDataModel: MessageDataModel, onButtonSaveClickListener: OnButtonSaveClickListener,
+            messageDataModel: MyMessageEntity, onButtonSaveClickListener: OnButtonSaveClickListener,
             onImageClickListener: OnImageClickListener,
         ) = with(binding) {
             val fileName = messageDataModel.fileName
@@ -156,8 +156,8 @@ class MessagesAdapter(
     }
 
     class MessageDiffCallback(
-        private val oldList: List<MessageDataModel>,
-        private val newList: List<MessageDataModel>
+        private val oldList: List<MyMessageEntity>,
+        private val newList: List<MyMessageEntity>
     ) : DiffUtil.Callback() {
         override fun getOldListSize() = oldList.size
         override fun getNewListSize() = newList.size

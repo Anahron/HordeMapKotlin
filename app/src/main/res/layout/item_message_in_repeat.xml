@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootFrame"
+    android:layout_marginEnd="38dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imvProfilePhoto"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:elevation="2dp"
+        android:layout_marginEnd="4dp"
+        android:src="@drawable/img_anonymous"
+        app:civ_border_color="@color/white"
+        app:civ_border_width="1dp">
+
+    </de.hdodenhof.circleimageview.CircleImageView>
+
+    <LinearLayout
+        android:id="@+id/rootLinear"
+        android:layout_marginVertical="3dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:elevation="2dp"
+        android:background="@drawable/rounded_background_white_item"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/textViewUsername"
+                android:layout_marginEnd="16dp"
+                android:paddingTop="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:paddingHorizontal="10dp"
+                android:textStyle="bold"
+                android:textColor="@color/red"
+                android:textSize="16sp"
+                tools:text="Username" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <LinearLayout
+            android:id="@+id/rootLinearReply"
+            android:layout_marginVertical="3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:elevation="2dp"
+            android:background="@drawable/rounded_background_lightblue"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/textViewUsernameReply"
+                    android:layout_marginEnd="16dp"
+                    android:paddingTop="2dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:paddingHorizontal="10dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/red"
+                    android:textSize="16sp"
+                    tools:text="Username" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/download_buttonReply"
+                android:layout_width="wrap_content"
+                android:layout_height="28sp"
+                android:layout_marginHorizontal="10dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/border_dark"
+                android:paddingHorizontal="6dp"
+                android:text="@string/download_file"
+                android:textColor="@color/main_green_dialog"
+                android:textSize="12sp"
+                android:visibility="visible"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <ImageView
+                android:id="@+id/imageViewReply"
+                android:layout_width="wrap_content"
+                android:layout_height="235dp"
+                android:layout_gravity="center"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/todo"
+                android:scaleType="fitCenter"
+                android:visibility="gone"
+                tools:visibility="gone" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/textViewMessageReply"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_weight="1"
+                    android:autoLink="web"
+                    android:background="@color/transparent"
+                    android:paddingHorizontal="10dp"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:visibility="visible"
+                    android:breakStrategy="simple"
+                    tools:text="Message" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/textViewTimeReply"
+                    android:gravity="end"
+                    android:layout_margin="1dp"
+                    android:layout_weight="0"
+                    android:layout_gravity="bottom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="5dp"
+                    android:textColor="@color/slate_500"
+                    android:textSize="12sp"
+                    tools:text="Time" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/download_button"
+            android:layout_width="wrap_content"
+            android:layout_height="28sp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/border_dark"
+            android:paddingHorizontal="6dp"
+            android:text="@string/download_file"
+            android:textColor="@color/main_green_dialog"
+            android:textSize="12sp"
+            android:visibility="visible"
+            tools:ignore="TouchTargetSizeCheck" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="235dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/todo"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            tools:visibility="gone" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:gravity="end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/textViewMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="2dp"
+                android:layout_weight="1"
+                android:autoLink="web"
+                android:background="@color/transparent"
+                android:paddingHorizontal="10dp"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:visibility="visible"
+                android:breakStrategy="simple"
+                tools:text="Message" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/textViewTime"
+                android:gravity="end"
+                android:layout_margin="1dp"
+                android:layout_weight="0"
+                android:layout_gravity="bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="5dp"
+                android:textColor="@color/slate_500"
+                android:textSize="12sp"
+                tools:text="Time" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </LinearLayout>
+
+</FrameLayout>
