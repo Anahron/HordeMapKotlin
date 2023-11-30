@@ -142,7 +142,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupUsersCountButton() {
-        binding.tvUsersCount.setOnClickListener {
+        binding.ibUsers.setOnClickListener {
             showMainPopupMenu(it)
         }
     }
@@ -151,7 +151,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         usersPopupMenu = PopupWindow(requireContext())
         usersPopupMenu.contentView = layoutInflater.inflate(
             R.layout.popup_users,
-            binding.tvUsersCount.rootView as ViewGroup,
+            binding.ibUsers.rootView as ViewGroup,
             false
         )
         usersPopupMenu.setBackgroundDrawable(
@@ -183,7 +183,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         binding.shadow.showShadowAnimate()
         usersPopupMenu.showAsDropDown(
             itemDotsView,
-            -requireContext().convertDpToPx(104),
+            -requireContext().convertDpToPx(64),
             0
         )
         usersPopupMenu.setOnDismissListener {
