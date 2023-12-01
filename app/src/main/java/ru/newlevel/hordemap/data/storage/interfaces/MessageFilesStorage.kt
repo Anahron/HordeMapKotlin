@@ -5,7 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 
 interface MessageFilesStorage {
-    suspend fun uploadFile(uri: Uri, fileName: String?): String
+    suspend fun uploadFile(uri: Uri, fileName: String?): Result<Uri>
 
     fun downloadFile(context: Context, uri: Uri, fileName: String?)
 

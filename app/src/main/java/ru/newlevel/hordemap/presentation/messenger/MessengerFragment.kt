@@ -51,6 +51,8 @@ import ru.newlevel.hordemap.app.REQUEST_CODE_CAMERA_PERMISSION
 import ru.newlevel.hordemap.app.REQUEST_CODE_WRITE_EXTERNAL_STORAGE
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
+import ru.newlevel.hordemap.app.animateButtonPadding
+import ru.newlevel.hordemap.app.animateButtonPaddingReverse
 import ru.newlevel.hordemap.app.blinkAndHideShadow
 import ru.newlevel.hordemap.app.convertDpToPx
 import ru.newlevel.hordemap.app.copyTextInSystem
@@ -58,8 +60,10 @@ import ru.newlevel.hordemap.app.createTempImageFile
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.getFileSizeFromUri
 import ru.newlevel.hordemap.app.hasPermission
+import ru.newlevel.hordemap.app.hideInputTextAnimation
 import ru.newlevel.hordemap.app.hideShadowAnimate
 import ru.newlevel.hordemap.app.loadAnimation
+import ru.newlevel.hordemap.app.showInputTextAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
@@ -137,7 +141,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         setupUIComponents()
         requestWriteExternalStoragePermission()
         setupMessagesUpdates()
-        showInputTextAnimation()
+        binding.inputLayout.showInputTextAnimation()
+        //  showInputTextAnimation()
         createActivityRegisters()
     }
 
@@ -447,7 +452,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun closeBottomInfoWindow() {
-        binding.rootLinearReply.visibility = GONE
+        binding.recyclerViewMessages.animateButtonPaddingReverse()
+        binding.rootLinearReply.hideInputTextAnimation()
         editMessageId = null
         replyMessageId = null
         binding.replyTextMessage.text = ""
@@ -537,7 +543,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private fun showReplyWindow(message: MyMessageEntity) {
         replyMessageId = message.timestamp
         editMessageId = null
-        binding.rootLinearReply.visibility = VISIBLE
+        binding.recyclerViewMessages.animateButtonPadding()
+        binding.rootLinearReply.showInputTextAnimation()
         binding.replyTextMessage.text = message.message
         val userName = requireContext().getString(R.string.reply_to) + " ${message.userName}"
         binding.replyName.text = userName
@@ -549,7 +556,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private fun showEditWindow(message: MyMessageEntity) {
         replyMessageId = if (message.replyOn > 0L) message.replyOn else null
         editMessageId = message.timestamp
-        binding.rootLinearReply.visibility = VISIBLE
+        binding.recyclerViewMessages.animateButtonPadding()
+        binding.rootLinearReply.showInputTextAnimation()
         binding.replyTextMessage.text = message.message
         binding.replyName.text = requireContext().getText(R.string.editing)
         binding.replyTextMessage.tag = message.timestamp
@@ -575,14 +583,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }, 200)
     }
 
-    private fun showInputTextAnimation() {
-        val inputLayout = binding.inputLayout
-        inputLayout.translationY = requireContext().convertDpToPx(55).toFloat()
-        val animator = ObjectAnimator.ofFloat(inputLayout, "translationY", 0f)
-        animator.duration = 300
-        animator.start()
-    }
-
     private fun requestWriteExternalStoragePermission() {
         if (!requireContext().hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             ActivityCompat.requestPermissions(
@@ -595,6 +595,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     override fun onFileDescriptionReceived(description: String, photoUri: Uri, fileName: String, fileSize: Long) {
         handleProgressUpdate(1)
-        messengerViewModel.sendFile(description, photoUri, fileName, fileSize)
+        lifecycleScope.launch {
+            messengerViewModel.sendFile(description, photoUri, fileName, fileSize).onFailure {
+                Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

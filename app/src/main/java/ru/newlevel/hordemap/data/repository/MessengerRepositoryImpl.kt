@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.data.db.MessageDao
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
@@ -71,9 +72,9 @@ class MessengerRepositoryImpl(
         messageRemoteStorage.getMessageUpdate().removeObserver(observer)
     }
 
-    override suspend fun uploadFile(uri: Uri, fileName: String?): String =
+    override suspend fun uploadFile(uri: Uri, fileName: String?): Result<Uri> = withContext(Dispatchers.IO) {
         messageFilesStorage.uploadFile(uri, fileName)
-
+    }
 
     override fun downloadFile(context: Context, uri: Uri, fileName: String?) =
         messageFilesStorage.downloadFile(context, uri, fileName)

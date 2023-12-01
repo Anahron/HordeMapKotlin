@@ -7,10 +7,8 @@ import android.net.Uri
 import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.google.android.gms.tasks.Task
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.UploadTask
-import kotlinx.coroutines.CompletableDeferred
+import com.google.firebase.storage.StorageReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -36,7 +34,7 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
     private val gsReference = storageReference.storage.getReferenceFromUrl(MAP_URL)
     private val progressLiveData = MutableLiveData<Int>()
 
-    override suspend fun loadGameMapFromServer(context: Context): Uri? {
+    override suspend fun downloadGameMapFromServer(context: Context): Uri? {
         return suspendCancellableCoroutine { continuation ->
             val filename = BASE_LAST_MAP_FILENAME + KMZ_EXTENSION
             val file = File(context.filesDir, filename)
@@ -51,41 +49,22 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
         }
     }
 
-    override suspend fun uploadFile(uri: Uri, fileName: String?): String {
-        return withContext(Dispatchers.IO) {
-            val messageFilesStorage = storageReference.child("$MESSAGE_FILE_FOLDER/$fileName")
-            val uploadTask = messageFilesStorage.putFile(uri)
-            val resultDeferred = CompletableDeferred<String?>()
-
-            uploadTask.addOnProgressListener { taskSnapshot: UploadTask.TaskSnapshot ->
-                val progress = 100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount
-                progressLiveData.postValue(progress.toInt())
-            }
-            uploadTask.addOnCompleteListener { task: Task<UploadTask.TaskSnapshot?> ->
-                if (task.isSuccessful) {
-                    progressLiveData.postValue(1000)
-                    messageFilesStorage.downloadUrl.addOnSuccessListener { uri: Uri ->
-                        val downloadUrl = uri.toString()
-                        resultDeferred.complete(downloadUrl)
-                    }.addOnFailureListener {
-                        resultDeferred.complete("")
-                    }
-                } else {
-                    resultDeferred.complete("")
-                }
-            }
-            resultDeferred.await().toString()
-        }
-    }
-
     override suspend fun uploadProfilePhoto(uri: Uri, fileName: String): Result<Uri> {
         val messageFilesStorage = storageReference.child("$PROFILE_PHOTO_FOLDER/$fileName")
+        return uploadTask(messageFilesStorage, uri)
+    }
+    override suspend fun uploadFile(uri: Uri, fileName: String?): Result<Uri> {
+        val messageFilesStorage = storageReference.child("$MESSAGE_FILE_FOLDER/$fileName")
+        return uploadTask(messageFilesStorage, uri)
+    }
+
+    private suspend fun uploadTask(storage: StorageReference, uri: Uri): Result<Uri>{
         return try {
             withContext(Dispatchers.IO) {
-                val uploadTask = messageFilesStorage.putFile(uri).await()
+                val uploadTask = storage.putFile(uri).await()
                 if (uploadTask.task.isSuccessful) {
                     try {
-                        val downloadUrl = messageFilesStorage.downloadUrl.await()
+                        val downloadUrl = storage.downloadUrl.await()
                         Result.success(downloadUrl)
                     } catch (downloadException: Exception) {
                         Result.failure(downloadException)

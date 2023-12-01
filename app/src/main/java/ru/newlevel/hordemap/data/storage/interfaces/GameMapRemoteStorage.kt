@@ -4,5 +4,5 @@ import android.content.Context
 import android.net.Uri
 
 interface GameMapRemoteStorage {
-    suspend fun loadGameMapFromServer(context: Context): Uri?
+    suspend fun downloadGameMapFromServer(context: Context): Uri?
 }

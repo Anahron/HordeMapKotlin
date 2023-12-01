@@ -2,6 +2,7 @@ package ru.newlevel.hordemap.app
 
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -15,6 +16,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import ru.newlevel.hordemap.R
@@ -57,11 +59,13 @@ fun Context.getFileSizeFromUri(uri: Uri): Long {
         }
     } ?: 0
 }
-fun Context.copyTextInSystem(text: String){
+
+fun Context.copyTextInSystem(text: String) {
     val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clipData = ClipData.newPlainText("Text", text)
     clipboardManager.setPrimaryClip(clipData)
 }
+
 fun UserDataModel.mapToDomainModel(): UserDomainModel {
     return UserDomainModel(
         name = name,
@@ -152,9 +156,68 @@ fun View.hideShadowAnimate() {
     }
 }
 
+fun View.showInputTextAnimation() {
+    if (visibility != View.VISIBLE) {
+        translationY = context.convertDpToPx(55).toFloat()
+        val animator = ObjectAnimator.ofFloat(this, "translationY", 0f)
+        animator.duration = 300
+        animator.start()
+        visibility = View.VISIBLE
+    }
+}
+
+
+fun View.animateButtonPadding() {
+    if (this.paddingBottom != context.convertDpToPx(71)) {
+        val paddingStart = context.convertDpToPx(16)
+        val paddingEnd = context.convertDpToPx(71)
+        val animator = ValueAnimator.ofInt(paddingStart, paddingEnd)
+        animator.addUpdateListener { valueAnimator ->
+            val animatedValue = valueAnimator.animatedValue as Int
+            this.setPadding(
+                this.paddingLeft,
+                this.paddingTop,
+                this.paddingRight,
+                animatedValue
+            )
+        }
+        animator.duration = 300L
+        animator.start()
+    }
+}
+
+fun View.animateButtonPaddingReverse() {
+    if (this.paddingBottom == context.convertDpToPx(71)) {
+        val paddingStart = context.convertDpToPx(71)
+        val paddingEnd = context.convertDpToPx(16)
+        val animator = ValueAnimator.ofInt(paddingStart, paddingEnd)
+        animator.addUpdateListener { valueAnimator ->
+            val animatedValue = valueAnimator.animatedValue as Int
+            this.setPadding(
+                this.paddingLeft,
+                this.paddingTop,
+                this.paddingRight,
+                animatedValue
+            )
+        }
+        animator.duration = 300L
+        animator.start()
+    }
+}
+
+fun View.hideInputTextAnimation() {
+    if (visibility == View.VISIBLE) {
+        val animator = ObjectAnimator.ofFloat(this, "translationY", context.convertDpToPx(55).toFloat())
+        animator.duration = 300
+        animator.start()
+        animator.doOnEnd {
+            this.visibility = View.GONE
+        }
+    }
+}
 
 fun View.loadAnimation(): ObjectAnimator {
-   return ObjectAnimator.ofFloat(this, "rotationY", 0f, 360f).apply {
+    return ObjectAnimator.ofFloat(this, "rotationY", 0f, 360f).apply {
         duration = 2000
         repeatCount = ObjectAnimator.INFINITE
         interpolator = AccelerateDecelerateInterpolator()

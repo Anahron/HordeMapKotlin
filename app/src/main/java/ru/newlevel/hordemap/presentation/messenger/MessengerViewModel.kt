@@ -5,9 +5,8 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
@@ -41,10 +40,9 @@ class MessengerViewModel(
         messengerUseCases.sendMessageUseCase.execute(text, replyId, editMessage = editMessage)
     }
 
-    fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long) {
-        CoroutineScope(Dispatchers.IO).launch {
+    suspend fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long): Result<Uri> =
+        withContext(Dispatchers.IO) {
             messengerUseCases.uploadFileUseCase.execute(message, uri, fileName, fileSize)
-        }
     }
 
     fun downloadFile(context: Context, uri: Uri, fileName: String?) {
