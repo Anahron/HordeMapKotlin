@@ -76,12 +76,7 @@ class MessengerRepositoryImpl(
         messageFilesStorage.uploadFile(uri, fileName)
     }
 
-    override fun downloadFile(context: Context, uri: Uri, fileName: String?) =
+    override suspend fun downloadFile(context: Context, uri: Uri, fileName: String?): Result<Boolean> =
         messageFilesStorage.downloadFile(context, uri, fileName)
-
-
-    override fun getDownloadProgress(): MutableLiveData<Int> = messageFilesStorage.getDownloadProgress()
-
-
     override fun getUsersProfiles(): MutableLiveData<List<UserDataModel>> = messageRemoteStorage.getProfilesInMessenger()
 }

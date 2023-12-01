@@ -17,15 +17,11 @@ class MessengerViewModel(
 
     var messagesLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
 
-    private var progressMutableLiveData = MutableLiveData<Int>()
-    val progressLiveData get(): LiveData<Int> = progressMutableLiveData
-
     private var usersProfileMutableLiveData = MutableLiveData<List<UserDomainModel>>()
     val usersProfileLiveData get(): LiveData<List<UserDomainModel>> = usersProfileMutableLiveData
 
     suspend fun startMessageUpdate() {
         usersProfileMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getUsersProfiles()
-        progressMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getDownloadProgress()
         messengerUseCases.startMessageUpdateInteractor.startMessageUpdate()
     }
 
@@ -45,7 +41,8 @@ class MessengerViewModel(
             messengerUseCases.uploadFileUseCase.execute(message, uri, fileName, fileSize)
     }
 
-    fun downloadFile(context: Context, uri: Uri, fileName: String?) {
-        fileName?.let { messengerUseCases.downloadFileUseCase.execute(context, uri, it) }
+    suspend fun downloadFile(context: Context, uri: Uri, fileName: String?) : Result<Boolean>{
+       return if (fileName != null) messengerUseCases.downloadFileUseCase.execute(context, uri, fileName) else Result.failure(
+           Throwable("Unknown file"))
     }
 }

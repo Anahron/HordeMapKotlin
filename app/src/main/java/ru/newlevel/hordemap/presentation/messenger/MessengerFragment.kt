@@ -142,7 +142,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         requestWriteExternalStoragePermission()
         setupMessagesUpdates()
         binding.inputLayout.showInputTextAnimation()
-        //  showInputTextAnimation()
         createActivityRegisters()
     }
 
@@ -226,18 +225,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
     }
 
-    private fun handleProgressUpdate(progress: Int) {
-        if (progress < 1000) {
-            binding.imgLoading.visibility = View.VISIBLE
-            anim = binding.imgLoading.loadAnimation()
-            isDownloadingState = true
-        } else {
-            isDownloadingState = false
-            binding.imgLoading.visibility = GONE
-            anim?.cancel()
-        }
-    }
-
     private fun setupMessagesUpdates() {
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
@@ -247,10 +234,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 messengerViewModel.startMessageUpdate()
                 messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
                     handleNewMessages(messages)
-                }
-                messengerViewModel.progressLiveData.observe(viewLifecycleOwner) { progress ->
-                    if (progress == 1000)
-                        handleProgressUpdate(progress)
                 }
                 messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
                     usersRecyclerViewAdapter.setMessages(profiles)
@@ -416,10 +399,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     override fun onButtonSaveClick(uri: String, fileName: String) {
         if (!isDownloadingState) {
-            isDownloadingState = true
-            handleProgressUpdate(1)
-            lifecycleScope.launch(Dispatchers.IO) {
-                messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName)
+            lifecycleScope.launch{
+                messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName).onFailure {
+                    Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                }
             }
         } else {
             Toast.makeText(requireContext(), requireContext().resources.getString(R.string.wait_download), Toast.LENGTH_LONG)
@@ -594,11 +577,16 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     override fun onFileDescriptionReceived(description: String, photoUri: Uri, fileName: String, fileSize: Long) {
-        handleProgressUpdate(1)
         lifecycleScope.launch {
+            binding.imgLoading.visibility = View.VISIBLE
+            anim = binding.imgLoading.loadAnimation()
+            isDownloadingState = true
             messengerViewModel.sendFile(description, photoUri, fileName, fileSize).onFailure {
                 Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
             }
+            isDownloadingState = false
+            anim?.cancel()
+            binding.imgLoading.visibility = GONE
         }
     }
 }

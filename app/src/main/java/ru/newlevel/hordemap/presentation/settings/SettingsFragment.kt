@@ -9,7 +9,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -50,7 +49,6 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     private var checkedRadioButton by Delegates.notNull<Int>()
     private lateinit var currentUserSetting: UserDomainModel
     private var activityListener: DisplayLocationUi? = null
-    private var move = false
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             lifecycleScope.launch {
@@ -181,52 +179,35 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         Log.e(TAG, "changeUiToSettings")
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+
     private fun setUpLoadingMapListeners() = with(binding) {
-        checkBox.setOnTouchListener { _, event ->
-            if (touchHandler(event, cardViewLoadMap)) {
-                Log.e(TAG, "!move" + !move)
-                checkBox.isChecked = !checkBox.isChecked
-                settingsViewModel.saveAutoLoad(checkBox.isChecked)
-                callback.onAutoLoadClick(checkBox.isChecked)
-            }
-            true
+        checkBox.setOnClickListener {
+            settingsViewModel.saveAutoLoad(checkBox.isChecked)
+            callback.onAutoLoadClick(checkBox.isChecked)
         }
 
-        btnFromServer.setOnTouchListener { _, event ->
-            if (touchHandler(event, cardViewLoadMap)) {
-                callback.onLoadMapFromServerClick()
-            }
-            true
+        btnFromServer.setOnClickListener {
+            callback.onLoadMapFromServerClick()
         }
 
-        btnFromFiles.setOnTouchListener { _, event ->
-            if (touchHandler(event, cardViewLoadMap)) {
-                activityLauncher.launch("application/*")
-            }
-            true
+        btnFromFiles.setOnClickListener {
+            activityLauncher.launch("application/*")
         }
 
-        btnLastSaved.setOnTouchListener { _, event ->
-            if (touchHandler(event, cardViewLoadMap)) {
-                callback.onLoadLastGameMapClick()
-            }
-            true
+        btnLastSaved.setOnClickListener {
+            callback.onLoadLastGameMapClick()
         }
 
-        btnCleanMap.setOnTouchListener { _, event ->
-            if (touchHandler(event, cardViewLoadMap)) {
-                callback.onAutoLoadClick(false)
-                callback.onClearMapClick()
-                lifecycleScope.launch {
-                    settingsViewModel.saveUser(
-                        currentUserSetting.copy(
-                            autoLoad = false
-                        )
+        btnCleanMap.setOnClickListener {
+            callback.onAutoLoadClick(false)
+            callback.onClearMapClick()
+            lifecycleScope.launch {
+                settingsViewModel.saveUser(
+                    currentUserSetting.copy(
+                        autoLoad = false
                     )
-                }
+                )
             }
-            true
         }
     }
 
@@ -286,56 +267,23 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             )
         }
     }
-    private fun touchHandler(event: MotionEvent, targetView: DraggableCardView): Boolean {
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                move = false
-                targetView.onTouch(targetView, event)
-            }
-
-            MotionEvent.ACTION_MOVE -> {
-                move = true
-                targetView.onTouch(targetView, event)
-                return false
-            }
-
-            MotionEvent.ACTION_UP -> {
-                if (!move) {
-                    return true
-                }
-            }
-
-            else -> targetView.onTouch(targetView, event)
-        }
-        return false
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupRadioButtonListeners() = with(binding) {
-        radioButton0.setOnTouchListener { v, event ->
-            if (touchHandler(event, binding.cardViewSettings))
-                saveUserSelectedMarker(v.tag.toString().toInt())
-            true
+        radioButton0.setOnClickListener {
+            saveUserSelectedMarker(it.tag.toString().toInt())
         }
-        radioButton1.setOnTouchListener { v, event ->
-            if (touchHandler(event, binding.cardViewSettings))
-                saveUserSelectedMarker(v.tag.toString().toInt())
-            true
+        radioButton1.setOnClickListener {
+            saveUserSelectedMarker(it.tag.toString().toInt())
         }
-        radioButton2.setOnTouchListener { v, event ->
-            if (touchHandler(event, binding.cardViewSettings))
-                saveUserSelectedMarker(v.tag.toString().toInt())
-            true
+        radioButton2.setOnClickListener {
+            saveUserSelectedMarker(it.tag.toString().toInt())
         }
-        radioButton3.setOnTouchListener { v, event ->
-            if (touchHandler(event, binding.cardViewSettings))
-                saveUserSelectedMarker(v.tag.toString().toInt())
-            true
+        radioButton3.setOnClickListener {
+            saveUserSelectedMarker(it.tag.toString().toInt())
         }
-        radioButton4.setOnTouchListener { v, event ->
-            if (touchHandler(event, binding.cardViewSettings))
-                saveUserSelectedMarker(v.tag.toString().toInt())
-            true
+        radioButton4.setOnClickListener {
+            saveUserSelectedMarker(it.tag.toString().toInt())
         }
     }
 

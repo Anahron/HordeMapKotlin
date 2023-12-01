@@ -6,7 +6,6 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.cardview.widget.CardView
 import ru.newlevel.hordemap.R
-import kotlin.math.abs
 
 class DraggableCardView @JvmOverloads constructor(
     context: Context,
@@ -52,14 +51,18 @@ class DraggableCardView @JvmOverloads constructor(
                         view.translationX = newX
                     else if (view.id != R.id.cardViewSettings && newX > 0)
                         view.translationX = newX
-                    if (newX < 0 && abs(newX) > threshold) { //свайп влево
+                    if (newX < 0
+                        //&& abs(newX) > threshold
+                        ) { //свайп влево
                         isDragging = false
                         onCardDragListener?.onCardSwiped(true)
                         view.animate().translationX(0f).apply {
                             startDelay = 400
                             duration = 100
                         }
-                    } else if (newX > 0 && abs(newX) > threshold) { //свайп вправо
+                    } else if (newX > 0
+                      //  && abs(newX) > threshold
+                        ) { //свайп вправо
                         isDragging = false
                         onCardDragListener?.onCardSwiped(false)
                         view.animate().translationX(0f).apply {

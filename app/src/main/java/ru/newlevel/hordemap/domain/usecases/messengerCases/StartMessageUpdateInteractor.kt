@@ -14,9 +14,6 @@ class StartMessageUpdateInteractor(private val messengerRepository: MessengerRep
 
     fun getMessageUpdate(): LiveData<List<MyMessageEntity>> = messengerRepository.getLocalMessageUpdate()
 
-
-    fun getDownloadProgress(): MutableLiveData<Int> = messengerRepository.getDownloadProgress()
-
     suspend fun startMessageUpdate() = withContext(Dispatchers.IO) {
             messengerRepository.startMessageUpdate()
     }
