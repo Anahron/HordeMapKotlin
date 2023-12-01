@@ -21,6 +21,7 @@ import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateInteractor
+import ru.newlevel.hordemap.domain.usecases.messengerCases.DeleteMessageUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.DownloadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 import ru.newlevel.hordemap.domain.usecases.messengerCases.UploadFileUseCase
@@ -139,6 +140,9 @@ val domainModule = module {
     factory {
         LogOutUseCase(settingsRepository = get())
     }
+    factory {
+        DeleteMessageUseCase(messengerRepository = get())
+    }
 
     single {
         GoogleAuthUiClient(
@@ -177,7 +181,8 @@ val domainModule = module {
             stopMessageUpdateInteractor = get(),
             sendMessageUseCase = get(),
             uploadFileUseCase = get(),
-            downloadFileUseCase = get()
+            downloadFileUseCase = get(),
+            deleteMessageUseCase = get()
         )
     }
 }

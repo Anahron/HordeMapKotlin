@@ -30,9 +30,10 @@ class MessengerRepositoryImpl(
         for (firebaseMessage in firebaseMessages) {
             val existingRoomMessage = messages.value?.find { it.timestamp == firebaseMessage.timestamp }
             if (existingRoomMessage != null) {
-                if (firebaseMessage.userName != existingRoomMessage.userName || firebaseMessage.selectedMarker != existingRoomMessage.selectedMarker || firebaseMessage.profileImageUrl != existingRoomMessage.profileImageUrl) {
+                if (firebaseMessage.userName != existingRoomMessage.userName || firebaseMessage.selectedMarker != existingRoomMessage.selectedMarker || firebaseMessage.profileImageUrl != existingRoomMessage.profileImageUrl || firebaseMessage.message != existingRoomMessage.message) {
                     val newMessage = existingRoomMessage.copy(
                         userName = firebaseMessage.userName,
+                        message = firebaseMessage.message,
                         selectedMarker = firebaseMessage.selectedMarker,
                         profileImageUrl = firebaseMessage.profileImageUrl
                     )
@@ -55,6 +56,9 @@ class MessengerRepositoryImpl(
     }
 
     override fun getLocalMessageUpdate(): LiveData<List<MyMessageEntity>> = messages
+    override fun deleteMessage(message: MyMessageEntity) {
+        messageRemoteStorage.deleteMessage(message)
+    }
 
     override suspend fun startMessageUpdate() {
         CoroutineScope(Dispatchers.Main).launch {

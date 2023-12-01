@@ -87,6 +87,10 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         return liveDataUsersProfiles
     }
 
+    override fun deleteMessage(message: MyMessageEntity) {
+        databaseReference.child(MESSAGE_PATH).child(message.timestamp.toString()).removeValue()
+    }
+
     override suspend fun sendUserData(userData: UserDataModel) {
         val geoDataPath = "$USERS_PROFILES_PATH/${userData.deviceID}"
         val updates: MutableMap<String, Any> = HashMap()

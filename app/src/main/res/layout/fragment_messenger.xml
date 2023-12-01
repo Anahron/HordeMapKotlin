@@ -184,6 +184,7 @@
                 android:ems="10"
                 android:hint="@string/entry_message"
                 android:inputType="textLongMessage"
+                android:imeOptions="flagNoExtractUi"
                 android:textSize="18sp"
                 tools:ignore="VisualLintTextFieldSize"
                 tools:layout_editor_absoluteY="294dp" />
@@ -244,17 +245,18 @@
             app:srcCompat="@drawable/img_marker_red"
             android:contentDescription="@string/todo"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <View
+            android:id="@+id/shadow"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:alpha="0"
+            android:background="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/rootLinearReply"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/topPanel" />
 
-    <View
-        android:id="@+id/shadow"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="40dp"
-        android:alpha="0"
-        android:background="@color/black"
-        app:layout_anchor="@+id/activityRoot"
-        app:layout_anchorGravity="center" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
             <include layout="@layout/messenger_choise_upload" />
 

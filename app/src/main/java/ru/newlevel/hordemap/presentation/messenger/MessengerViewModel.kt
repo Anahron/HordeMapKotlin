@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 
@@ -33,6 +34,9 @@ class MessengerViewModel(
         messengerUseCases.stopMessageUpdateInteractor.execute()
     }
 
+    fun deleteMessage(message: MyMessageEntity){
+        messengerUseCases.deleteMessageUseCase.execute(message)
+    }
     suspend fun sendMessage(text: String, replyId: String) {
         messengerUseCases.sendMessageUseCase.execute(text, replyId)
     }

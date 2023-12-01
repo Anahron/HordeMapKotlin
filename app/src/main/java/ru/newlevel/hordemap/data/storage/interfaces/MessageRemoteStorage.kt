@@ -12,4 +12,5 @@ interface MessageRemoteStorage {
     fun stopMessageUpdate()
 
     fun getProfilesInMessenger(): MutableLiveData<List<UserDataModel>>
+    fun deleteMessage(message: MyMessageEntity)
 }

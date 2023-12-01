@@ -1,7 +1,9 @@
 package ru.newlevel.hordemap.presentation.messenger
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -11,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.convertDpToPx
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.ItemMessageInBinding
@@ -25,6 +28,7 @@ class MessagesAdapter(
 
     private var messageDataModels: ArrayList<MyMessageEntity> = ArrayList()
     private var glide: RequestManager = Glide.with(context)
+    private var bottomPadding = context.convertDpToPx(80)
 
     fun setMessages(newList: ArrayList<MyMessageEntity>) {
         val diffCallback = MessageDiffCallback(messageDataModels, newList)
@@ -40,13 +44,15 @@ class MessagesAdapter(
     override fun onCreateViewHolder(
         parent: ViewGroup, viewType: Int
     ): MessageViewHolder {
-        val view = when (viewType) {
-            ITEM_IN -> LayoutInflater.from(parent.context).inflate(R.layout.item_message_in, parent, false)
-            else -> LayoutInflater.from(parent.context).inflate(R.layout.item_message_out, parent, false)
+        return when (viewType) {
+            ITEM_IN ->  MessageViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_message_in, parent, false)
+                , onMessageItemClickListener, glide, true)
+            else -> MessageViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_message_out, parent, false)
+                , onMessageItemClickListener, glide, false)
         }
-        return MessageViewHolder(view, onMessageItemClickListener, glide)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(
         holder: MessageViewHolder, position: Int
     ) {
@@ -56,8 +62,17 @@ class MessagesAdapter(
         val replyMessage = if (message.replyOn > 0) messageDataModels.find {
             it.timestamp == message.replyOn
         } else null
+        var x = 0f
+        var y = 0f
+        holder.itemView.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                x = event.rawX
+                y = if (position+1 == messageDataModels.size) event.rawY- bottomPadding else event.rawY - (bottomPadding/2)
+            }
+            false
+        }
         holder.itemView.setOnClickListener {
-            onMessageItemClickListener.onItemClick(message)
+            onMessageItemClickListener.onItemClick(message, holder.itemView, x, y, holder.isInMessage)
         }
         holder.bind(message, someUserMessage, replyMessage)
     }
@@ -71,7 +86,7 @@ class MessagesAdapter(
     }
 
     class MessageViewHolder(
-        view: View, private val onMessageItemClickListener: OnMessageItemClickListener, private val glide: RequestManager
+        view: View, private val onMessageItemClickListener: OnMessageItemClickListener, private val glide: RequestManager, val isInMessage: Boolean
     ) : RecyclerView.ViewHolder(view) {
 
         private val binding = ItemMessageInBinding.bind(view)
@@ -105,7 +120,7 @@ class MessagesAdapter(
                 replyMessageDataModel?.let {
                     val inflatedView =
                         LayoutInflater.from(itemView.context).inflate(R.layout.item_message_reply, replyView, false)
-                    MessageViewHolder(inflatedView, onMessageItemClickListener, glide).bindReply(it)
+                    MessageViewHolder(inflatedView, onMessageItemClickListener, glide, isInMessage).bindReply(it)
                     replyView.addView(inflatedView)
                     replyView.visibility = View.VISIBLE
                 }
@@ -153,7 +168,8 @@ class MessagesAdapter(
             ) + "Mb)"
             if (fileName.endsWith(".jpg")) {
                 imageView.visibility = View.VISIBLE
-                glide.load(messageDataModel.url).thumbnail(0.1f).placeholder(R.drawable.message_placeholder).timeout(30_000)
+                glide.load(messageDataModel.url).thumbnail(0.1f).placeholder(R.drawable.message_placeholder)
+                    .timeout(30_000)
                     .into(imageView)
                 if (!isReply) imageView.setOnClickListener {
                     onMessageItemClickListener.onImageClick(messageDataModel.url)
@@ -191,7 +207,7 @@ class MessagesAdapter(
     interface OnMessageItemClickListener {
         fun onButtonSaveClick(uri: String, fileName: String)
         fun onImageClick(url: String)
-        fun onItemClick(message: MyMessageEntity)
+        fun onItemClick(message: MyMessageEntity, itemView: View, x: Float, y: Float, isInMessage: Boolean)
         fun onReplyClick(message: MyMessageEntity)
     }
 

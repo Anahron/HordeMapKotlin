@@ -3,6 +3,8 @@ package ru.newlevel.hordemap.app
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -55,7 +57,11 @@ fun Context.getFileSizeFromUri(uri: Uri): Long {
         }
     } ?: 0
 }
-
+fun Context.copyTextInSystem(text: String){
+    val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipData = ClipData.newPlainText("Text", text)
+    clipboardManager.setPrimaryClip(clipData)
+}
 fun UserDataModel.mapToDomainModel(): UserDomainModel {
     return UserDomainModel(
         name = name,

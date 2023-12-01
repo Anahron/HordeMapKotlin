@@ -12,6 +12,7 @@ interface MessengerRepository {
 
     fun getLocalMessageUpdate(): LiveData<List<MyMessageEntity>>
 
+    fun deleteMessage(message: MyMessageEntity)
     fun stopMessageUpdate()
 
     suspend fun startMessageUpdate()

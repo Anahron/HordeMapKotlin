@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.View.GONE
@@ -38,7 +39,9 @@ import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.button.MaterialButton
 import com.jsibbold.zoomage.ZoomageView
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -48,13 +51,14 @@ import ru.newlevel.hordemap.app.REQUEST_CODE_CAMERA_PERMISSION
 import ru.newlevel.hordemap.app.REQUEST_CODE_WRITE_EXTERNAL_STORAGE
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
+import ru.newlevel.hordemap.app.blinkAndHideShadow
 import ru.newlevel.hordemap.app.convertDpToPx
+import ru.newlevel.hordemap.app.copyTextInSystem
 import ru.newlevel.hordemap.app.createTempImageFile
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.getFileSizeFromUri
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideShadowAnimate
-import ru.newlevel.hordemap.app.blinkAndHideShadow
 import ru.newlevel.hordemap.app.loadAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
@@ -84,6 +88,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var pickImage: ActivityResultLauncher<String>
     private lateinit var takePicture: ActivityResultLauncher<Uri>
     private lateinit var viewBehavior: View
+    private var isPopUpShow = false
+    private val handler = Handler(Looper.getMainLooper())
 
     private fun createActivityRegisters() {
         activityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
@@ -167,7 +173,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             )
         )
         usersPopupMenu.height = requireContext().convertDpToPx(200)
-        usersPopupMenu.isFocusable = true
+        usersPopupMenu.isFocusable = false
+        usersPopupMenu.isOutsideTouchable = true
         usersPopupMenu.elevation = 18f
         usersPopupMenu.contentView?.findViewById<RecyclerView>(R.id.rvUsersCount)?.let {
             usersRecyclerView = it
@@ -183,9 +190,13 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             setHasFixedSize(true)
             isNestedScrollingEnabled = false
         }
+        usersPopupMenu.setOnDismissListener {
+            handler.postDelayed({ isPopUpShow = false}, 300)
+        }
     }
 
     private fun showMainPopupMenu(itemDotsView: View) {
+        isPopUpShow = true
         binding.shadow.showShadowAnimate()
         usersPopupMenu.showAsDropDown(
             itemDotsView,
@@ -193,6 +204,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             0
         )
         usersPopupMenu.setOnDismissListener {
+            handler.postDelayed({ isPopUpShow = false}, 300)
             binding.shadow.hideShadowAnimate()
         }
     }
@@ -396,6 +408,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
     }
+
     override fun onButtonSaveClick(uri: String, fileName: String) {
         if (!isDownloadingState) {
             isDownloadingState = true
@@ -404,7 +417,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName)
             }
         } else {
-            Toast.makeText(requireContext(), requireContext().resources.getString(R.string.wait_download), Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), requireContext().resources.getString(R.string.wait_download), Toast.LENGTH_LONG)
+                .show()
             return
         }
     }
@@ -439,7 +453,85 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         binding.replyName.tag = ""
     }
 
-    override fun onItemClick(message: MyMessageEntity) {
+    private fun showOutMessagePopupMenu(itemView: View, message: MyMessageEntity, x: Float, y: Float) {
+        isPopUpShow = true
+        binding.shadow.showShadowAnimate()
+        val mainPopupMenu = PopupWindow(requireContext())
+        mainPopupMenu.inputMethodMode = PopupWindow.INPUT_METHOD_NEEDED
+        mainPopupMenu.contentView = layoutInflater.inflate(
+            R.layout.popup_message_out,
+            itemView.rootView as ViewGroup,
+            false
+        )
+        mainPopupMenu.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
+            )
+        )
+        mainPopupMenu.elevation = 18f
+        mainPopupMenu.isFocusable = false
+        mainPopupMenu.isOutsideTouchable = true
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteMessage)
+            ?.setOnClickListener {
+                mainPopupMenu.dismiss()
+                CoroutineScope(Dispatchers.IO).launch {
+                    messengerViewModel.deleteMessage(message)
+                }
+            }
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnEditMessage)
+            ?.setOnClickListener {
+                mainPopupMenu.dismiss()
+                binding.editTextMessage.setText(message.message)
+            }
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnReplyMessage)
+            ?.setOnClickListener {
+                mainPopupMenu.dismiss()
+                showReplyWindow(message)
+            }
+        mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
+        mainPopupMenu.setOnDismissListener {
+            binding.shadow.hideShadowAnimate()
+            handler.postDelayed({ isPopUpShow = false}, 300)
+        }
+    }
+
+    private fun showInMessagePopupMenu(itemView: View, message: MyMessageEntity, x: Float, y: Float) {
+        isPopUpShow = true
+        binding.shadow.showShadowAnimate()
+        val mainPopupMenu = PopupWindow(requireContext())
+        mainPopupMenu.inputMethodMode = PopupWindow.INPUT_METHOD_NEEDED
+        mainPopupMenu.contentView = layoutInflater.inflate(
+            R.layout.popup_message_in,
+            itemView.rootView as ViewGroup,
+            false
+        )
+        mainPopupMenu.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(),
+                R.drawable.round_white
+            )
+        )
+        mainPopupMenu.elevation = 18f
+        mainPopupMenu.isFocusable = false
+        mainPopupMenu.isOutsideTouchable = true
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnCopyMessage)?.setOnClickListener {
+            mainPopupMenu.dismiss()
+            requireContext().copyTextInSystem(message.message)
+        }
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnReplyMessage)
+            ?.setOnClickListener {
+                mainPopupMenu.dismiss()
+                showReplyWindow(message)
+            }
+        mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
+        mainPopupMenu.setOnDismissListener {
+            binding.shadow.hideShadowAnimate()
+            handler.postDelayed({ isPopUpShow = false}, 300)
+        }
+    }
+
+    private fun showReplyWindow(message: MyMessageEntity) {
         binding.rootLinearReply.visibility = VISIBLE
         binding.replyTextMessage.text = message.message
         val userName = requireContext().getString(R.string.reply_to) + " ${message.userName}"
@@ -450,9 +542,15 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
     }
 
+    override fun onItemClick(message: MyMessageEntity, itemView: View, x: Float, y: Float, isInMessage: Boolean) {
+        if (isInMessage && !isPopUpShow)
+            showInMessagePopupMenu(message = message, itemView = itemView, x = x, y = y)
+        else if (!isPopUpShow)
+            showOutMessagePopupMenu(message = message, itemView = itemView, x = x, y = y)
+    }
+
     override fun onReplyClick(message: MyMessageEntity) {
         val handler = Handler(Looper.getMainLooper())
-        Log.e(TAG, " onReplyClick ")
         val position = messageAdapter.getPosition(message)
         recyclerView.smoothScrollToPosition(position - 1)
         handler.postDelayed({
