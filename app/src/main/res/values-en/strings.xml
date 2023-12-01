@@ -100,4 +100,5 @@
     <string name="copy">Copy</string>
     <string name="editing">Editing:</string>
     <string name="upload_failed">Upload failed</string>
+    <string name="time_after_restart">Restart application required to update time to request</string>
 </resources>

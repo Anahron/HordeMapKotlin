@@ -412,7 +412,6 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                Log.e(TAG, "onStopTrackingTouch " + slider.value)
                 lifecycleScope.launch {
                     settingsViewModel.saveUser(currentUserSetting.copy(usersMarkerSize = slider.value.toInt()))
                     callback.onChangeMarkerSettings()
@@ -424,7 +423,6 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                Log.e(TAG, "onStopTrackingTouch " + slider.value)
                 lifecycleScope.launch {
                     settingsViewModel.saveUser(currentUserSetting.copy(staticMarkerSize = slider.value.toInt()))
                     callback.onChangeMarkerSettings()
@@ -438,11 +436,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
 
             override fun onStopTrackingTouch(slider: Slider) {
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(
-                        currentUserSetting.copy(
-                            timeToSendData = slider.value.toInt()
-                        )
-                    )
+                    settingsViewModel.saveUser(currentUserSetting.copy(timeToSendData = slider.value.toInt()))
+                    Toast.makeText(requireContext(), requireContext().getString(R.string.time_after_restart), Toast.LENGTH_SHORT).show()
                 }
             }
         })

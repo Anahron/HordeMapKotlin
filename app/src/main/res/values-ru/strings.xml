@@ -100,5 +100,6 @@
     <string name="reply">Ответить</string>
     <string name="copy">Копировать</string>
     <string name="editing">Правка:</string>
-    <string name="upload_failed">Upload failed</string>
+    <string name="upload_failed">Загрузка прервалась</string>
+    <string name="time_after_restart">Для обновления времени запроса требуется перезапустить приложение</string>
 </resources>

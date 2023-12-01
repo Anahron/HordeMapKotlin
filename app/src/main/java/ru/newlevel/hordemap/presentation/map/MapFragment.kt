@@ -83,7 +83,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     override fun onMapReady(gMap: GoogleMap) {
-        Log.e(TAG, "onMapReady" )
+        Log.e(TAG, "onMapReady")
         mapViewModel.turnToDefaultState()
         googleMap = gMap
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
@@ -299,7 +299,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
                 cameraUpdate(
                     myLocation.latitude, myLocation.longitude
                 )
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 makeLongText(getString(R.string.no_gps_connection))
             }
         }
@@ -445,7 +445,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
 
     override fun onChangeMarkerSettings() {
         userMarkerCollection.markers.forEach { marker -> marker.remove() }
-        staticMarkerCollection.markers.forEach { marker ->  marker.remove() }
+        staticMarkerCollection.markers.forEach { marker -> marker.remove() }
         mapViewModel.reCreateMarkers()
     }
 
@@ -473,6 +473,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             }
         }
     }
+
     override fun onAutoLoadClick(isAutoLoad: Boolean) {
         mapViewModel.setIsAutoLoadMap(isAutoLoad)
     }

@@ -76,7 +76,7 @@ class MyLocationManager : Service() {
     }
 
     private fun startService() {
-        Log.e("AAA", "startService()")
+        Log.e(TAG, "startService()")
         val notification = createNotification()
         startForeground(1, notification)
         handler.postDelayed({
@@ -85,6 +85,7 @@ class MyLocationManager : Service() {
             } catch (e: Exception){
                 30000
             }
+            Log.e(TAG, "locationRequest set with $timeToSendData")
             locationRequest =
                 LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData)
                     //TODO 0 для теста установить 10
