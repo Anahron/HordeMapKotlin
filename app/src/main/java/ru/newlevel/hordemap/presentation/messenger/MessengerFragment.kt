@@ -272,13 +272,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             setHasFixedSize(false)
             isNestedScrollingEnabled = false
             setOnScrollChangeListener { _, _, _, _, _ ->
-                if (!mRecyclerView.canScrollVertically(1)
-                //   && recyclerView.computeVerticalScrollRange() > recyclerView.height
-                ) {
+                if (!mRecyclerView.canScrollVertically(1) && (mRecyclerView.computeVerticalScrollRange() > mRecyclerView.height))
+                    binding.btnGoDown.hideToRight(500f)
+                else
                     binding.btnGoDown.showAtRight(500f)
-                } else {
-                   binding.btnGoDown.hideToRight(500f)
-                }
             }
         }
     }
@@ -380,7 +377,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     override fun onButtonSaveClick(uri: String, fileName: String) {
         if (!isDownloadingState) {
-            lifecycleScope.launch{
+            lifecycleScope.launch {
                 messengerViewModel.downloadFile(requireContext(), Uri.parse(uri), fileName).onFailure {
                     Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
                 }

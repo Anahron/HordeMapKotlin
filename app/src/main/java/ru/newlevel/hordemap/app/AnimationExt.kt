@@ -6,6 +6,7 @@ import android.animation.ValueAnimator
 import android.graphics.Color
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.TextView
 import androidx.core.animation.doOnEnd
 import ru.newlevel.hordemap.R
 
@@ -21,6 +22,7 @@ fun View.hideToRight(valuePx: Float) {
 
 fun View.showAtRight(valuePx: Float) {
     if (translationX == valuePx) {
+        this.visibility = TextView.VISIBLE
         translationX = valuePx
         val animator = ObjectAnimator.ofFloat(this, "translationX", 0f)
         animator.duration = 500
