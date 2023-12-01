@@ -412,14 +412,11 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
+                Log.e(TAG, "onStopTrackingTouch " + slider.value)
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(
-                        currentUserSetting.copy(
-                            usersMarkerSize = slider.value.toInt()
-                        )
-                    )
+                    settingsViewModel.saveUser(currentUserSetting.copy(usersMarkerSize = slider.value.toInt()))
+                    callback.onChangeMarkerSettings()
                 }
-                callback.onChangeMarkerSettings()
             }
         })
         staticMarkerSize.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
@@ -427,14 +424,11 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
+                Log.e(TAG, "onStopTrackingTouch " + slider.value)
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(
-                        currentUserSetting.copy(
-                            staticMarkerSize = slider.value.toInt()
-                        )
-                    )
+                    settingsViewModel.saveUser(currentUserSetting.copy(staticMarkerSize = slider.value.toInt()))
+                    callback.onChangeMarkerSettings()
                 }
-                callback.onChangeMarkerSettings()
             }
         })
 

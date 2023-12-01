@@ -62,6 +62,8 @@ import ru.newlevel.hordemap.app.getFileSizeFromUri
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideInputTextAnimation
 import ru.newlevel.hordemap.app.hideShadowAnimate
+import ru.newlevel.hordemap.app.hideToRight
+import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.loadAnimation
 import ru.newlevel.hordemap.app.showInputTextAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
@@ -76,29 +78,29 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private val binding: FragmentMessengerBinding by viewBinding()
     private val messengerViewModel by viewModel<MessengerViewModel>()
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var messageAdapter: MessagesAdapter
-    private lateinit var messageLayoutManager: LinearLayoutManager
-    private lateinit var usersRecyclerView: RecyclerView
-    private lateinit var usersRecyclerViewAdapter: UsersAdapter
-    private lateinit var userLayoutManager: LinearLayoutManager
-    private lateinit var usersPopupMenu: PopupWindow
+    private lateinit var mRecyclerView: RecyclerView
+    private lateinit var mMessageAdapter: MessagesAdapter
+    private lateinit var mMessageLayoutManager: LinearLayoutManager
+    private lateinit var mUsersRecyclerView: RecyclerView
+    private lateinit var mUsersRecyclerViewAdapter: UsersAdapter
+    private lateinit var mUserLayoutManager: LinearLayoutManager
+    private lateinit var mUsersPopupMenu: PopupWindow
+    private lateinit var mBottomSheetBehavior: BottomSheetBehavior<*>
+    private lateinit var mActivityLauncher: ActivityResultLauncher<String>
+    private lateinit var pickImage: ActivityResultLauncher<String>
+    private lateinit var takePicture: ActivityResultLauncher<Uri>
+    private lateinit var viewBehavior: View
     private var anim: ObjectAnimator? = null
     private var file: File? = null
     private lateinit var photoUri: Uri
     private var isDownloadingState = false
-    private lateinit var mBottomSheetBehavior: BottomSheetBehavior<*>
-    private lateinit var activityLauncher: ActivityResultLauncher<String>
-    private lateinit var pickImage: ActivityResultLauncher<String>
-    private lateinit var takePicture: ActivityResultLauncher<Uri>
-    private lateinit var viewBehavior: View
     private var isPopUpShow = false
     private val handler = Handler(Looper.getMainLooper())
     private var editMessageId: Long? = null
     private var replyMessageId: Long? = null
 
     private fun createActivityRegisters() {
-        activityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
+        mActivityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
             if (uri != null) {
                 val dialogFragment = SendFileDescriptionDialogFragment(
                     uri,
@@ -166,37 +168,37 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupUsersRecyclerView() {
-        usersPopupMenu = PopupWindow(requireContext())
-        usersPopupMenu.contentView = layoutInflater.inflate(
+        mUsersPopupMenu = PopupWindow(requireContext())
+        mUsersPopupMenu.contentView = layoutInflater.inflate(
             R.layout.popup_users,
             binding.ibUsers.rootView as ViewGroup,
             false
         )
-        usersPopupMenu.setBackgroundDrawable(
+        mUsersPopupMenu.setBackgroundDrawable(
             ContextCompat.getDrawable(
                 requireContext(),
                 R.drawable.round_white
             )
         )
-        usersPopupMenu.height = requireContext().convertDpToPx(200)
-        usersPopupMenu.isFocusable = false
-        usersPopupMenu.isOutsideTouchable = true
-        usersPopupMenu.elevation = 18f
-        usersPopupMenu.contentView?.findViewById<RecyclerView>(R.id.rvUsersCount)?.let {
-            usersRecyclerView = it
+        mUsersPopupMenu.height = requireContext().convertDpToPx(200)
+        mUsersPopupMenu.isFocusable = false
+        mUsersPopupMenu.isOutsideTouchable = true
+        mUsersPopupMenu.elevation = 18f
+        mUsersPopupMenu.contentView?.findViewById<RecyclerView>(R.id.rvUsersCount)?.let {
+            mUsersRecyclerView = it
         }
-        usersRecyclerViewAdapter = UsersAdapter()
-        userLayoutManager = LinearLayoutManager(requireContext()).apply {
+        mUsersRecyclerViewAdapter = UsersAdapter()
+        mUserLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = false
             initialPrefetchItemCount = 30
         }
-        usersRecyclerView.apply {
-            layoutManager = userLayoutManager
-            adapter = usersRecyclerViewAdapter
+        mUsersRecyclerView.apply {
+            layoutManager = mUserLayoutManager
+            adapter = mUsersRecyclerViewAdapter
             setHasFixedSize(true)
             isNestedScrollingEnabled = false
         }
-        usersPopupMenu.setOnDismissListener {
+        mUsersPopupMenu.setOnDismissListener {
             handler.postDelayed({ isPopUpShow = false }, 300)
         }
     }
@@ -204,24 +206,23 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private fun showMainPopupMenu(itemDotsView: View) {
         isPopUpShow = true
         binding.shadow.showShadowAnimate()
-        usersPopupMenu.showAsDropDown(
+        mUsersPopupMenu.showAsDropDown(
             itemDotsView,
             -requireContext().convertDpToPx(64),
             0
         )
-        usersPopupMenu.setOnDismissListener {
+        mUsersPopupMenu.setOnDismissListener {
             handler.postDelayed({ isPopUpShow = false }, 300)
             binding.shadow.hideShadowAnimate()
         }
     }
 
     private fun handleNewMessages(messages: List<MyMessageEntity>) {
-        val onDown =
-            !recyclerView.canScrollVertically(1) && recyclerView.computeVerticalScrollRange() > recyclerView.height
-        Log.e(TAG, "onDown = $onDown")
-        messageAdapter.setMessages(messages as ArrayList<MyMessageEntity>)
+        val onDown = !mRecyclerView.canScrollVertically(1)
+                && mRecyclerView.computeVerticalScrollRange() > mRecyclerView.height
+        mMessageAdapter.setMessages(messages as ArrayList<MyMessageEntity>)
         if (onDown) {
-            recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+            mRecyclerView.scrollToPosition(mMessageAdapter.itemCount - 1)
         }
     }
 
@@ -229,14 +230,14 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (messageAdapter.itemCount < 1)
+                if (mMessageAdapter.itemCount < 1)
                     delay(350)
                 messengerViewModel.startMessageUpdate()
                 messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
                     handleNewMessages(messages)
                 }
                 messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
-                    usersRecyclerViewAdapter.setMessages(profiles)
+                    mUsersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }
             }
@@ -260,53 +261,33 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupRecyclerView() {
-        messageAdapter = MessagesAdapter(this, requireContext())
-        messageLayoutManager = LinearLayoutManager(requireContext()).apply {
+        mMessageAdapter = MessagesAdapter(this, requireContext())
+        mMessageLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = true
             initialPrefetchItemCount = 30
         }
-        recyclerView = binding.recyclerViewMessages.apply {
-            layoutManager = messageLayoutManager
-            adapter = messageAdapter
+        mRecyclerView = binding.recyclerViewMessages.apply {
+            layoutManager = mMessageLayoutManager
+            adapter = mMessageAdapter
             setHasFixedSize(false)
             isNestedScrollingEnabled = false
             setOnScrollChangeListener { _, _, _, _, _ ->
-                if (!recyclerView.canScrollVertically(1)
+                if (!mRecyclerView.canScrollVertically(1)
                 //   && recyclerView.computeVerticalScrollRange() > recyclerView.height
                 ) {
-                    if (binding.btnGoDown.translationX != 500F) {
-                        showOrHideDownBtn(false)
-                    }
+                    binding.btnGoDown.showAtRight(500f)
                 } else {
-                    if (binding.btnGoDown.translationX == 500F) {
-                        showOrHideDownBtn(true)
-                        binding.btnGoDown.visibility = VISIBLE
-                    }
+                   binding.btnGoDown.hideToRight(500f)
                 }
             }
-        }
-    }
-
-    private fun showOrHideDownBtn(isNeedToShow: Boolean) {
-        val btnGoDown = binding.btnGoDown
-        if (isNeedToShow) {
-            btnGoDown.translationX = 500f
-            val animator = ObjectAnimator.ofFloat(btnGoDown, "translationX", 0f)
-            animator.duration = 500
-            animator.start()
-        } else {
-            btnGoDown.translationX = 0f
-            val animator = ObjectAnimator.ofFloat(btnGoDown, "translationX", 500f)
-            animator.duration = 500
-            animator.start()
         }
     }
 
     private fun setupScrollDownButton() {
         binding.btnGoDown.translationX = 500f
         binding.btnGoDown.setOnClickListener {
-            recyclerView.smoothScrollToPosition(
-                messageAdapter.itemCount.minus(1)
+            mRecyclerView.smoothScrollToPosition(
+                mMessageAdapter.itemCount.minus(1)
             )
         }
     }
@@ -386,7 +367,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
         viewBehavior.findViewById<ImageButton>(R.id.btn_bottom_file).setOnClickListener {
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            activityLauncher.launch("*/*")
+            mActivityLauncher.launch("*/*")
         }
 
     }
@@ -558,12 +539,12 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     override fun onReplyClick(message: MyMessageEntity) {
         val handler = Handler(Looper.getMainLooper())
-        val position = messageAdapter.getPosition(message)
-        recyclerView.smoothScrollToPosition(position - 1)
+        val position = mMessageAdapter.getPosition(message)
+        mRecyclerView.smoothScrollToPosition(position - 1)
         handler.postDelayed({
-            messageLayoutManager.findViewByPosition(position)?.findViewById<FrameLayout>(R.id.rootFrame)
+            mMessageLayoutManager.findViewByPosition(position)?.findViewById<FrameLayout>(R.id.rootFrame)
                 ?.blinkAndHideShadow()
-        }, 200)
+        }, 250)
     }
 
     private fun requestWriteExternalStoragePermission() {
