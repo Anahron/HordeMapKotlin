@@ -95,9 +95,9 @@
     <string name="map_empty">Нет сохраненной карты</string>
     <string name="logout">Выйти</string>
     <string name="no_gps_connection">Нет GPS соединения</string>
-    <string name="users">Users:</string>
-    <string name="reply_to">Ответить:</string>
-    <string name="edit">Edit</string>
-    <string name="reply">Reply</string>
-    <string name="copy">Copy</string>
+    <string name="reply_to">В ответ:</string>
+    <string name="edit">Править</string>
+    <string name="reply">Ответить</string>
+    <string name="copy">Копировать</string>
+    <string name="editing">Правка:</string>
 </resources>

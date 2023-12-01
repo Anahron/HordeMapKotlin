@@ -37,8 +37,8 @@ class MessengerViewModel(
     fun deleteMessage(message: MyMessageEntity){
         messengerUseCases.deleteMessageUseCase.execute(message)
     }
-    suspend fun sendMessage(text: String, replyId: String) {
-        messengerUseCases.sendMessageUseCase.execute(text, replyId)
+    suspend fun sendMessage(text: String, replyId: Long?, editMessage: Long?) {
+        messengerUseCases.sendMessageUseCase.execute(text, replyId, editMessage = editMessage)
     }
 
     fun sendFile(message: String, uri: Uri, fileName: String?, fileSize: Long) {

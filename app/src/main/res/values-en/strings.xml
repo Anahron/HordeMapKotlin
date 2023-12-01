@@ -94,9 +94,9 @@
     <string name="map_empty">No saved map</string>
     <string name="logout">Logout</string>
     <string name="no_gps_connection">No GPS connection</string>
-    <string name="users">Users:</string>
     <string name="reply_to">Reply to:</string>
     <string name="edit">Edit</string>
     <string name="reply">Reply</string>
     <string name="copy">Copy</string>
+    <string name="editing">Editing:</string>
 </resources>

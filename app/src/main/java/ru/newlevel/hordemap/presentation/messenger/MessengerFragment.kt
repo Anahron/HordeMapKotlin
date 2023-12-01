@@ -90,6 +90,8 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var viewBehavior: View
     private var isPopUpShow = false
     private val handler = Handler(Looper.getMainLooper())
+    private var editMessageId: Long? = null
+    private var replyMessageId: Long? = null
 
     private fun createActivityRegisters() {
         activityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
@@ -191,7 +193,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             isNestedScrollingEnabled = false
         }
         usersPopupMenu.setOnDismissListener {
-            handler.postDelayed({ isPopUpShow = false}, 300)
+            handler.postDelayed({ isPopUpShow = false }, 300)
         }
     }
 
@@ -204,7 +206,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             0
         )
         usersPopupMenu.setOnDismissListener {
-            handler.postDelayed({ isPopUpShow = false}, 300)
+            handler.postDelayed({ isPopUpShow = false }, 300)
             binding.shadow.hideShadowAnimate()
         }
     }
@@ -336,14 +338,13 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val text = binding.editTextMessage.text.toString()
                 if (text.isNotEmpty()) {
-                    val replyOn = binding.replyName.tag.toString()
                     lifecycleScope.launch(Dispatchers.IO) {
-                        messengerViewModel.sendMessage(text, replyOn)
+                        messengerViewModel.sendMessage(text, replyId = replyMessageId, editMessage = editMessageId)
                     }
                 }
                 binding.editTextMessage.setText("")
                 binding.editTextMessage.requestFocus()
-                closeReply()
+                closeBottomInfoWindow()
                 return@OnEditorActionListener true
             }
             false
@@ -354,12 +355,11 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         binding.buttonSend.setOnClickListener {
             val text = binding.editTextMessage.text.toString().trim()
             if (text.isNotEmpty()) {
-                val replyOn = binding.replyName.tag.toString()
                 lifecycleScope.launch(Dispatchers.IO) {
-                    messengerViewModel.sendMessage(text, replyOn)
+                    messengerViewModel.sendMessage(text, replyId = replyMessageId, editMessage = editMessageId)
                 }
             }
-            closeReply()
+            closeBottomInfoWindow()
             binding.editTextMessage.setText("")
             binding.editTextMessage.requestFocus()
         }
@@ -442,15 +442,16 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     private fun setUpCloseReplyButton() {
         binding.btnReplyClose.setOnClickListener {
-            closeReply()
+            closeBottomInfoWindow()
         }
     }
 
-    private fun closeReply() {
+    private fun closeBottomInfoWindow() {
         binding.rootLinearReply.visibility = GONE
+        editMessageId = null
+        replyMessageId = null
         binding.replyTextMessage.text = ""
         binding.replyName.text = ""
-        binding.replyName.tag = ""
     }
 
     private fun showOutMessagePopupMenu(itemView: View, message: MyMessageEntity, x: Float, y: Float) {
@@ -482,6 +483,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnEditMessage)
             ?.setOnClickListener {
                 mainPopupMenu.dismiss()
+                showEditWindow(message)
                 binding.editTextMessage.setText(message.message)
             }
         mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnReplyMessage)
@@ -492,7 +494,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
         mainPopupMenu.setOnDismissListener {
             binding.shadow.hideShadowAnimate()
-            handler.postDelayed({ isPopUpShow = false}, 300)
+            handler.postDelayed({ isPopUpShow = false }, 300)
         }
     }
 
@@ -527,16 +529,29 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
         mainPopupMenu.setOnDismissListener {
             binding.shadow.hideShadowAnimate()
-            handler.postDelayed({ isPopUpShow = false}, 300)
+            handler.postDelayed({ isPopUpShow = false }, 300)
         }
     }
 
     private fun showReplyWindow(message: MyMessageEntity) {
+        replyMessageId = message.timestamp
+        editMessageId = null
         binding.rootLinearReply.visibility = VISIBLE
         binding.replyTextMessage.text = message.message
         val userName = requireContext().getString(R.string.reply_to) + " ${message.userName}"
         binding.replyName.text = userName
-        binding.replyName.tag = message.timestamp
+        NameColors.values().find { it.id == message.selectedMarker }?.let {
+            binding.replyName.setTextColor(ContextCompat.getColor(requireContext(), it.resourceId))
+        }
+    }
+
+    private fun showEditWindow(message: MyMessageEntity) {
+        replyMessageId = if (message.replyOn > 0L) message.replyOn else null
+        editMessageId = message.timestamp
+        binding.rootLinearReply.visibility = VISIBLE
+        binding.replyTextMessage.text = message.message
+        binding.replyName.text = requireContext().getText(R.string.editing)
+        binding.replyTextMessage.tag = message.timestamp
         NameColors.values().find { it.id == message.selectedMarker }?.let {
             binding.replyName.setTextColor(ContextCompat.getColor(requireContext(), it.resourceId))
         }

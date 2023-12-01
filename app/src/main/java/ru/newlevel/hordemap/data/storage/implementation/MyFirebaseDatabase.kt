@@ -92,16 +92,8 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     }
 
     override suspend fun sendUserData(userData: UserDataModel) {
-        val geoDataPath = "$USERS_PROFILES_PATH/${userData.deviceID}"
-        val updates: MutableMap<String, Any> = HashMap()
-        updates["$geoDataPath/name"] = userData.name
-        updates["$geoDataPath/deviceID"] = userData.deviceID
-        updates["$geoDataPath/profileImageUrl"] = userData.profileImageUrl
-        updates["$geoDataPath/authName"] = userData.authName
-        updates["$geoDataPath/selectedMarker"] = userData.selectedMarker
-        updates["$geoDataPath/timeToSendData"] = userData.timeToSendData
         return withContext(Dispatchers.IO) {
-            val updateTask = databaseReference.updateChildren(updates)
+            val updateTask =  databaseReference.child("$USERS_PROFILES_PATH/${userData.deviceID}").setValue(userData)
             updateTask.await()
             if (updateTask.isSuccessful)
                 updateAllUserMessages(userData)
@@ -118,6 +110,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                 Log.e(TAG, "Failed to delete profile: ${it.message}")
             }
     }
+
 
     private fun updateAllUserMessages(userData: UserDataModel) {
         val deviceId = userData.deviceID
