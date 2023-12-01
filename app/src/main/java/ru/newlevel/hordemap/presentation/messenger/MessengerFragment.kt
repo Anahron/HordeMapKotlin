@@ -452,6 +452,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         replyMessageId = null
         binding.replyTextMessage.text = ""
         binding.replyName.text = ""
+        binding.editTextMessage.setText("")
     }
 
     private fun showOutMessagePopupMenu(itemView: View, message: MyMessageEntity, x: Float, y: Float) {
