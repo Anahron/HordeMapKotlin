@@ -26,7 +26,7 @@ val presentationModule = module {
         MapViewModel(
             mapUseCases = get(),
             markersUtils = get(),
-           getUserSettingsUseCase = get()
+            getUserSettingsUseCase = get()
         )
     }
 

@@ -48,6 +48,7 @@ import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
 import java.util.Date
 import kotlin.math.roundToInt
 
+@Suppress("DEPRECATION")
 class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, SettingsFragment.OnChangeSettings {
 
     private val mapViewModel by viewModel<MapViewModel>()

@@ -212,6 +212,7 @@
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="5dp"
                 android:background="@color/white"
+                android:visibility="gone"
                 android:contentDescription="@string/todo"
                 android:padding="5dp"
                 android:scaleType="fitCenter"

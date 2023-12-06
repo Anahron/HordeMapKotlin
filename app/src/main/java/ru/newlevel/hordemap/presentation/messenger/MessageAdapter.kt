@@ -168,7 +168,7 @@ class MessagesAdapter(
             ) + "Mb)"
             if (fileName.endsWith(".jpg")) {
                 imageView.visibility = View.VISIBLE
-                glide.load(messageDataModel.url).thumbnail(0.1f).placeholder(R.drawable.message_placeholder)
+                glide.load(messageDataModel.url).thumbnail(0.1f).placeholder(R.drawable.downloaded_image)
                     .timeout(30_000)
                     .into(imageView)
                 if (!isReply) imageView.setOnClickListener {

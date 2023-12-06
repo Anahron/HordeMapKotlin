@@ -6,6 +6,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/round_white"
+    android:layout_margin="16dp"
     android:elevation="8dp"
     app:cardCornerRadius="8dp">
 
@@ -14,7 +15,7 @@
         android:layout_height="wrap_content"
         android:background="@color/transparent"
         android:orientation="vertical"
-        android:padding="15dp">
+        android:padding="8dp">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textView3"
@@ -23,13 +24,13 @@
             android:padding="4dp"
             android:text="@string/added_image"
             android:textColor="@color/main_green_dark"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/fileDiscriptions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="4dp"
+            android:layout_marginBottom="6dp"
             android:background="@drawable/border"
             android:padding="6dp"
             android:textColor="@color/main_green_dark"
@@ -45,7 +46,7 @@
             android:layout_gravity="center_horizontal"
             android:adjustViewBounds="true"
             android:contentDescription="@string/todo"
-            android:maxHeight="360dp"
+            android:maxHeight="260dp"
             android:scaleType="centerInside"
             android:src="@drawable/downloaded_image" />
 
@@ -53,7 +54,7 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+
             android:hint="@string/descriptions"
             android:textColorHint="@color/main_green_dark"
             app:boxCornerRadiusBottomEnd="7dp"

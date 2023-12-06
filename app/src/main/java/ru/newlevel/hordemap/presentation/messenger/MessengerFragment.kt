@@ -528,21 +528,30 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     override fun onItemClick(message: MyMessageEntity, itemView: View, x: Float, y: Float, isInMessage: Boolean) {
-        if (isInMessage && !isPopUpShow)
-            showInMessagePopupMenu(message = message, itemView = itemView, x = x, y = y)
-        else if (!isPopUpShow)
-            showOutMessagePopupMenu(message = message, itemView = itemView, x = x, y = y)
+        if ( mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+            mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        else {
+            if (isInMessage && !isPopUpShow)
+                showInMessagePopupMenu(message = message, itemView = itemView, x = x, y = y)
+            else if (!isPopUpShow)
+                showOutMessagePopupMenu(message = message, itemView = itemView, x = x, y = y)
+        }
     }
 
     override fun onReplyClick(message: MyMessageEntity) {
-        val handler = Handler(Looper.getMainLooper())
-        val position = mMessageAdapter.getPosition(message)
-        mRecyclerView.smoothScrollToPosition(position - 1)
-        handler.postDelayed({
-            mMessageLayoutManager.findViewByPosition(position)?.findViewById<FrameLayout>(R.id.rootFrame)
-                ?.blinkAndHideShadow()
-        }, 250)
+        if ( mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+            mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        else {
+            val handler = Handler(Looper.getMainLooper())
+            val position = mMessageAdapter.getPosition(message)
+            mRecyclerView.smoothScrollToPosition(position - 1)
+            handler.postDelayed({
+                mMessageLayoutManager.findViewByPosition(position)?.findViewById<FrameLayout>(R.id.rootFrame)
+                    ?.blinkAndHideShadow()
+            }, 250)
+        }
     }
+
 
     private fun requestWriteExternalStoragePermission() {
         if (!requireContext().hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
