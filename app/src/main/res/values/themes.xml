@@ -33,12 +33,13 @@
 
     <!--Input field style-->
     <style name="MyEditText" parent="Theme.AppCompat.Light">
+        <item name="android:textColor">@color/slate_800</item>
+        <item name="android:editTextColor">@color/slate_800</item>
+        <item name="android:textColorPrimary">@color/slate_800</item>
         <item name="colorAccent">@color/slate_800</item>
         <item name="colorPrimary">@color/slate_800</item>
         <item name="colorPrimaryDark">@color/slate_800</item>
         <item name="android:colorControlHighlight">@color/main_green</item>
-<!--        <item name="selectableItemBackground">@drawable/selectable_item_background</item>-->
-<!--       <item name="android:selectableItemBackground">@drawable/selectable_item_background</item>-->
         <item name="colorControlNormal">@color/slate_800</item>
         <item name="colorControlActivated">@color/black</item>
         <item name="cursorColor">@color/black</item>
