@@ -282,9 +282,12 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             )
         )
         mapViewModel.distanceText.observe(viewLifecycleOwner) {
-            lifecycleScope.launch(Dispatchers.Main) {
+            if (it.isNotEmpty()) {
                 binding.distanceTextView.visibility = View.VISIBLE
                 binding.distanceTextView.text = it
+            }
+            else {
+                binding.distanceTextView.visibility = View.GONE
             }
         }
     }

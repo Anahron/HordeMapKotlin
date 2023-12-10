@@ -19,7 +19,7 @@ class MarkersItems {
         MARKER_6(R.drawable.marker_point6,16),
         MARKER_7(R.drawable.marker_point7,17),
         MARKER_8(R.drawable.marker_point8,18),
-        MARKER_9(R.drawable.marker_point9,18)
+        MARKER_9(R.drawable.marker_point9,19)
     }
     enum class UsersMarkersItem(val resourceId: Int,val id: Int) {
         RED(R.drawable.img_marker_red, 0),

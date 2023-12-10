@@ -100,6 +100,7 @@ class MapViewModel(
     }
 
     fun removeRoute() {
+        _distanceText.postValue("")
         routePolyline?.remove()
         routePolyline = null
     }
@@ -122,10 +123,6 @@ class MapViewModel(
     fun sendMarker(latLng: LatLng, description: String, checkedItem: Int) {
         mapUseCases.sendStaticMarkerUseCase.execute(latLng, description, checkedItem)
     }
-
-//    fun setUriForMap(uri: Uri) {
-//        _mapUri.postValue(uri)
-//    }
 
     fun cleanUriForMap() {
         _mapUri.postValue(null)
