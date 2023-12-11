@@ -18,8 +18,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -40,9 +42,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     private val settingsFragment: SettingsFragment by lazy { SettingsFragment(mainFragment) }
     private val messengerFragment: MessengerFragment by lazy { MessengerFragment() }
     private val googleAuthUiClient by inject<GoogleAuthUiClient>()
+    private val mainViewModel by viewModel<MainViewModel>()
     private lateinit var currentFragment: Fragment
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var navView: BottomNavigationView
+    private var syncJob: Job? = null
+    private var newMessageJob: Job? = null
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,6 +68,23 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         onBackPressedListener()
     }
 
+    private fun newMessageHandler() {
+       syncJob = lifecycleScope.launch {
+            mainViewModel.syncMessageData()
+        }
+        newMessageJob = lifecycleScope.launch {
+            mainViewModel.newMessageAnnounced.collect {
+                if (it > 0)
+                    navView.getOrCreateBadge(R.id.messengerFragment).apply {
+                        isVisible = true
+                        number = it
+                    }
+                else
+                    navView.getOrCreateBadge(R.id.messengerFragment).isVisible = false
+            }
+        }
+    }
+
     private fun onBackPressedListener() {
         this.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -81,6 +103,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
                     showFragment(messengerFragment)
                     hideNavView()
+                    mainViewModel.resetNewMessageCount()
                     true
                 }
 
@@ -162,7 +185,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
             ).replace(R.id.container, mainFragment).addToBackStack(null).commit()
             currentFragment = mainFragment
             navView.visibility = ViewGroup.VISIBLE
+            newMessageHandler()
         } else {
+            syncJob?.cancel()
+            newMessageJob?.cancel()
             navView.visibility = ViewGroup.GONE
             goToRequestsPermissions()
         }
@@ -190,6 +216,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 
     override fun logOut() {
+        syncJob?.cancel()
+        newMessageJob?.cancel()
         lifecycleScope.launch {
             googleAuthUiClient.signOut()
         }

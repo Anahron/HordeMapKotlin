@@ -2,6 +2,7 @@ package ru.newlevel.hordemap.di
 
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import ru.newlevel.hordemap.presentation.MainViewModel
 import ru.newlevel.hordemap.presentation.map.MapViewModel
 import ru.newlevel.hordemap.presentation.messenger.MessengerViewModel
 import ru.newlevel.hordemap.presentation.permissions.PermissionViewModel
@@ -27,6 +28,11 @@ val presentationModule = module {
             mapUseCases = get(),
             markersUtils = get(),
             getUserSettingsUseCase = get()
+        )
+    }
+    viewModel {
+        MainViewModel(
+            messageUpdateInteractor = get()
         )
     }
 

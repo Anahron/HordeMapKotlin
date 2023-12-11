@@ -55,18 +55,37 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
-    override fun getMessageUpdate(): MutableLiveData<List<MyMessageEntity>> {
-        Log.e(TAG, "startMessageUpdate() вызван")
+    override fun getMessageUpdate(): Flow<List<MyMessageEntity>> = callbackFlow{
+       val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val messages = ArrayList<MyMessageEntity>()
+                for (snap in snapshot.children) {
+                    val message: MyMessageEntity? = snap.getValue(MyMessageEntity::class.java)
+                    if (message != null) {
+                        messages.add(message)
+                    }
+                }
+                if (messages.isNotEmpty()) {
+                   trySend(messages)
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
         databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
-            .addValueEventListener(messageEventListener)
-        return liveDataMessageDataModel
+            .addValueEventListener(listener)
+        awaitClose{
+            Log.e(TAG, "awaitClose in getMessageUpdate")
+            databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
+                .removeEventListener(listener)
+        }
     }
 
     override fun getUserMarkerUpdates(): Flow<List<MarkerDataModel>> {
         return callbackFlow {
             val listener = userDatabaseReference.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    Log.e(TAG, "onDataChange in userDatabaseReference")
                     val savedUserMarkers: ArrayList<MarkerDataModel> = ArrayList()
                     val timeNow = System.currentTimeMillis()
                     for (snapshot in dataSnapshot.children) {
@@ -110,7 +129,6 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     override fun getStaticMarkerUpdates(): Flow<List<MarkerDataModel>> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                Log.e(TAG, "onDataChange in staticDatabaseReference")
                 val savedStaticMarkers: ArrayList<MarkerDataModel> = ArrayList()
                 for (snapshot in dataSnapshot.children) {
                     try {

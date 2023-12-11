@@ -25,8 +25,7 @@ import ru.newlevel.hordemap.domain.usecases.messengerCases.DownloadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 import ru.newlevel.hordemap.domain.usecases.messengerCases.UploadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.SendMessageUseCase
-import ru.newlevel.hordemap.domain.usecases.messengerCases.StartMessageUpdateInteractor
-import ru.newlevel.hordemap.domain.usecases.messengerCases.StopMessageUpdateInteractor
+import ru.newlevel.hordemap.domain.usecases.messengerCases.MessageUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteAllTracksUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteSessionLocationUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.GetSessionLocationsUseCase
@@ -42,12 +41,9 @@ import ru.newlevel.hordemap.presentation.sign_in.GoogleAuthUiClient
 val domainModule = module {
 
     factory {
-        StartMessageUpdateInteractor(messengerRepository = get())
+        MessageUpdateInteractor(messengerRepository = get())
     }
 
-    factory {
-        StopMessageUpdateInteractor(messengerRepository = get())
-    }
     factory {
         SendMessageUseCase(messengerRepository = get())
     }
@@ -75,6 +71,7 @@ val domainModule = module {
     factory {
         LoadLastGameMapUseCase()
     }
+
 
     factory {
         DownloadFileUseCase(messengerRepository = get())
@@ -172,8 +169,7 @@ val domainModule = module {
     }
     single {
         MessengerUseCases(
-            startMessageUpdateInteractor = get(),
-            stopMessageUpdateInteractor = get(),
+            messageUpdateInteractor = get(),
             sendMessageUseCase = get(),
             uploadFileUseCase = get(),
             downloadFileUseCase = get(),

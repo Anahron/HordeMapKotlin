@@ -12,18 +12,11 @@ import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 
 class MessengerViewModel(private val messengerUseCases: MessengerUseCases) : ViewModel() {
 
-    var messagesLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
+    private val _messagesDataFlow: Flow<List<MyMessageEntity>> = messengerUseCases.messageUpdateInteractor.getMessageUpdate()
+    val messagesDataFlow get(): Flow<List<MyMessageEntity>> = _messagesDataFlow
 
-    private val usersProfileMutableLiveData: Flow<List<UserDomainModel>> =  messengerUseCases.startMessageUpdateInteractor.getUsersProfiles()
-    val usersProfileLiveData get(): Flow<List<UserDomainModel>> = usersProfileMutableLiveData
-
-    suspend fun startMessageUpdate() {
-        messengerUseCases.startMessageUpdateInteractor.startMessageUpdate()
-    }
-
-    fun stopMessageUpdate() {
-        messengerUseCases.stopMessageUpdateInteractor.execute()
-    }
+    private val _usersProfileDataFlow: Flow<List<UserDomainModel>> =  messengerUseCases.messageUpdateInteractor.getUsersProfiles()
+    val usersProfileDataFlow get(): Flow<List<UserDomainModel>> = _usersProfileDataFlow
 
     fun deleteMessage(message: MyMessageEntity){
         messengerUseCases.deleteMessageUseCase.execute(message)

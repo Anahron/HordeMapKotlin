@@ -13,6 +13,7 @@ const val KEY_USER_ID = "keyUserId"
 const val KEY_AUTH_NAME = "keyAuthName"
 const val KEY_PROFILE_URL = "keyProfileUrl"
 const val KEY_IS_AUTO_LOAD = "isAutoLoad"
+const val KEY_NEW_MESSAGES_COUNT = "keyNewMessages_count"
 
 const val DEFAULT_SIZE = 60
 const val DEFAULT_TIME = 30

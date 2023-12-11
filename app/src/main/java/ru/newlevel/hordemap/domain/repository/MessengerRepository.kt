@@ -2,7 +2,6 @@ package ru.newlevel.hordemap.domain.repository
 
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.LiveData
 import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
@@ -10,16 +9,24 @@ import ru.newlevel.hordemap.data.storage.models.UserDataModel
 interface MessengerRepository {
     suspend fun sendMessage(message: MyMessageEntity)
 
-    fun getLocalMessageUpdate(): LiveData<List<MyMessageEntity>>
+    suspend fun insertLocalMessages(messages: List<MyMessageEntity>)
 
-    fun deleteMessage(message: MyMessageEntity)
-    fun stopMessageUpdate()
+    suspend fun insertLocalMessage(message: MyMessageEntity)
 
-    suspend fun startMessageUpdate()
+    suspend fun updateLocalMessage(newMessage: MyMessageEntity)
+    suspend fun deleteLocalMessage(message: MyMessageEntity)
+
+    fun getLocalMessageUpdate(): Flow<List<MyMessageEntity>>
+
+    fun getRemoteMessagesUpdate(): Flow<List<MyMessageEntity>>
+
+    fun deleteRemoteMessage(message: MyMessageEntity)
+    fun getNewMessageCount(): Flow<Int>
+    fun incrementNewMessageCount(increment: Int)
 
     suspend fun uploadFile(uri: Uri, fileName: String?): Result<Uri>
 
     suspend fun downloadFile(context: Context, uri: Uri, fileName: String?): Result<Boolean>
 
-    fun getUsersProfiles(): Flow<List<UserDataModel>>
+    fun getUsersProfilesUpdate(): Flow<List<UserDataModel>>
 }

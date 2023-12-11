@@ -230,20 +230,23 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (mMessageAdapter.itemCount < 1)
-                    delay(350)
-                messengerViewModel.startMessageUpdate()
-                messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
-                    handleNewMessages(messages)
-                }
-                messengerViewModel.usersProfileLiveData.collect { profiles ->
+                messengerViewModel.usersProfileDataFlow.collect { profiles ->
                     Log.e(TAG, " usersProfileLiveData.collect $profiles")
                     mUsersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }
             }
-            Log.e(TAG, " messengerViewModel.stopMessageUpdate()")
-            messengerViewModel.stopMessageUpdate()
+            Log.e(TAG, " messengerViewModel.usersProfileLiveData.collect stop")
+        }
+        lifecycle.coroutineScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (mMessageAdapter.itemCount < 1)
+                    delay(350)
+                messengerViewModel.messagesDataFlow.collect { messages ->
+                    handleNewMessages(messages)
+                }
+            }
+            Log.e(TAG, "messengerViewModel.messagesLiveData.collect stop")
         }
     }
 
