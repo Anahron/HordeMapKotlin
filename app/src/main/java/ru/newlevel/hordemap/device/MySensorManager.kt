@@ -4,35 +4,29 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import ru.newlevel.hordemap.app.TAG
 
-class MySensorManager(private val sensorManager: SensorManager) : SensorEventListener {
-    private val mutableLiveDataEvent = MutableLiveData<SensorEvent>()
-    private val liveDataEvent: LiveData<SensorEvent> get() = mutableLiveDataEvent
+class MySensorManager(private val sensorManager: SensorManager){
 
-    fun compassOFF() {
-        sensorManager.unregisterListener(this)
-    }
+    fun getCompassData(): Flow<FloatArray> {
+        return channelFlow {
+            val listener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
+                        channel.trySend(event.values).isSuccess }
+                }
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+            }
+            sensorManager.registerListener(listener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_STATUS_ACCURACY_HIGH or 80000)
 
-    fun compassON(): LiveData<SensorEvent> {
-        sensorManager.unregisterListener(this)
-        sensorManager.registerListener(
-            this,
-            sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-            SensorManager.SENSOR_STATUS_ACCURACY_HIGH or 80000
-        )
-        return liveDataEvent
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
-            event.let {
-                mutableLiveDataEvent.postValue(it)
+            awaitClose {
+                Log.e(TAG, "sensorManager.unregisterListener(listener)")
+                sensorManager.unregisterListener(listener)
             }
         }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 }

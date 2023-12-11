@@ -1,6 +1,6 @@
 package ru.newlevel.hordemap.data.storage.interfaces
 
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 
 interface MarkersRemoteStorage {
@@ -8,11 +8,9 @@ interface MarkersRemoteStorage {
 
     fun sendUserMarker(markerModel: MarkerDataModel)
 
-    fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>>
+    fun getUserMarkerUpdates(): Flow<List<MarkerDataModel>>
 
-    fun startStaticMarkerUpdates(): MutableLiveData<List<MarkerDataModel>>
-
-    fun stopMarkerUpdates()
+    fun getStaticMarkerUpdates(): Flow<List<MarkerDataModel>>
 
     fun sendStaticMarker(markerModel: MarkerDataModel)
 }

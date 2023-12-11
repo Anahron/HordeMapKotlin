@@ -1,11 +1,8 @@
 package ru.newlevel.hordemap.domain.repository
 
-import android.hardware.SensorEvent
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.Flow
 
 
 interface SensorRepository {
-    fun startSensorEventListener(): LiveData<SensorEvent>
-
-    fun stopSensorEventListener()
+    fun getCompassData(): Flow<FloatArray>
 }

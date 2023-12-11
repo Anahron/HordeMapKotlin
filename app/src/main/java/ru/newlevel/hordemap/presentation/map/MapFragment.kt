@@ -18,7 +18,10 @@ import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -30,7 +33,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.data.kml.KmlLayer
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.xmlpull.v1.XmlPullParserException
@@ -97,46 +100,64 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     private fun markerStateObserver() {
+        val lifecycle = viewLifecycleOwner.lifecycle
+        lifecycle.coroutineScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mapViewModel.userMarkersFlow.collect { data ->
+                    mapViewModel.createUsersMarkers(
+                        data = data,
+                        markerCollection = userMarkerCollection,
+                        context = requireContext()
+                    )
+                    Log.e(TAG, "userMarkersLiveData.collect UserMarkerData $data")
+                }
+            }
+        }
+        lifecycle.coroutineScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mapViewModel.staticMarkersFlow.collect { data ->
+                    staticMarkerCollection.markers.forEach { marker -> marker.remove() }
+                    mapViewModel.createStaticMarkers(
+                        data = data,
+                        markerCollection = staticMarkerCollection,
+                        context = requireContext()
+                    )
+                    Log.e(TAG, "staticMarkersLiveData.collect StaticMarkersData $data")
+                }
+            }
+        }
+
         mapViewModel.state.observe(this) { state ->
             when (state) {
-                is MapState.LoadingState -> {
-                }
+                is MapState.LoadingState -> {}
 
                 is MapState.DefaultState -> {
-                    startMarkerObservers()
+                    staticMarkerCollection.showAll()
+                    userMarkerCollection.showAll()
                     binding.ibMarkers.setBackgroundResource(R.drawable.img_map_show_markers)
-                    mapViewModel.userMarkersLiveData.observe(viewLifecycleOwner) {
-                        mapViewModel.createUsersMarkers(
-                            it, markerCollection = userMarkerCollection, requireContext()
-                        )
-                    }
-                    mapViewModel.staticMarkersLiveData.observe(viewLifecycleOwner) {
-                        staticMarkerCollection.markers.forEach { marker -> marker.remove() }
-                        mapViewModel.createStaticMarkers(
-                            it, markerCollection = staticMarkerCollection, requireContext()
-                        )
-                    }
                 }
 
                 is MapState.MarkersOffState -> {
-                    stopMarkerObservers()
                     staticMarkerCollection.hideAll()
                     userMarkerCollection.hideAll()
                     binding.ibMarkers.setBackgroundResource(R.drawable.img_map_hide_markers)
                 }
-
-                else -> {}
             }
         }
     }
 
     @SuppressLint("SetTextI18n")
     private fun compassObserver() {
-        mapViewModel.compassAngle.observe(viewLifecycleOwner) { angle ->
-            binding.imgCompass.visibility = View.VISIBLE
-            binding.tvCompass.visibility = View.VISIBLE
-            binding.imgCompass.rotation = -angle
-            binding.tvCompass.text = Math.round(if (angle > 0) angle else angle + 360).toString() + "\u00B0 "
+        val lifecycle = viewLifecycleOwner.lifecycle
+        lifecycle.coroutineScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mapViewModel.compassAngle.collect { angle ->
+                    binding.imgCompass.visibility = View.VISIBLE
+                    binding.tvCompass.visibility = View.VISIBLE
+                    binding.imgCompass.rotation = -angle
+                    binding.tvCompass.text = (if (angle > 0) angle else angle + 360).roundToInt().toString() + "\u00B0 "
+                }
+            }
         }
     }
 
@@ -249,10 +270,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         mapViewModel.polygon.value?.remove()
     }
 
-    private fun stopMarkerObservers() {
-        mapViewModel.stopMarkerUpdates()
-    }
-
     private fun cameraUpdate(latitude: Double, longitude: Double) {
         val update = CameraUpdateFactory.newLatLngZoom(
             LatLng(
@@ -260,10 +277,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             ), 14F
         )
         googleMap.animateCamera(update)
-    }
-
-    private fun startMarkerObservers() {
-        mapViewModel.startMarkerUpdates()
     }
 
     private fun startBackgroundWork() {
@@ -285,8 +298,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             if (it.isNotEmpty()) {
                 binding.distanceTextView.visibility = View.VISIBLE
                 binding.distanceTextView.text = it
-            }
-            else {
+            } else {
                 binding.distanceTextView.visibility = View.GONE
             }
         }
@@ -420,16 +432,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         )
     }
 
-    override fun onPause() {
-        super.onPause()
-        mapViewModel.compassDeActivate()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        mapViewModel.compassActivate()
-    }
-
     override fun onDetach() {
         mapViewModel.stopLocationUpdates()
         val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
@@ -450,7 +452,20 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     override fun onChangeMarkerSettings() {
         userMarkerCollection.markers.forEach { marker -> marker.remove() }
         staticMarkerCollection.markers.forEach { marker -> marker.remove() }
-        mapViewModel.reCreateMarkers()
+        lifecycleScope.launch {
+            mapViewModel.createStaticMarkers(
+                data = mapViewModel.staticMarkersFlow.first(),
+                markerCollection = staticMarkerCollection,
+                context = requireContext()
+            )
+        }
+        lifecycleScope.launch {
+            mapViewModel.createUsersMarkers(
+                data = mapViewModel.userMarkersFlow.first(),
+                markerCollection = userMarkerCollection,
+                context = requireContext()
+            )
+        }
     }
 
     override fun onLoadLastGameMapClick() {

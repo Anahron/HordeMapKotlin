@@ -3,7 +3,7 @@ package ru.newlevel.hordemap.domain.repository
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
@@ -21,5 +21,5 @@ interface MessengerRepository {
 
     suspend fun downloadFile(context: Context, uri: Uri, fileName: String?): Result<Boolean>
 
-    fun getUsersProfiles(): MutableLiveData<List<UserDataModel>>
+    fun getUsersProfiles(): Flow<List<UserDataModel>>
 }

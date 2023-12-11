@@ -1,9 +1,9 @@
 package ru.newlevel.hordemap.domain.usecases.messengerCases
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.app.mapToDomainModel
 import ru.newlevel.hordemap.data.db.MyMessageEntity
@@ -15,16 +15,12 @@ class StartMessageUpdateInteractor(private val messengerRepository: MessengerRep
     fun getMessageUpdate(): LiveData<List<MyMessageEntity>> = messengerRepository.getLocalMessageUpdate()
 
     suspend fun startMessageUpdate() = withContext(Dispatchers.IO) {
-            messengerRepository.startMessageUpdate()
+        messengerRepository.startMessageUpdate()
     }
 
-    suspend fun getUsersProfiles(): MutableLiveData<List<UserDomainModel>> {
-        return withContext(Dispatchers.IO) {
-            messengerRepository.getUsersProfiles().map {
-                it.map { s ->
-                    s.mapToDomainModel()
-                }
-            } as MutableLiveData<List<UserDomainModel>>
+   fun getUsersProfiles(): Flow<List<UserDomainModel>> = messengerRepository.getUsersProfiles().map {
+        it.map { s ->
+            s.mapToDomainModel()
         }
     }
 }

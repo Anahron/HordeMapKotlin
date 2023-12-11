@@ -2,26 +2,22 @@ package ru.newlevel.hordemap.presentation.messenger
 
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 
-class MessengerViewModel(
-    private val messengerUseCases: MessengerUseCases
-) : ViewModel() {
+class MessengerViewModel(private val messengerUseCases: MessengerUseCases) : ViewModel() {
 
     var messagesLiveData = messengerUseCases.startMessageUpdateInteractor.getMessageUpdate()
 
-    private var usersProfileMutableLiveData = MutableLiveData<List<UserDomainModel>>()
-    val usersProfileLiveData get(): LiveData<List<UserDomainModel>> = usersProfileMutableLiveData
+    private val usersProfileMutableLiveData: Flow<List<UserDomainModel>> =  messengerUseCases.startMessageUpdateInteractor.getUsersProfiles()
+    val usersProfileLiveData get(): Flow<List<UserDomainModel>> = usersProfileMutableLiveData
 
     suspend fun startMessageUpdate() {
-        usersProfileMutableLiveData = messengerUseCases.startMessageUpdateInteractor.getUsersProfiles()
         messengerUseCases.startMessageUpdateInteractor.startMessageUpdate()
     }
 

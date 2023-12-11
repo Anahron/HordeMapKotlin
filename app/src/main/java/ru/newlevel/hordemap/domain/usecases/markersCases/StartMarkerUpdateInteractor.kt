@@ -1,15 +1,11 @@
 package ru.newlevel.hordemap.domain.usecases.markersCases
 
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 
 class StartMarkerUpdateInteractor(private val geoDataRepository: GeoDataRepository) {
-    fun startUserUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        return geoDataRepository.startUserMarkerUpdates()
-    }
+    fun startUserUpdates(): Flow<List<MarkerDataModel>> = geoDataRepository.startUserMarkerUpdates()
 
-    fun startStaticUpdates(): MutableLiveData<List<MarkerDataModel>> {
-       return geoDataRepository.startStaticMarkerUpdates()
-    }
+    fun startStaticUpdates(): Flow<List<MarkerDataModel>> = geoDataRepository.startStaticMarkerUpdates()
 }

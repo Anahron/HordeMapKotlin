@@ -20,7 +20,6 @@ import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateInteractor
-import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.messengerCases.DeleteMessageUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.DownloadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
@@ -98,9 +97,6 @@ val domainModule = module {
     factory {
         StartMarkerUpdateInteractor(geoDataRepository = get())
     }
-    factory {
-        StopMarkerUpdateInteractor(geoDataRepository = get())
-    }
 
     factory {
         GetSessionLocationsUseCase(locationRepository = get())
@@ -159,7 +155,6 @@ val domainModule = module {
             loadGameMapFromServerUseCase = get(),
             sendStaticMarkerUseCase = get(),
             startMarkerUpdateInteractor = get(),
-            stopMarkerUpdateInteractor = get(),
             compassInteractor = get(),
             createRouteUseCase = get(),
             locationUpdatesInteractor = get()

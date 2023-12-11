@@ -3,10 +3,10 @@ package ru.newlevel.hordemap.data.repository
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.data.db.MessageDao
@@ -27,6 +27,7 @@ class MessengerRepositoryImpl(
     }
 
     private val messages: LiveData<List<MyMessageEntity>> = messageDao.getAllMessagesLiveData()
+
     private var observer: Observer<in List<MyMessageEntity>> = Observer { firebaseMessages ->
         for (firebaseMessage in firebaseMessages) {
             val existingRoomMessage = messages.value?.find { it.timestamp == firebaseMessage.timestamp }
@@ -78,5 +79,6 @@ class MessengerRepositoryImpl(
 
     override suspend fun downloadFile(context: Context, uri: Uri, fileName: String?): Result<Boolean> =
         messageFilesStorage.downloadFile(context, uri, fileName)
-    override fun getUsersProfiles(): MutableLiveData<List<UserDataModel>> = messageRemoteStorage.getProfilesInMessenger()
+
+    override fun getUsersProfiles(): Flow<List<UserDataModel>> = messageRemoteStorage.getProfilesInMessenger()
 }

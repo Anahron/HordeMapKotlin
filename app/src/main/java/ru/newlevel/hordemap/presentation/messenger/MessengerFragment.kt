@@ -236,15 +236,13 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
                     handleNewMessages(messages)
                 }
-                messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
+                messengerViewModel.usersProfileLiveData.collect { profiles ->
+                    Log.e(TAG, " usersProfileLiveData.collect $profiles")
                     mUsersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }
             }
-            Log.e(
-                TAG,
-                " messengerViewModel.stopMessageUpdate()"
-            )
+            Log.e(TAG, " messengerViewModel.stopMessageUpdate()")
             messengerViewModel.stopMessageUpdate()
         }
     }

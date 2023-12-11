@@ -1,6 +1,7 @@
 package ru.newlevel.hordemap.data.storage.interfaces
 
 import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
@@ -11,7 +12,7 @@ interface MessageRemoteStorage {
 
     fun stopMessageUpdate()
 
-    fun getProfilesInMessenger(): MutableLiveData<List<UserDataModel>>
+    fun getProfilesInMessenger(): Flow<List<UserDataModel>>
 
     fun deleteMessage(message: MyMessageEntity)
 }

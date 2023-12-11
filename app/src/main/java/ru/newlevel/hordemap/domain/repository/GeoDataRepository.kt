@@ -1,15 +1,13 @@
 package ru.newlevel.hordemap.domain.repository
 
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 
 interface GeoDataRepository {
 
-    fun stopMarkerUpdates()
+    fun startUserMarkerUpdates(): Flow<List<MarkerDataModel>>
 
-    fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>>
-
-    fun startStaticMarkerUpdates(): MutableLiveData<List<MarkerDataModel>>
+    fun startStaticMarkerUpdates(): Flow<List<MarkerDataModel>>
 
     fun deleteStaticMarker(key: String)
 

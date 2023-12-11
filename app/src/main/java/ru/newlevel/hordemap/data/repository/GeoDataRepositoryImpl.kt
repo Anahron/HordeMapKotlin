@@ -1,6 +1,6 @@
 package ru.newlevel.hordemap.data.repository
 
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
@@ -19,17 +19,8 @@ class GeoDataRepositoryImpl(private val markersRemoteStorage: MarkersRemoteStora
         markersRemoteStorage.sendStaticMarker(markerModel)
     }
 
-    override fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        return  markersRemoteStorage.startUserMarkerUpdates()
-    }
+    override fun startUserMarkerUpdates(): Flow<List<MarkerDataModel>> = markersRemoteStorage.getUserMarkerUpdates()
 
-    override fun startStaticMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        return markersRemoteStorage.startStaticMarkerUpdates()
-    }
-
-    override fun stopMarkerUpdates() {
-        markersRemoteStorage.stopMarkerUpdates()
-    }
-
+    override fun startStaticMarkerUpdates(): Flow<List<MarkerDataModel>> = markersRemoteStorage.getStaticMarkerUpdates()
 
 }

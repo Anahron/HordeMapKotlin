@@ -15,6 +15,7 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.collections.MarkerManager
+import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.MapUseCases
@@ -38,9 +39,9 @@ class MapViewModel(
     private var routePolyline: Polyline? = null
     private var destination: LatLng? = null
 
-    lateinit var userMarkersLiveData: MutableLiveData<List<MarkerDataModel>>
-    lateinit var staticMarkersLiveData: MutableLiveData<List<MarkerDataModel>>
-    lateinit var compassAngle: LiveData<Float>
+    val userMarkersFlow: Flow<List<MarkerDataModel>> = mapUseCases.startMarkerUpdateInteractor.startUserUpdates()
+    val staticMarkersFlow: Flow<List<MarkerDataModel>> = mapUseCases.startMarkerUpdateInteractor.startStaticUpdates()
+    val compassAngle: Flow<Float> = mapUseCases.compassInteractor.getCompassData()
 
     private val _distanceText = MutableLiveData<String>()
     val distanceText: LiveData<String> = _distanceText
@@ -48,7 +49,7 @@ class MapViewModel(
     private val _mapUri = MutableLiveData<Uri?>()
     val mapUri: LiveData<Uri?> = _mapUri
 
-    private var _isAutoLoadMap = MutableLiveData<Boolean>()
+    private val _isAutoLoadMap = MutableLiveData<Boolean>()
     val isAutoLoadMap: LiveData<Boolean> = _isAutoLoadMap
 
     val polygon: MutableLiveData<Polygon> = MutableLiveData<Polygon>()
@@ -66,15 +67,7 @@ class MapViewModel(
     }
 
     fun startLocationUpdates() = mapUseCases.locationUpdatesInteractor.startLocationUpdates()
-
     fun stopLocationUpdates() = mapUseCases.locationUpdatesInteractor.stopLocationUpdates()
-    fun compassActivate() {
-        compassAngle = mapUseCases.compassInteractor.startSensorEventListener()
-    }
-
-    fun compassDeActivate() {
-        mapUseCases.compassInteractor.stopSensorEventListener()
-    }
 
     fun setRoutePolyline(polyline: Polyline) {
         routePolyline = polyline
@@ -128,11 +121,6 @@ class MapViewModel(
         _mapUri.postValue(null)
     }
 
-    fun reCreateMarkers() {
-        userMarkersLiveData.value = userMarkersLiveData.value
-        staticMarkersLiveData.value = staticMarkersLiveData.value
-    }
-
     fun setIsAutoLoadMap(boolean: Boolean) {
         _isAutoLoadMap.value = boolean
     }
@@ -144,8 +132,6 @@ class MapViewModel(
         }
         return result.exceptionOrNull()
     }
-
-
 
     suspend fun loadMapFromServer(context: Context): Throwable? {
         val result = mapUseCases.loadGameMapFromServerUseCase.execute(context)
@@ -173,33 +159,18 @@ class MapViewModel(
     }
 
     fun createUsersMarkers(
-        it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
+        data: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
     ) {
-        markersUtils.createUsersMarkers(it, markerCollection = markerCollection, context = context)
+        markersUtils.createUsersMarkers(data, markerCollection = markerCollection, context = context)
     }
 
     fun createStaticMarkers(
-        it: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
+        data: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
     ) {
-        markersUtils.createStaticMarkers(it, markerCollection = markerCollection, context = context)
-    }
-
-    fun stopMarkerUpdates() {
-        mapUseCases.stopMarkerUpdateInteractor.execute()
-    }
-
-    fun startMarkerUpdates() {
-        staticMarkersLiveData = mapUseCases.startMarkerUpdateInteractor.startStaticUpdates()
-        userMarkersLiveData = mapUseCases.startMarkerUpdateInteractor.startUserUpdates()
+        markersUtils.createStaticMarkers(data, markerCollection = markerCollection, context = context)
     }
 
     fun deleteStaticMarker(marker: Marker) {
         mapUseCases.deleteMarkerUseCase.execute(marker)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        Log.e("AAA", "MV marker stopped")
-        stopMarkerUpdates()
     }
 }
