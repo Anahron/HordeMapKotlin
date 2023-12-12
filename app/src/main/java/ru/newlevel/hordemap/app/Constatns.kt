@@ -2,6 +2,11 @@ package ru.newlevel.hordemap.app
 
 const val TAG = "AAA"
 
+
+// NotificationChannels
+const val CHANEL_GPS = "CHANNEL_1"
+const val CHANEL_MESSAGE = "CHANNEL_2"
+
 //Keys
 const val SHARE_PREFS_NAME = "sharedHordeMap"
 const val KEY_NAME = "userName"
@@ -43,3 +48,4 @@ const val REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE = 34
 const val REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE = 56
 
 const val ACTION_PROCESS_UPDATES = "ru.newlevel.hordemap.app.action.PROCESS_UPDATES"
+const val ACTION_OPEN_MESSENGER = "ru.newlevel.hordemap.app.action.OPEN_MESSENGER"

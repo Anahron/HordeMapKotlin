@@ -9,8 +9,6 @@ interface MessageRemoteStorage {
 
     fun getMessageUpdate(): Flow<List<MyMessageEntity>>
 
-    fun stopMessageUpdate()
-
     fun getProfilesInMessenger(): Flow<List<UserDataModel>>
 
     fun deleteMessage(message: MyMessageEntity)

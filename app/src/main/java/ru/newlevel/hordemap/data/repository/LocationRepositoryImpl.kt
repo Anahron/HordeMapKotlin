@@ -13,9 +13,8 @@ import ru.newlevel.hordemap.domain.repository.LocationRepository
 
 class LocationRepositoryImpl(private val context: Context, private val myLocationDao: MyLocationDao) :
     LocationRepository {
-    override fun renameTrackNameForSession(sessionId: String, newTrackName: String) {
+    override fun renameTrackNameForSession(sessionId: String, newTrackName: String) =
         myLocationDao.renameTrackNameForSession(sessionId = sessionId, newTrackName = newTrackName)
-    }
 
     @MainThread
     override fun startLocationUpdates() {
@@ -45,30 +44,23 @@ class LocationRepositoryImpl(private val context: Context, private val myLocatio
     override fun getLocationsBySessionId(sessionId: String): List<MyLocationEntity> =
         myLocationDao.getLocationsBySessionId(sessionId)
 
-    override suspend fun getAllLocationsGroupedBySessionId(): List<String> {
-        return myLocationDao.getUniqueSessionIds()
-    }
+    override suspend fun getAllLocationsGroupedBySessionId(): List<String> = myLocationDao.getUniqueSessionIds()
+    override fun saveCurrentTrackSession(sessionId: String, newSessionId: String) =
+        myLocationDao.updateSessionId(sessionId, newSessionId)
 
-    override fun saveCurrentTrackSession(sessionId: String, newSessionId: String) {
-        myLocationDao.updateSessionId(sessionId,newSessionId)
-    }
-    override fun updateLocation(myLocationEntity: MyLocationEntity) {
+    override fun updateLocation(myLocationEntity: MyLocationEntity) =
         myLocationDao.updateLocation(myLocationEntity)
-    }
 
-    override fun addLocation(myLocationEntity: MyLocationEntity) {
+    override fun addLocation(myLocationEntity: MyLocationEntity) =
         myLocationDao.addLocation(myLocationEntity)
-    }
 
-    override fun addLocations(myLocationEntities: List<MyLocationEntity>) {
+    override fun addLocations(myLocationEntities: List<MyLocationEntity>) =
         myLocationDao.addLocations(myLocationEntities)
-    }
 
-    override fun deleteLocationsBySessionId(sessionId: String) {
-       myLocationDao.deleteLocationsBySessionId(sessionId = sessionId)
-    }
+    override fun deleteLocationsBySessionId(sessionId: String) =
+        myLocationDao.deleteLocationsBySessionId(sessionId = sessionId)
 
-    override fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean) {
+    override fun setFavouriteTrackForSession(sessionId: String, isFavourite: Boolean) =
         myLocationDao.setFavouriteTrackForSession(sessionId, isFavourite)
-    }
+
 }

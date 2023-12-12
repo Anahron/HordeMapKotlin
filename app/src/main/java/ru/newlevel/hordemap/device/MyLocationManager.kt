@@ -14,6 +14,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.ACTION_PROCESS_UPDATES
+import ru.newlevel.hordemap.app.CHANEL_GPS
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -22,11 +23,9 @@ import ru.newlevel.hordemap.presentation.MainActivity
 class MyLocationManager : Service() {
 
     private var timeToSendData = 60000L
-
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
     }
-
     private lateinit var locationRequest: LocationRequest
 
     private val locationUpdatePendingIntent: PendingIntent by lazy {
@@ -56,11 +55,8 @@ class MyLocationManager : Service() {
                 intent,
                 PendingIntent.FLAG_IMMUTABLE
             )
-        val channel = NotificationChannel("CHANNEL_1", "GPS", NotificationManager.IMPORTANCE_LOW)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.createNotificationChannel(channel)
 
-        val builder = NotificationCompat.Builder(this.applicationContext, "CHANNEL_1")
+        val builder = NotificationCompat.Builder(this.applicationContext, CHANEL_GPS)
             .setSmallIcon(R.mipmap.hordecircle_round)
             .setContentTitle("Horde Map")
             .setContentText("Horde Map получает GPS данные в фоновом режиме")
@@ -82,7 +78,7 @@ class MyLocationManager : Service() {
         handler.postDelayed({
             timeToSendData = try {
                 UserEntityProvider.userEntity.timeToSendData.times(1000L)
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 30000
             }
             Log.e(TAG, "locationRequest set with $timeToSendData")

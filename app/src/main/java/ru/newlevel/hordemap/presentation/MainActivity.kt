@@ -2,6 +2,7 @@ package ru.newlevel.hordemap.presentation
 
 import android.Manifest
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -23,8 +24,10 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.ACTION_OPEN_MESSENGER
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.data.db.UserEntityProvider
+import ru.newlevel.hordemap.device.MessageNotificationService
 import ru.newlevel.hordemap.presentation.map.MapFragment
 import ru.newlevel.hordemap.presentation.messenger.MessengerFragment
 import ru.newlevel.hordemap.presentation.permissions.PermissionRequestFragment
@@ -43,11 +46,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     private val messengerFragment: MessengerFragment by lazy { MessengerFragment() }
     private val googleAuthUiClient by inject<GoogleAuthUiClient>()
     private val mainViewModel by viewModel<MainViewModel>()
+    private val notificationService: MessageNotificationService by lazy { MessageNotificationService(applicationContext) }
     private lateinit var currentFragment: Fragment
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var navView: BottomNavigationView
     private var syncJob: Job? = null
     private var newMessageJob: Job? = null
+    private var isAppInBackground = false
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,18 +73,35 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         onBackPressedListener()
     }
 
+    override fun onStart() {
+        super.onStart()
+        isAppInBackground = false
+    }
+
+    override fun onStop() {
+        super.onStop()
+        isAppInBackground = true
+    }
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent?.action == ACTION_OPEN_MESSENGER)
+            navView.selectedItemId = R.id.messengerFragment
+    }
+
     private fun newMessageHandler() {
-       syncJob = lifecycleScope.launch {
+        syncJob = lifecycleScope.launch {
             mainViewModel.syncMessageData()
         }
         newMessageJob = lifecycleScope.launch {
             mainViewModel.newMessageAnnounced.collect {
-                if (it > 0)
+                if (it > 0) {
+                    if (isAppInBackground)
+                        notificationService.showNotification(it)
                     navView.getOrCreateBadge(R.id.messengerFragment).apply {
                         isVisible = true
                         number = it
                     }
-                else
+                } else
                     navView.getOrCreateBadge(R.id.messengerFragment).isVisible = false
             }
         }

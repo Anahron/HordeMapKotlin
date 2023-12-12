@@ -6,9 +6,14 @@ import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapLocalStorage
 import ru.newlevel.hordemap.domain.repository.GameMapRepository
 
-class GameMapRepositoryImpl(private val gameMapLocalStorage: GameMapLocalStorage, private val gameMapRemoteStorage: GameMapRemoteStorage): GameMapRepository {
+class GameMapRepositoryImpl(
+    private val gameMapLocalStorage: GameMapLocalStorage,
+    private val gameMapRemoteStorage: GameMapRemoteStorage
+) : GameMapRepository {
 
-    override suspend fun loadGameMapFromServer(context: Context): Uri? = gameMapRemoteStorage.downloadGameMapFromServer(context)
+    override suspend fun loadGameMapFromServer(context: Context): Uri? =
+        gameMapRemoteStorage.downloadGameMapFromServer(context)
 
-    override suspend fun saveGameMapToFile(uri: Uri, suffix: String) : Result<Uri?> = gameMapLocalStorage.saveGameMapToFile(uri, suffix)
+    override suspend fun saveGameMapToFile(uri: Uri, suffix: String): Result<Uri?> =
+        gameMapLocalStorage.saveGameMapToFile(uri, suffix)
 }

@@ -25,12 +25,11 @@ class SettingsRepositoryImpl(
 
     override fun resetUserSettings() = userLocalStorage.reset()
     override suspend fun deleteUserDataRemote(deviceId: String) =
-       profileRemoteStorage.deleteUserDataRemote(deviceId)
+        profileRemoteStorage.deleteUserDataRemote(deviceId)
 
 
     override fun saveAutoLoad(boolean: Boolean) = userLocalStorage.saveAutoLoad(boolean)
 
-    override suspend fun uploadProfilePhoto(uri: Uri, fileName: String): Result<Uri> {
-        return profilePhotoStorage.uploadProfilePhoto(uri, fileName)
-    }
+    override suspend fun uploadProfilePhoto(uri: Uri, fileName: String): Result<Uri> =
+        profilePhotoStorage.uploadProfilePhoto(uri, fileName)
 }

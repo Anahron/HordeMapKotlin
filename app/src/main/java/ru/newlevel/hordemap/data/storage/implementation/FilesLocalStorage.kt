@@ -51,6 +51,3 @@ class FilesLocalStorage(private val context: Context, private val filesUtils: Fi
         }
     }
 }
-
-
-//   if (resultFile != null) Result.success(resultFile) else Result.failure(Throwable(context.getString(R.string.file_wrong)))

@@ -7,17 +7,11 @@ import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 
 class GeoDataRepositoryImpl(private val markersRemoteStorage: MarkersRemoteStorage) : GeoDataRepository {
 
-    override fun deleteStaticMarker(key: String) {
-        markersRemoteStorage.deleteStaticMarker(key)
-    }
+    override fun deleteStaticMarker(key: String) = markersRemoteStorage.deleteStaticMarker(key)
 
-    override fun sendCoordinates(markerModel: MarkerDataModel) {
-       markersRemoteStorage.sendUserMarker(markerModel)
-    }
+    override fun sendCoordinates(markerModel: MarkerDataModel) = markersRemoteStorage.sendUserMarker(markerModel)
 
-    override fun createStaticMarker(markerModel: MarkerDataModel) {
-        markersRemoteStorage.sendStaticMarker(markerModel)
-    }
+    override fun createStaticMarker(markerModel: MarkerDataModel) = markersRemoteStorage.sendStaticMarker(markerModel)
 
     override fun startUserMarkerUpdates(): Flow<List<MarkerDataModel>> = markersRemoteStorage.getUserMarkerUpdates()
 

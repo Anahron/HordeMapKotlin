@@ -1,7 +1,6 @@
 package ru.newlevel.hordemap.data.storage.implementation
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -31,7 +30,6 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     private val databaseReference = FirebaseDatabase.getInstance().reference
     private val staticDatabaseReference = databaseReference.child(GEO_STATIC_MARKERS_PATH)
     private val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
-    private val liveDataMessageDataModel = MutableLiveData<List<MyMessageEntity>>()
     override fun deleteStaticMarker(key: String) {
         staticDatabaseReference.child(key).removeValue()
     }
@@ -44,19 +42,13 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         databaseReference.child("$MESSAGE_PATH/${message.timestamp}").setValue(message)
     }
 
-    override fun stopMessageUpdate() {
-        Log.e(TAG, "stopMessageUpdate вызван")
-        databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
-            .removeEventListener(messageEventListener)
-    }
-
     override fun sendUserMarker(markerModel: MarkerDataModel) {
         Log.e(TAG, " sendUserMarker$markerModel")
         userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
     }
 
-    override fun getMessageUpdate(): Flow<List<MyMessageEntity>> = callbackFlow{
-       val listener = object : ValueEventListener {
+    override fun getMessageUpdate(): Flow<List<MyMessageEntity>> = callbackFlow {
+        val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val messages = ArrayList<MyMessageEntity>()
                 for (snap in snapshot.children) {
@@ -66,16 +58,17 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                     }
                 }
                 if (messages.isNotEmpty()) {
-                   trySend(messages)
+                    trySend(messages)
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
                 close(error.toException())
             }
         }
         databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
             .addValueEventListener(listener)
-        awaitClose{
+        awaitClose {
             Log.e(TAG, "awaitClose in getMessageUpdate")
             databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
                 .removeEventListener(listener)
@@ -187,7 +180,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         }
         databaseReference.child(USERS_PROFILES_PATH).orderByChild("deviceID")
             .addValueEventListener(listener)
-        awaitClose{
+        awaitClose {
             Log.e(TAG, "awaitClose in getProfilesInMessenger")
             databaseReference.child(USERS_PROFILES_PATH).orderByChild("deviceID")
                 .removeEventListener(listener)
@@ -235,23 +228,6 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                     Log.e(TAG, "MyFirebaseDatabase updateAllUserMessages onCancelled = " + databaseError.message)
                 }
             })
-    }
-
-    private val messageEventListener = object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            val messages = ArrayList<MyMessageEntity>()
-            for (snap in snapshot.children) {
-                val message: MyMessageEntity? = snap.getValue(MyMessageEntity::class.java)
-                if (message != null) {
-                    messages.add(message)
-                }
-            }
-            if (messages.isNotEmpty()) {
-                liveDataMessageDataModel.postValue(messages)
-            }
-        }
-
-        override fun onCancelled(error: DatabaseError) {}
     }
 }
 

@@ -140,7 +140,9 @@ val domainModule = module {
     single {
         GoogleAuthUiClient(
             androidContext().applicationContext,
-            Identity.getSignInClient(androidContext().applicationContext), logOutUseCase = get(), getUserSettingsUseCase = get()
+            Identity.getSignInClient(androidContext().applicationContext),
+            logOutUseCase = get(),
+            getUserSettingsUseCase = get()
         )
     }
 
