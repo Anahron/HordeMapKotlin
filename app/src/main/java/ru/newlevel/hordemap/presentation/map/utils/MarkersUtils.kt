@@ -88,14 +88,14 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
         val bitmap = Bitmap.createBitmap(textWidth + 15, 100, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawText(text, (bitmap.width - textWidth) / 2f, 25f, paint)
-        if (marker.markerType == "Navaid") markerCollection.addMarker(
+        if (marker.markerType == "Navaid" && marker.name.length < 3) markerCollection.addMarker(
             MarkerOptions().position(LatLng(marker.latLng.latitude, marker.latLng.longitude))
                 .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
         ).setAnchor(0.55f, 0.5f)
         else markerCollection.addMarker(
             MarkerOptions().position(LatLng(marker.latLng.latitude, marker.latLng.longitude))
                 .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-        ).setAnchor(0.5f, 0f)
+        ).setAnchor(0.5f, -0.1f)
     }
 
     private fun findStaticIcon(markerModel: MarkerDataModel, context: Context): BitmapDescriptor {
@@ -109,23 +109,27 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
     }
 
     fun createStaticMarkers(
-        markersModel: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
+        markersModel: List<MarkerDataModel>,
+        markerCollection: MarkerManager.Collection,
+        context: Context,
+        visibility: Boolean
     ) {
         val userEntity = UserEntityProvider.userEntity
         MARKER_SIZE_STATIC = userEntity.staticMarkerSize
         for (markerModel in markersModel) {
             if (markerModel.title != "Маркер" && markerModel.title.isNotEmpty()) createStaticTextMarker(
-                markerModel,
-                markerCollection
+                markerModel, markerCollection, visibility
             )
             val icon = findStaticIcon(markerModel, context)
-            val marker: Marker? = markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 1))
+            val marker: Marker? =
+                markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 1).visible(visibility))
             marker?.tag = markerModel.timestamp
+            marker?.isVisible = visibility
         }
     }
 
     private fun createStaticTextMarker(
-        marker: MarkerDataModel, markerCollection: MarkerManager.Collection
+        marker: MarkerDataModel, markerCollection: MarkerManager.Collection, visibility: Boolean
     ) {
         val text = if (marker.title.length > 10) "${marker.title.substring(0, 7)}..." else marker.title
         val paint = createPaint()
@@ -137,8 +141,11 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
         canvas.drawText(text, (bitmap.width - textWidth) / 2f, 25f, paint)
         markerCollection.addMarker(
             MarkerOptions().position(LatLng(marker.latitude, marker.longitude))
-                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-        ).setAnchor(0.5f, 0f)
+                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)).visible(visibility)
+        ).apply {
+            setAnchor(0.5f, 0f)
+            isVisible = visibility
+        }
     }
 
     private fun findUserIcon(markerModel: MarkerDataModel, context: Context): BitmapDescriptor {
@@ -152,25 +159,27 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
     }
 
     fun createUsersMarkers(
-        markersModels: List<MarkerDataModel>, markerCollection: MarkerManager.Collection, context: Context
+        markersModels: List<MarkerDataModel>,
+        markerCollection: MarkerManager.Collection,
+        context: Context,
+        visibility: Boolean
     ) {
         val userEntity = UserEntityProvider.userEntity
         MARKER_SIZE_USERS = userEntity.usersMarkerSize
 
         markerCollection.markers.forEach { marker ->
             val markerId = marker.tag.toString().split("/")
-            if (markersModels.none{it.deviceId == markerId[0]})
-                marker.remove()
+            if (markersModels.none { it.deviceId == markerId[0] }) marker.remove()
         }
 
         markersModels.forEach { markerModel ->
             if (userEntity.deviceID == markerModel.deviceId) return@forEach
             val foundMarker = markerCollection.markers.find {
+                it.isVisible = visibility
                 val markerInfo = it.tag.toString().split("/")
                 if (markerInfo[0] == markerModel.deviceId) {
                     it.position = LatLng(markerModel.latitude, markerModel.longitude)
-                    if (it.title != markerModel.userName)
-                        it.title = markerModel.userName
+                    if (it.title != markerModel.userName) it.title = markerModel.userName
                     it.alpha = markerModel.alpha
                     it.snippet = LocalDateTime.ofInstant(Instant.ofEpochMilli(markerModel.timestamp), ZoneId.systemDefault())
                         .format(timeFormatter)
@@ -180,8 +189,10 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
             }
             if (foundMarker == null) {
                 val icon = findUserIcon(markerModel, context)
-                markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 0)).tag =
-                    ("${markerModel.deviceId}/${markerModel.item}")
+                markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 0)).apply {
+                    tag = ("${markerModel.deviceId}/${markerModel.item}")
+                    isVisible = visibility
+                }
             }
         }
     }
@@ -190,8 +201,10 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
         markerModel: MarkerDataModel, icon: BitmapDescriptor, flagToChooseTitle: Int
     ): MarkerOptions {
         return MarkerOptions().title(if (flagToChooseTitle == 0) markerModel.userName else markerModel.title)
-            .position(LatLng(markerModel.latitude, markerModel.longitude)).alpha(markerModel.alpha)
-            .snippet(LocalDateTime.ofInstant(Instant.ofEpochMilli(markerModel.timestamp), ZoneId.systemDefault()).format(timeFormatter)).icon(icon)
+            .position(LatLng(markerModel.latitude, markerModel.longitude)).alpha(markerModel.alpha).snippet(
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(markerModel.timestamp), ZoneId.systemDefault())
+                    .format(timeFormatter)
+            ).icon(icon)
 
     }
 

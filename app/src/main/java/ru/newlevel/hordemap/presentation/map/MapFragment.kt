@@ -1,7 +1,6 @@
 package ru.newlevel.hordemap.presentation.map
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -30,25 +29,21 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
-import com.google.maps.android.collections.MarkerManager
-import com.google.maps.android.data.kml.KmlLayer
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.xmlpull.v1.XmlPullParserException
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.GPX_EXTENSION
-import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.app.MyAlarmReceiver
 import ru.newlevel.hordemap.app.REQUEST_CODE_POST_NOTIFICATION
 import ru.newlevel.hordemap.app.TAG
-import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.hasPermission
+import ru.newlevel.hordemap.app.hideToRight
+import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
+import ru.newlevel.hordemap.presentation.map.utils.MapOverlayManager
 import ru.newlevel.hordemap.presentation.settings.SettingsFragment
 import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
 import java.util.Date
@@ -60,21 +55,13 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private val mapViewModel by viewModel<MapViewModel>()
     private val tracksTransferViewModel by viewModel<TrackTransferViewModel>()
     private val binding: FragmentMapsBinding by viewBinding()
-    private lateinit var markerManager: MarkerManager
-    private lateinit var userMarkerCollection: MarkerManager.Collection
-    private lateinit var staticMarkerCollection: MarkerManager.Collection
-    private lateinit var garminMarkerCollection: MarkerManager.Collection
-    private var kmlLayer: KmlLayer? = null
+    private val mapOverlayManager: MapOverlayManager by lazy { MapOverlayManager(googleMap) }
     private lateinit var googleMap: GoogleMap
 
     private fun init() {
         setupMap()
-        markerManager = MarkerManager(googleMap)
-        userMarkerCollection = markerManager.newCollection()
-        staticMarkerCollection = markerManager.newCollection()
-        garminMarkerCollection = markerManager.newCollection()
         menuListenersSetup()
-        markerStateObserver()
+        markersObservers()
         overlayObserver()
         tracksObserver()
         compassObserver()
@@ -101,7 +88,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
 
     override fun onMapReady(gMap: GoogleMap) {
         Log.e(TAG, "onMapReady")
-        mapViewModel.turnToDefaultState()
         googleMap = gMap
         val location = LatLng(56.0901, 93.2329) //координаты красноярска
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
@@ -112,14 +98,13 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
     }
 
-    private fun markerStateObserver() {
+    private fun markersObservers() {
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.userMarkersFlow.collect { data ->
-                    mapViewModel.createUsersMarkers(
+                    mapOverlayManager.createUsersMarkers(
                         data = data,
-                        markerCollection = userMarkerCollection,
                         context = requireContext()
                     )
                     Log.e(TAG, "userMarkersLiveData.collect UserMarkerData $data")
@@ -129,31 +114,11 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.staticMarkersFlow.collect { data ->
-                    staticMarkerCollection.markers.forEach { marker -> marker.remove() }
-                    mapViewModel.createStaticMarkers(
+                    mapOverlayManager.createStaticMarkers(
                         data = data,
-                        markerCollection = staticMarkerCollection,
                         context = requireContext()
                     )
                     Log.e(TAG, "staticMarkersLiveData.collect StaticMarkersData $data")
-                }
-            }
-        }
-
-        mapViewModel.state.observe(this) { state ->
-            when (state) {
-                is MapState.LoadingState -> {}
-
-                is MapState.DefaultState -> {
-                    staticMarkerCollection.showAll()
-                    userMarkerCollection.showAll()
-                    binding.ibMarkers.setBackgroundResource(R.drawable.img_map_show_markers)
-                }
-
-                is MapState.MarkersOffState -> {
-                    staticMarkerCollection.hideAll()
-                    userMarkerCollection.hideAll()
-                    binding.ibMarkers.setBackgroundResource(R.drawable.img_map_hide_markers)
                 }
             }
         }
@@ -164,7 +129,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mapViewModel.compassAngle.collect { angle ->
+                mapViewModel.compassAngleFlow.collect { angle ->
                     binding.imgCompass.visibility = View.VISIBLE
                     binding.tvCompass.visibility = View.VISIBLE
                     binding.imgCompass.rotation = -angle
@@ -177,19 +142,13 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private fun tracksObserver() {
         tracksTransferViewModel.trackToShowOnMap.observe(viewLifecycleOwner) { listLatLng ->
             if (listLatLng.isNotEmpty()) {
-                mapViewModel.setRoutePolyline(
-                    googleMap.addPolyline(
-                        mapViewModel.createRoute(
-                            PolyUtil.simplify(listLatLng, 22.0)
-                        )
-                    )
-                )
+                mapOverlayManager.addPolyline(PolyUtil.simplify(listLatLng, 22.0))
                 cameraUpdate(
                     listLatLng[0].latitude, listLatLng[0].longitude
                 )
                 showOrHideTrackBtn(true)
             } else {
-                mapViewModel.removeRoute()
+                mapOverlayManager.removeRoute()
                 showOrHideTrackBtn(false)
             }
         }
@@ -199,88 +158,43 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         val ibTrackHide = binding.ibTrackHide
         if (isNeedToShow) {
             ibTrackHide.translationX = 500f
-            val animator = ObjectAnimator.ofFloat(ibTrackHide, "translationX", 0f)
-            animator.duration = 500
-            animator.start()
+            ibTrackHide.showAtRight(500f)
         } else {
             ibTrackHide.translationX = 0f
-            val animator = ObjectAnimator.ofFloat(ibTrackHide, "translationX", 500f)
-            animator.duration = 500
-            animator.start()
+            ibTrackHide.hideToRight(500f)
         }
     }
 
     private fun overlayObserver() {
+        val lifecycle = viewLifecycleOwner.lifecycle
+        lifecycle.coroutineScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mapOverlayManager.distanceText.collect {
+                    if (it.isNotEmpty()) {
+                        binding.distanceTextView.visibility = View.VISIBLE
+                        binding.distanceTextView.text = it
+                    } else {
+                        binding.distanceTextView.visibility = View.GONE
+                    }
+                }
+            }
+        }
         mapViewModel.isAutoLoadMap.observe(viewLifecycleOwner) {
             if (it)
                 onLoadLastGameMapClick()
         }
-        mapViewModel.mapUri.observe(viewLifecycleOwner) { uri ->
-            removeOverlays()
-            if (uri != null) {
-                val mimeType = requireContext().getFileNameFromUri(uri)
-                when {
-                    mimeType.endsWith(KMZ_EXTENSION) -> {
-                        loadKmlToMap(uri)
-                    }
-
-                    mimeType.endsWith(GPX_EXTENSION) -> {
-                        loadGpxToMap(uri)
+        mapViewModel.mapOverlayUri.observe(viewLifecycleOwner) { overlayUri ->
+            mapOverlayManager.removeOverlays()
+            overlayUri?.let { uri ->
+                lifecycleScope.launch {
+                    mapOverlayManager.createOverlay(uri, requireContext(), googleMap).onSuccess { latLng ->
+                        cameraUpdate(latLng.latitude, latLng.longitude)
+                    }.onFailure { e ->
+                        e.message?.let { makeLongText(it) }
                     }
                 }
             }
         }
-    }
-
-    private fun loadKmlToMap(uri: Uri) {
-        lifecycleScope.launch {
-            uri.let {
-                requireContext().contentResolver.openInputStream(uri).let { stream ->
-                    stream?.let {
-                        try {
-                            kmlLayer = KmlLayer(
-                                googleMap, it, requireContext(), markerManager, null, null, null, null
-                            )
-                        } catch (e: XmlPullParserException) {
-                            e.printStackTrace()
-                        }
-                    }
-
-                    kmlLayer?.addLayerToMap()
-                    kmlLayer?.let { layer ->
-                        layer.groundOverlays?.let {
-                            it.any { overlay ->
-                                val center = overlay.latLngBox.center
-                                cameraUpdate(center.latitude, center.longitude)
-                                true
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun loadGpxToMap(uri: Uri) {
-        try {
-            lifecycleScope.launch {
-                mapViewModel.createGpxLayer(
-                    uri, garminMarkerCollection, requireContext(), googleMap
-                )
-                garminMarkerCollection.markers.any {
-                    cameraUpdate(it.position.latitude, it.position.longitude)
-                    true
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun removeOverlays() {
-        kmlLayer?.removeLayerFromMap()
-        garminMarkerCollection.markers.forEach { marker -> marker.remove() }
-        mapViewModel.polygon.value?.remove()
     }
 
     private fun cameraUpdate(latitude: Double, longitude: Double) {
@@ -298,29 +212,22 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     private fun buildRoute(destination: LatLng) {
-        mapViewModel.setRoutePolyline(
-            googleMap.addPolyline(
-                mapViewModel.createRoute(
-                    LatLng(
-                        googleMap.myLocation.latitude, googleMap.myLocation.longitude
-                    ), destination, requireContext().applicationContext
-                )
+        try {
+            mapOverlayManager.createRoute(
+                LatLng(googleMap.myLocation.latitude, googleMap.myLocation.longitude),
+                destination, requireContext().applicationContext
             )
-        )
-        mapViewModel.distanceText.observe(viewLifecycleOwner) {
-            if (it.isNotEmpty()) {
-                binding.distanceTextView.visibility = View.VISIBLE
-                binding.distanceTextView.text = it
-            } else {
-                binding.distanceTextView.visibility = View.GONE
-            }
+        } catch (e: Exception) {
+            makeLongText(getString(R.string.no_gps_connection))
         }
     }
 
     private fun mapListenersSetup() {
         googleMap.setOnMyLocationChangeListener { location ->
-            val currentLatLng = LatLng(location.latitude, location.longitude)
-            mapViewModel.updateRoute(currentLatLng)
+            if (mapOverlayManager.isRoutePolylineNotNull()) {
+                val currentLatLng = LatLng(location.latitude, location.longitude)
+                mapOverlayManager.updateRoute(currentLatLng)
+            }
         }
         binding.ibMyLocation.setOnClickListener {
             try {
@@ -332,17 +239,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
                 makeLongText(getString(R.string.no_gps_connection))
             }
         }
-        staticMarkerCollection.setOnInfoWindowClickListener {
-            it.hideInfoWindow()
-        }
-        staticMarkerCollection.setOnMarkerClickListener { marker: Marker ->
-            marker.showInfoWindow()
-            true
-        }
-        staticMarkerCollection.setOnInfoWindowLongClickListener {
-            mapViewModel.deleteStaticMarker(it)
-        }
-
         googleMap.setOnMapLongClickListener { latLng ->
             onMapLongClickMenu(latLng)
         }
@@ -377,10 +273,10 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
         mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMapShowDistance)?.setOnClickListener {
             mainPopupMenu.dismiss()
-            if (!mapViewModel.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
+            if (!mapOverlayManager.isRoutePolylineNotNull())
+                showOrHideTrackBtn(true)
             buildRoute(latLng)
         }
-        requireContext().resources.displayMetrics.widthPixels
         mainPopupMenu.showAtLocation(
             binding.root, Gravity.NO_GRAVITY, point.x, point.y
         )
@@ -397,13 +293,21 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             }
         }
         binding.ibTrackHide.setOnClickListener {
-            mapViewModel.removeRoute()
+            mapOverlayManager.removeRoute()
             tracksTransferViewModel.clearTrack()
             showOrHideTrackBtn(false)
         }
 
         binding.ibMarkers.setOnClickListener {
-            mapViewModel.showOrHideMarkers()
+            if (mapOverlayManager.isMarkersVisible) {
+                mapOverlayManager.hideAllMarkers()
+                binding.ibMarkers.setBackgroundResource(R.drawable.img_map_hide_markers)
+                mapOverlayManager.isMarkersVisible = false
+            } else {
+                mapOverlayManager.showAllMarkers()
+                binding.ibMarkers.setBackgroundResource(R.drawable.img_map_show_markers)
+                mapOverlayManager.isMarkersVisible = true
+            }
         }
     }
 
@@ -463,19 +367,16 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     override fun onChangeMarkerSettings() {
-        userMarkerCollection.markers.forEach { marker -> marker.remove() }
-        staticMarkerCollection.markers.forEach { marker -> marker.remove() }
+        mapOverlayManager.removeMarkers()
         lifecycleScope.launch {
-            mapViewModel.createStaticMarkers(
+            mapOverlayManager.createStaticMarkers(
                 data = mapViewModel.staticMarkersFlow.first(),
-                markerCollection = staticMarkerCollection,
                 context = requireContext()
             )
         }
         lifecycleScope.launch {
-            mapViewModel.createUsersMarkers(
+            mapOverlayManager.createUsersMarkers(
                 data = mapViewModel.userMarkersFlow.first(),
-                markerCollection = userMarkerCollection,
                 context = requireContext()
             )
         }
@@ -511,7 +412,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     override fun onClearMapClick() {
-        removeOverlays()
+        mapOverlayManager.removeOverlays()
         mapViewModel.cleanUriForMap()
     }
 

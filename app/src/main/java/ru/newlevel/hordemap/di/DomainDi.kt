@@ -64,7 +64,7 @@ val domainModule = module {
     factory {
         ResetUserSettingsUseCase(settingsRepository = get())
     }
-    factory {
+    single {
         DeleteMarkerUseCase(geoDataRepository = get())
     }
 

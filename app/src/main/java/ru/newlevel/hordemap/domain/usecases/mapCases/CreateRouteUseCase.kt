@@ -24,6 +24,6 @@ class CreateRouteUseCase {
         )
         val customCap = CustomCap(bitmapCustomCapIcon)
         return PolylineOptions().addAll(listOf(currentLatLng, destination)).endCap(customCap)
-            .geodesic(true).color(Color.BLUE).width(6f)
+            .geodesic(true).color(Color.BLUE).width(6f).zIndex(1f)
     }
 }
