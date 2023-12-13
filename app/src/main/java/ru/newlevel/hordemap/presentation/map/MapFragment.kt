@@ -57,6 +57,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private val binding: FragmentMapsBinding by viewBinding()
     private val mapOverlayManager: MapOverlayManager by lazy { MapOverlayManager(googleMap) }
     private lateinit var googleMap: GoogleMap
+    private var pendingIntent: PendingIntent? = null
 
     private fun init() {
         setupMap()
@@ -341,23 +342,19 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private fun startAlarmManager() {
         Log.e("AAA", "startAlarmManager at " + Date(System.currentTimeMillis()))
         val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
+        pendingIntent = PendingIntent.getBroadcast(
             requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
-        (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 240000, pendingIntent
-        )
+        pendingIntent?.let { (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 240000, it
+        )}
     }
 
     override fun onDetach() {
         mapViewModel.stopLocationUpdates()
-        val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
-        )
-        (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.cancel(
-            pendingIntent
-        )
+        pendingIntent?.let {
+            (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.cancel(it)
+        }
         super.onDetach()
     }
 
