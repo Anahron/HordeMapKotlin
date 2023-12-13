@@ -48,5 +48,9 @@ const val REQUEST_CODE_CAMERA_PERMISSION = 1011
 const val REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE = 34
 const val REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE = 56
 
+//MapHandler
+const val ROTATION_TIMEOUT = 130L  // Интервал обновления положения камеры
+const val IDLE_TIMEOUT = 3000L  // Время в миллисекундах, после которого считаем, что карта находится в состоянии покоя
+//Actions
 const val ACTION_PROCESS_UPDATES = "ru.newlevel.hordemap.app.action.PROCESS_UPDATES"
 const val ACTION_OPEN_MESSENGER = "ru.newlevel.hordemap.app.action.OPEN_MESSENGER"

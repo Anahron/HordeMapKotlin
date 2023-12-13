@@ -28,6 +28,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
@@ -43,6 +44,7 @@ import ru.newlevel.hordemap.app.hideToRight
 import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
+import ru.newlevel.hordemap.presentation.map.utils.MapInteractionHandler
 import ru.newlevel.hordemap.presentation.map.utils.MapOverlayManager
 import ru.newlevel.hordemap.presentation.settings.SettingsFragment
 import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
@@ -58,10 +60,16 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private val mapOverlayManager: MapOverlayManager by lazy { MapOverlayManager(googleMap) }
     private lateinit var googleMap: GoogleMap
     private var pendingIntent: PendingIntent? = null
+    private var angle = 0f
+    private var isCompassActive = false
+    private var isUserMoveCamera = true
+    private val mapInteractionHandler = MapInteractionHandler {
+        rotateCamera()
+    }
 
     private fun init() {
         setupMap()
-        menuListenersSetup()
+        mapButtonsListenersSetup()
         markersObservers()
         overlayObserver()
         tracksObserver()
@@ -70,12 +78,48 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         startBackgroundWork()
     }
 
+    private fun rotateCamera() {
+        try {
+            if (!isCompassActive)
+                this.angle = googleMap.cameraPosition.bearing
+            val cameraPosition = CameraPosition.builder()
+                .target(LatLng(googleMap.myLocation.latitude, googleMap.myLocation.longitude)) // Центр карты
+                .zoom(googleMap.cameraPosition.zoom) // Уровень масштабирования остается неизменным
+                .bearing(this.angle) // Угол поворота карты
+                .tilt(googleMap.cameraPosition.tilt) // Угол наклона карты остается неизменным
+                .build()
+            isUserMoveCamera = false
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 100,
+                object : GoogleMap.CancelableCallback {
+                    override fun onCancel() {
+                        isUserMoveCamera = true
+                    }
+
+                    override fun onFinish() {
+                        isUserMoveCamera = true
+                    }
+
+                })
+            isUserMoveCamera = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mapInteractionHandler.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mapInteractionHandler.onResume()
+    }
+
     private fun requestNotificationPermission() {
         if (!requireContext().hasPermission(Manifest.permission.POST_NOTIFICATIONS) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                REQUEST_CODE_POST_NOTIFICATION
+                requireActivity(), arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE_POST_NOTIFICATION
             )
         }
     }
@@ -105,8 +149,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.userMarkersFlow.collect { data ->
                     mapOverlayManager.createUsersMarkers(
-                        data = data,
-                        context = requireContext()
+                        data = data, context = requireContext()
                     )
                     Log.e(TAG, "userMarkersLiveData.collect UserMarkerData $data")
                 }
@@ -116,8 +159,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.staticMarkersFlow.collect { data ->
                     mapOverlayManager.createStaticMarkers(
-                        data = data,
-                        context = requireContext()
+                        data = data, context = requireContext()
                     )
                     Log.e(TAG, "staticMarkersLiveData.collect StaticMarkersData $data")
                 }
@@ -131,6 +173,10 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.compassAngleFlow.collect { angle ->
+                    if (!isCompassActive)
+                        binding.imgCompassBackground.visibility = View.VISIBLE
+                    isCompassActive = true
+                    this@MapFragment.angle = angle
                     binding.imgCompass.visibility = View.VISIBLE
                     binding.tvCompass.visibility = View.VISIBLE
                     binding.imgCompass.rotation = -angle
@@ -181,8 +227,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             }
         }
         mapViewModel.isAutoLoadMap.observe(viewLifecycleOwner) {
-            if (it)
-                onLoadLastGameMapClick()
+            if (it) onLoadLastGameMapClick()
         }
         mapViewModel.mapOverlayUri.observe(viewLifecycleOwner) { overlayUri ->
             mapOverlayManager.removeOverlays()
@@ -216,7 +261,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         try {
             mapOverlayManager.createRoute(
                 LatLng(googleMap.myLocation.latitude, googleMap.myLocation.longitude),
-                destination, requireContext().applicationContext
+                destination,
+                requireContext().applicationContext
             )
         } catch (e: Exception) {
             makeLongText(getString(R.string.no_gps_connection))
@@ -224,33 +270,27 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     private fun mapListenersSetup() {
+        googleMap.setOnMapClickListener {
+            mapInteractionHandler.onCameraMove(true)
+        }
+        googleMap.setOnCameraMoveStartedListener {
+            Log.e(TAG, "isUserMoveCamera = $isUserMoveCamera")
+            mapInteractionHandler.onCameraMove(isUserMoveCamera)
+        }
+        googleMap.setOnCameraIdleListener {
+            mapInteractionHandler.onCameraIdle()
+        }
         googleMap.setOnMyLocationChangeListener { location ->
             if (mapOverlayManager.isRoutePolylineNotNull()) {
                 val currentLatLng = LatLng(location.latitude, location.longitude)
                 mapOverlayManager.updateRoute(currentLatLng)
             }
         }
-        binding.ibMyLocation.setOnClickListener {
-            try {
-                val myLocation = googleMap.myLocation
-                cameraUpdate(
-                    myLocation.latitude, myLocation.longitude
-                )
-            } catch (e: Exception) {
-                makeLongText(getString(R.string.no_gps_connection))
-            }
-        }
         googleMap.setOnMapLongClickListener { latLng ->
+            mapInteractionHandler.onCameraMove(true)
             onMapLongClickMenu(latLng)
         }
 
-        binding.imgCompass.setOnClickListener {
-            binding.imgCompass.layoutParams.height =
-                if (binding.imgCompass.layoutParams.width != convertDpToPx(50)) convertDpToPx(50) else convertDpToPx(250)
-            binding.imgCompass.layoutParams.width =
-                if (binding.imgCompass.layoutParams.width != convertDpToPx(50)) convertDpToPx(50) else convertDpToPx(250)
-            binding.imgCompass.requestLayout()
-        }
     }
 
     private fun onMapLongClickMenu(latLng: LatLng) {
@@ -274,8 +314,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
         mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMapShowDistance)?.setOnClickListener {
             mainPopupMenu.dismiss()
-            if (!mapOverlayManager.isRoutePolylineNotNull())
-                showOrHideTrackBtn(true)
+            if (!mapOverlayManager.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
             buildRoute(latLng)
         }
         mainPopupMenu.showAtLocation(
@@ -283,7 +322,40 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         )
     }
 
-    private fun menuListenersSetup() {
+    private fun mapButtonsListenersSetup() {
+        binding.ibMyLocation.setOnClickListener {
+            mapInteractionHandler.onCameraMove(true)
+            try {
+                val myLocation = googleMap.myLocation
+                cameraUpdate(
+                    myLocation.latitude, myLocation.longitude
+                )
+            } catch (e: Exception) {
+                makeLongText(getString(R.string.no_gps_connection))
+            }
+        }
+        binding.imgCompass.setOnClickListener {
+            val newSize =
+                if (binding.imgCompass.layoutParams.width != convertDpToPx(45)) {
+                    binding.imgCompassBackground.visibility = View.VISIBLE
+                    convertDpToPx(45)
+                } else {
+                    binding.imgCompassBackground.visibility = View.GONE
+                    convertDpToPx(250)
+                }
+            binding.imgCompass.layoutParams.height = newSize
+            binding.imgCompass.layoutParams.width = newSize
+            binding.imgCompass.requestLayout()
+        }
+        binding.imgMapRotate.setOnClickListener {
+            if (mapInteractionHandler.getIsStopped()) {
+                binding.imgMapRotate.setBackgroundResource(R.drawable.img_map_rotate_on)
+                mapInteractionHandler.start()
+            } else {
+                binding.imgMapRotate.setBackgroundResource(R.drawable.img_map_rotate_off)
+                mapInteractionHandler.stop()
+            }
+        }
         binding.ibMapType.setOnClickListener {
             if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {
                 googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
@@ -345,9 +417,11 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         pendingIntent = PendingIntent.getBroadcast(
             requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
-        pendingIntent?.let { (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 240000, it
-        )}
+        pendingIntent?.let {
+            (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 240000, it
+            )
+        }
     }
 
     override fun onDetach() {
@@ -356,6 +430,11 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.cancel(it)
         }
         super.onDetach()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapInteractionHandler.onDestroy()
     }
 
     private fun convertDpToPx(dp: Int): Int {
@@ -367,14 +446,12 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         mapOverlayManager.removeMarkers()
         lifecycleScope.launch {
             mapOverlayManager.createStaticMarkers(
-                data = mapViewModel.staticMarkersFlow.first(),
-                context = requireContext()
+                data = mapViewModel.staticMarkersFlow.first(), context = requireContext()
             )
         }
         lifecycleScope.launch {
             mapOverlayManager.createUsersMarkers(
-                data = mapViewModel.userMarkersFlow.first(),
-                context = requireContext()
+                data = mapViewModel.userMarkersFlow.first(), context = requireContext()
             )
         }
     }
@@ -416,9 +493,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
 
     private fun makeLongText(text: String) {
         Toast.makeText(
-            requireContext().applicationContext,
-            text,
-            Toast.LENGTH_LONG
+            requireContext().applicationContext, text, Toast.LENGTH_LONG
         ).show()
     }
 

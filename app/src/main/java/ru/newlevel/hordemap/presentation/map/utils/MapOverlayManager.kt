@@ -3,7 +3,6 @@ package ru.newlevel.hordemap.presentation.map.utils
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
-import android.util.Log
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -22,7 +21,6 @@ import org.xmlpull.v1.XmlPullParserException
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.GPX_EXTENSION
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
-import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
@@ -86,7 +84,6 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
             kmlLayer?.let { layer ->
                 layer.groundOverlays?.let {
                     it.any { overlay ->
-                        Log.e(TAG, "overlay.properties = " + overlay.properties.toString())
                         val center = overlay.latLngBox.center
                         return Result.success(center)
                     }
