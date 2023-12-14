@@ -32,6 +32,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -147,7 +148,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mapViewModel.userMarkersFlow.collect { data ->
+                mapViewModel.userMarkersFlow.collectLatest { data ->
                     mapOverlayManager.createUsersMarkers(
                         data = data, context = requireContext()
                     )
@@ -157,7 +158,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mapViewModel.staticMarkersFlow.collect { data ->
+                mapViewModel.staticMarkersFlow.collectLatest { data ->
                     mapOverlayManager.createStaticMarkers(
                         data = data, context = requireContext()
                     )
@@ -172,7 +173,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mapViewModel.compassAngleFlow.collect { angle ->
+                mapViewModel.compassAngleFlow.collectLatest { angle ->
                     if (!isCompassActive)
                         binding.imgCompassBackground.visibility = View.VISIBLE
                     isCompassActive = true

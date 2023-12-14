@@ -12,11 +12,9 @@ class CompassInteractor(private val sensorRepository: SensorRepository) {
     private val rotationMatrix = FloatArray(9)
 
     fun getCompassData(): Flow<Float> {
-        val sensorLiveData:  Flow<FloatArray>  = sensorRepository.getCompassData()
-        val angleLiveData: Flow<Float> = sensorLiveData.map { sensorEvent ->
+        return sensorRepository.getCompassData().map { sensorEvent ->
             return@map eventToAngle(sensorEvent)
         }
-        return angleLiveData
     }
 
     private fun eventToAngle(event: FloatArray): Float {

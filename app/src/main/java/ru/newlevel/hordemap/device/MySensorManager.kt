@@ -7,17 +7,17 @@ import android.hardware.SensorManager
 import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.callbackFlow
 import ru.newlevel.hordemap.app.TAG
 
 class MySensorManager(private val sensorManager: SensorManager){
 
     fun getCompassData(): Flow<FloatArray> {
-        return channelFlow {
+        return callbackFlow {
             val listener = object : SensorEventListener {
                 override fun onSensorChanged(event: SensorEvent?) {
                     if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
-                        channel.trySend(event.values).isSuccess }
+                       trySend(event.values) }
                 }
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
             }
