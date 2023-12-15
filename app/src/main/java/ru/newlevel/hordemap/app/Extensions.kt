@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.maps.model.LatLng
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
@@ -24,6 +25,16 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.roundToInt
 
+
+fun Location.getLatLng(): LatLng{
+    return LatLng(this.latitude, this.longitude)
+}
+
+
+fun Double.toDistanceText(): String{
+   return if (this.toInt() > 1000) ((this / 10).roundToInt() / 100.0).toString() + " км." else this.toInt()
+        .toString() + " м."
+}
 
 fun Context.getFileNameFromUri(uri: Uri): String {
     var fileName: String? = null

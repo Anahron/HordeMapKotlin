@@ -122,7 +122,7 @@ val domainModule = module {
         DeleteAllTracksUseCase(locationRepository = get())
     }
     factory {
-        MarkersUtils(garminGpxParser = get())
+        MarkersUtils()
     }
     factory {
         GarminGpxParser()

@@ -2,14 +2,9 @@ package ru.newlevel.hordemap.presentation.map
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.SystemClock
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -35,21 +30,24 @@ import com.google.maps.android.PolyUtil
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.MyAlarmReceiver
+import ru.newlevel.hordemap.app.MyAlarmManager
 import ru.newlevel.hordemap.app.REQUEST_CODE_POST_NOTIFICATION
 import ru.newlevel.hordemap.app.TAG
+import ru.newlevel.hordemap.app.convertDpToPx
+import ru.newlevel.hordemap.app.getLatLng
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideToRight
 import ru.newlevel.hordemap.app.showAtRight
+import ru.newlevel.hordemap.app.toDistanceText
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
 import ru.newlevel.hordemap.presentation.map.utils.MapInteractionHandler
 import ru.newlevel.hordemap.presentation.map.utils.MapOverlayManager
 import ru.newlevel.hordemap.presentation.settings.SettingsFragment
 import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
-import java.util.Date
 import kotlin.math.roundToInt
 
 @Suppress("DEPRECATION")
@@ -58,10 +56,10 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private val mapViewModel by viewModel<MapViewModel>()
     private val tracksTransferViewModel by viewModel<TrackTransferViewModel>()
     private val binding: FragmentMapsBinding by viewBinding()
+    private val myAlarmManager by inject<MyAlarmManager>()
     private val mapOverlayManager: MapOverlayManager by lazy { MapOverlayManager(googleMap) }
     private lateinit var googleMap: GoogleMap
-    private var pendingIntent: PendingIntent? = null
-    private var angle = 0f
+    private var compassAngle = 0f
     private var isCompassActive = false
     private var isUserMoveCamera = true
     private val mapInteractionHandler = MapInteractionHandler {
@@ -69,7 +67,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     private fun init() {
-        setupMap()
+        setupGoogleMapUi()
         mapButtonsListenersSetup()
         markersObservers()
         overlayObserver()
@@ -77,17 +75,18 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         compassObserver()
         mapListenersSetup()
         startBackgroundWork()
+        requestNotificationPermission()
     }
 
     private fun rotateCamera() {
         try {
             if (!isCompassActive)
-                this.angle = googleMap.cameraPosition.bearing
+                this.compassAngle = googleMap.cameraPosition.bearing
             val cameraPosition = CameraPosition.builder()
-                .target(LatLng(googleMap.myLocation.latitude, googleMap.myLocation.longitude)) // Центр карты
-                .zoom(googleMap.cameraPosition.zoom) // Уровень масштабирования остается неизменным
-                .bearing(this.angle) // Угол поворота карты
-                .tilt(googleMap.cameraPosition.tilt) // Угол наклона карты остается неизменным
+                .target(googleMap.myLocation.getLatLng())
+                .zoom(googleMap.cameraPosition.zoom)
+                .bearing(this.compassAngle)
+                .tilt(googleMap.cameraPosition.tilt)
                 .build()
             isUserMoveCamera = false
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 100,
@@ -129,7 +128,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this@MapFragment)
-        requestNotificationPermission()
     }
 
     override fun onMapReady(gMap: GoogleMap) {
@@ -149,20 +147,14 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.userMarkersFlow.collectLatest { data ->
-                    mapOverlayManager.createUsersMarkers(
-                        data = data, context = requireContext()
-                    )
-                    Log.e(TAG, "userMarkersLiveData.collect UserMarkerData $data")
+                    mapOverlayManager.createUsersMarkers(data = data, context = requireContext())
                 }
             }
         }
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.staticMarkersFlow.collectLatest { data ->
-                    mapOverlayManager.createStaticMarkers(
-                        data = data, context = requireContext()
-                    )
-                    Log.e(TAG, "staticMarkersLiveData.collect StaticMarkersData $data")
+                    mapOverlayManager.createStaticMarkers(data = data, context = requireContext())
                 }
             }
         }
@@ -174,12 +166,10 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.compassAngleFlow.collectLatest { angle ->
-                    if (!isCompassActive)
-                        binding.imgCompassBackground.visibility = View.VISIBLE
-                    isCompassActive = true
-                    this@MapFragment.angle = angle
-                    binding.imgCompass.visibility = View.VISIBLE
-                    binding.tvCompass.visibility = View.VISIBLE
+                    if (!isCompassActive) {
+                        setupCompassUi()
+                    }
+                    compassAngle = angle
                     binding.imgCompass.rotation = -angle
                     binding.tvCompass.text = (if (angle > 0) angle else angle + 360).roundToInt().toString() + "\u00B0 "
                 }
@@ -187,13 +177,18 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
     }
 
+    private fun setupCompassUi() {
+        isCompassActive = true
+        binding.imgCompassBackground.visibility = View.VISIBLE
+        binding.imgCompass.visibility = View.VISIBLE
+        binding.tvCompass.visibility = View.VISIBLE
+    }
+
     private fun tracksObserver() {
         tracksTransferViewModel.trackToShowOnMap.observe(viewLifecycleOwner) { listLatLng ->
             if (listLatLng.isNotEmpty()) {
                 mapOverlayManager.addPolyline(PolyUtil.simplify(listLatLng, 22.0))
-                cameraUpdate(
-                    listLatLng[0].latitude, listLatLng[0].longitude
-                )
+                cameraUpdate(listLatLng[0])
                 showOrHideTrackBtn(true)
             } else {
                 mapOverlayManager.removeRoute()
@@ -218,9 +213,9 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapOverlayManager.distanceText.collect {
-                    if (it.isNotEmpty()) {
+                    if (it != 0.0) {
                         binding.distanceTextView.visibility = View.VISIBLE
-                        binding.distanceTextView.text = it
+                        binding.distanceTextView.text = it.toDistanceText()
                     } else {
                         binding.distanceTextView.visibility = View.GONE
                     }
@@ -234,8 +229,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             mapOverlayManager.removeOverlays()
             overlayUri?.let { uri ->
                 lifecycleScope.launch {
-                    mapOverlayManager.createOverlay(uri, requireContext(), googleMap).onSuccess { latLng ->
-                        cameraUpdate(latLng.latitude, latLng.longitude)
+                    mapOverlayManager.createOverlay(uri, requireContext(), googleMap).onSuccess {
+                        cameraUpdate(it)
                     }.onFailure { e ->
                         e.message?.let { makeLongText(it) }
                     }
@@ -244,27 +239,22 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
     }
 
-    private fun cameraUpdate(latitude: Double, longitude: Double) {
-        val update = CameraUpdateFactory.newLatLngZoom(
-            LatLng(
-                latitude, longitude
-            ), 14F
-        )
+    private fun cameraUpdate(latLng: LatLng, zoom: Float = 14F) {
+        val update = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
         googleMap.animateCamera(update)
     }
 
     private fun startBackgroundWork() {
         mapViewModel.startLocationUpdates()
-        startAlarmManager()
+        myAlarmManager.startAlarmManager()
     }
 
     private fun buildRoute(destination: LatLng) {
         try {
             mapOverlayManager.createRoute(
-                LatLng(googleMap.myLocation.latitude, googleMap.myLocation.longitude),
+                googleMap.myLocation.getLatLng(),
                 destination,
-                requireContext().applicationContext
-            )
+                requireContext())
         } catch (e: Exception) {
             makeLongText(getString(R.string.no_gps_connection))
         }
@@ -275,7 +265,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             mapInteractionHandler.onCameraMove(true)
         }
         googleMap.setOnCameraMoveStartedListener {
-            Log.e(TAG, "isUserMoveCamera = $isUserMoveCamera")
             mapInteractionHandler.onCameraMove(isUserMoveCamera)
         }
         googleMap.setOnCameraIdleListener {
@@ -283,8 +272,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
         googleMap.setOnMyLocationChangeListener { location ->
             if (mapOverlayManager.isRoutePolylineNotNull()) {
-                val currentLatLng = LatLng(location.latitude, location.longitude)
-                mapOverlayManager.updateRoute(currentLatLng)
+                mapOverlayManager.updateRoute(location.getLatLng())
             }
         }
         googleMap.setOnMapLongClickListener { latLng ->
@@ -327,22 +315,19 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         binding.ibMyLocation.setOnClickListener {
             mapInteractionHandler.onCameraMove(true)
             try {
-                val myLocation = googleMap.myLocation
-                cameraUpdate(
-                    myLocation.latitude, myLocation.longitude
-                )
+                cameraUpdate(googleMap.myLocation.getLatLng(),16f)
             } catch (e: Exception) {
                 makeLongText(getString(R.string.no_gps_connection))
             }
         }
         binding.imgCompass.setOnClickListener {
             val newSize =
-                if (binding.imgCompass.layoutParams.width != convertDpToPx(45)) {
+                if (binding.imgCompass.layoutParams.width != requireContext().convertDpToPx(45)) {
                     binding.imgCompassBackground.visibility = View.VISIBLE
-                    convertDpToPx(45)
+                    requireContext().convertDpToPx(45)
                 } else {
                     binding.imgCompassBackground.visibility = View.GONE
-                    convertDpToPx(250)
+                    requireContext().convertDpToPx(250)
                 }
             binding.imgCompass.layoutParams.height = newSize
             binding.imgCompass.layoutParams.width = newSize
@@ -386,61 +371,35 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     private fun createStaticMarkerDialog(latLng: LatLng) {
-        val dialogFragment = OnMapClickInfoDialog(object : OnMapClickInfoDialogResult {
-            override fun onMapClickInfoDialogResult(
-                description: String, checkedRadioButton: Int
-            ) {
-                mapViewModel.sendMarker(latLng, description, checkedRadioButton)
-            }
-        })
-        dialogFragment.show(this.childFragmentManager, "customDialog")
+        OnMapClickInfoDialog { result ->
+            mapViewModel.sendMarker(latLng, result.first, result.second)
+        }.show(this.childFragmentManager, "customDialog")
     }
 
     @SuppressLint("MissingPermission")
-    private fun setupMap() {
+    private fun setupGoogleMapUi() {
         googleMap.uiSettings.isZoomControlsEnabled = true
+        googleMap.uiSettings.isMapToolbarEnabled = false
+        googleMap.uiSettings.isCompassEnabled = true
+        googleMap.uiSettings.isMyLocationButtonEnabled = false
         if (requireContext().hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || requireContext().hasPermission(
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-        ) {
+                Manifest.permission.ACCESS_COARSE_LOCATION)) {
             googleMap.isMyLocationEnabled = true
-            googleMap.uiSettings.isCompassEnabled = true
-            googleMap.uiSettings.isMapToolbarEnabled = false
-            googleMap.uiSettings.isMyLocationButtonEnabled = false
         } else {
             (activity as MainActivity).goToRequestsPermissions()
         }
     }
 
-    private fun startAlarmManager() {
-        Log.e("AAA", "startAlarmManager at " + Date(System.currentTimeMillis()))
-        val intent = Intent(requireContext().applicationContext, MyAlarmReceiver::class.java)
-        pendingIntent = PendingIntent.getBroadcast(
-            requireContext().applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE
-        )
-        pendingIntent?.let {
-            (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 240000, it
-            )
-        }
-    }
 
     override fun onDetach() {
         mapViewModel.stopLocationUpdates()
-        pendingIntent?.let {
-            (requireContext().applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.cancel(it)
-        }
+        myAlarmManager.stopAlarmManager()
         super.onDetach()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         mapInteractionHandler.onDestroy()
-    }
-
-    private fun convertDpToPx(dp: Int): Int {
-        val density: Float = resources.displayMetrics.density
-        return (dp.toFloat() * density).roundToInt()
     }
 
     override fun onChangeMarkerSettings() {

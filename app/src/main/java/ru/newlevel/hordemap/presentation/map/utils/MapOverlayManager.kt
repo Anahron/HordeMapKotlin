@@ -25,7 +25,6 @@ import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
-import kotlin.math.roundToInt
 
 class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
 
@@ -34,6 +33,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     private val groundOverlayManager: GroundOverlayManager = GroundOverlayManager(googleMap)
     private val polygonManager: PolygonManager = PolygonManager(googleMap)
     private val polylineManager: PolylineManager = PolylineManager(googleMap)
+    private val garminGpxParser by inject<GarminGpxParser>()
     private val markersUtils by inject<MarkersUtils>()
     private val deleteMarkerUseCase by inject<DeleteMarkerUseCase>()
     private val createRouteUseCase by inject<CreateRouteUseCase>()
@@ -46,8 +46,9 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     private var destination: LatLng? = null
     private var kmlLayer: KmlLayer? = null
 
-    private val _distanceText = MutableStateFlow("")
-    val distanceText: StateFlow<String> = _distanceText
+    private val _distanceText = MutableStateFlow(0.0)
+    val distanceText: StateFlow<Double> = _distanceText
+
     init {
         staticMarkerCollection.setOnInfoWindowClickListener {
             it.hideInfoWindow()
@@ -106,10 +107,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
 
     private fun setDistanceText(currentLatLng: LatLng, destination: LatLng?) {
         val distance = SphericalUtil.computeDistanceBetween(currentLatLng, destination)
-        _distanceText.value =
-            if (distance.toInt() > 1000) ((distance / 10).roundToInt() / 100.0).toString() + " км." else distance.toInt()
-                .toString() + " м."
-
+        _distanceText.value = distance
     }
 
     fun addPolyline(latLngList: List<LatLng>) {
@@ -119,7 +117,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
             zIndex(1f)
             width(15f)
         }.addAll(latLngList))
-        polylineCollection.polylines.forEach { it.zIndex = 1f}
+        polylineCollection.polylines.forEach { it.zIndex = 1f }
     }
 
     fun isRoutePolylineNotNull(): Boolean {
@@ -157,9 +155,15 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     }
 
     private suspend fun createGpxLayer(context: Context, uri: Uri): Result<LatLng> {
-        markersUtils.createGpxLayer(uri, garminMarkerCollection, context)?.let { polygonCollection.addPolygon(it) }
+        garminGpxParser.parseGpxFile(uri, context)?.let {
+            markersUtils.createGarminMarkers(it, garminMarkerCollection, context)
+            markersUtils.createGarminBounds(it, polygonCollection)
+        }
         garminMarkerCollection.markers.any {
-            return Result.success(it.position)
+            if (it != null)
+                return Result.success(it.position)
+            else
+                return Result.failure(Throwable("GPX Marker not found"))
         }
         return Result.failure(Throwable("GPX Marker not found"))
     }
@@ -187,7 +191,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
 
     fun removeRoute() {
         destination = null
-        _distanceText.value = ""
+        _distanceText.value = 0.0
         polylineCollection.polylines.forEach { polyline -> polyline.remove() }
         polylineCollection.clear()
     }
@@ -196,7 +200,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
         val mimeType = context.getFileNameFromUri(uri)
         when {
             mimeType.endsWith(KMZ_EXTENSION) -> {
-               return createKmzLayer(context, uri, googleMap)
+                return createKmzLayer(context, uri, googleMap)
             }
 
             mimeType.endsWith(GPX_EXTENSION) -> {

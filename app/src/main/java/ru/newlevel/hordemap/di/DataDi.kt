@@ -5,6 +5,7 @@ import android.hardware.SensorManager
 import androidx.room.Room.databaseBuilder
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.newlevel.hordemap.app.MyAlarmManager
 import ru.newlevel.hordemap.data.db.MyDatabase
 import ru.newlevel.hordemap.data.repository.*
 import ru.newlevel.hordemap.data.storage.implementation.FilesLocalStorage
@@ -30,6 +31,11 @@ val databaseModule = module {
 }
 
 val dataModule = module {
+
+
+    single {
+        MyAlarmManager(context = get())
+    }
 
     single {
         val database = get<MyDatabase>()

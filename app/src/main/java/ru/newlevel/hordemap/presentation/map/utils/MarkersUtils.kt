@@ -8,7 +8,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.net.Uri
 import android.os.Build
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -17,6 +16,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolygonOptions
 import com.google.maps.android.collections.MarkerManager
+import com.google.maps.android.collections.PolygonManager
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.GARMIN_TAG
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -28,19 +28,9 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
+class MarkersUtils {
 
-    suspend fun createGpxLayer(
-        uri: Uri, markerCollection: MarkerManager.Collection, context: Context
-    ): PolygonOptions? {
-        val parse = garminGpxParser.parseGpxFile(uri, context)
-        parse?.let {
-            createGarminMarkers(parse, markerCollection, context)
-        }
-        return parse?.bounds?.let { createGarminBounds(parse) }
-    }
-
-    private fun createGarminMarkers(
+    fun createGarminMarkers(
         garminGpxMarkersSet: GarminGpxMarkersSet, markerCollection: MarkerManager.Collection, context: Context
     ) {
         val markerSize = 70
@@ -57,8 +47,11 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
         }
     }
 
-    private fun createGarminBounds(garminGpxMarkersSet: GarminGpxMarkersSet): PolygonOptions {
-        return PolygonOptions().add(garminGpxMarkersSet.bounds?.let {
+    fun createGarminBounds(
+        garminGpxMarkersSet: GarminGpxMarkersSet,
+        polygonCollection: PolygonManager.Collection
+    ) {
+        polygonCollection.addPolygon(PolygonOptions().add(garminGpxMarkersSet.bounds?.let {
             LatLng(
                 it.southwest.latitude, it.southwest.longitude
             )
@@ -74,7 +67,7 @@ class MarkersUtils(private val garminGpxParser: GarminGpxParser) {
             LatLng(
                 it.southwest.latitude, it.northeast.longitude
             )
-        }).strokeColor(Color.BLACK).strokeWidth(8F).fillColor(Color.TRANSPARENT)
+        }).strokeColor(Color.BLACK).strokeWidth(8F).fillColor(Color.TRANSPARENT))
     }
 
     private fun createTextMarker(
