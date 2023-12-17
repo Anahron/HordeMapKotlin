@@ -41,4 +41,8 @@ class MessageNotificationService(private val context: Context) {
             Log.e(TAG, "Error creating notification", e)
         }
     }
+
+    fun hideNotification(){
+        notificationManager.cancel(2)
+    }
 }

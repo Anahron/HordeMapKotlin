@@ -60,12 +60,12 @@ import ru.newlevel.hordemap.app.createTempImageFile
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.getFileSizeFromUri
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.app.hideInputTextAnimation
+import ru.newlevel.hordemap.app.hideToBottomAnimation
 import ru.newlevel.hordemap.app.hideShadowAnimate
 import ru.newlevel.hordemap.app.hideToRight
 import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.loadAnimation
-import ru.newlevel.hordemap.app.showInputTextAnimation
+import ru.newlevel.hordemap.app.showFromBottomAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
@@ -143,7 +143,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         setupUIComponents()
         requestWriteExternalStoragePermission()
         setupMessagesUpdates()
-        binding.inputLayout.showInputTextAnimation()
+        binding.inputLayout.showFromBottomAnimation()
         createActivityRegisters()
     }
 
@@ -415,7 +415,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     private fun closeBottomInfoWindow() {
         binding.recyclerViewMessages.animateButtonPaddingReverse()
-        binding.rootLinearReply.hideInputTextAnimation()
+        binding.rootLinearReply.hideToBottomAnimation()
         editMessageId = null
         replyMessageId = null
         binding.replyTextMessage.text = ""
@@ -506,7 +506,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         replyMessageId = message.timestamp
         editMessageId = null
         binding.recyclerViewMessages.animateButtonPadding()
-        binding.rootLinearReply.showInputTextAnimation()
+        binding.rootLinearReply.showFromBottomAnimation()
         binding.replyTextMessage.text = message.message
         val userName = requireContext().getString(R.string.reply_to) + " ${message.userName}"
         binding.replyName.text = userName
@@ -519,7 +519,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         replyMessageId = if (message.replyOn > 0L) message.replyOn else null
         editMessageId = message.timestamp
         binding.recyclerViewMessages.animateButtonPadding()
-        binding.rootLinearReply.showInputTextAnimation()
+        binding.rootLinearReply.showFromBottomAnimation()
         binding.replyTextMessage.text = message.message
         binding.replyName.text = requireContext().getText(R.string.editing)
         binding.replyTextMessage.tag = message.timestamp

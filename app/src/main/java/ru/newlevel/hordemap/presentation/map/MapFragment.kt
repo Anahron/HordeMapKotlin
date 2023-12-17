@@ -62,6 +62,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private var compassAngle = 0f
     private var isCompassActive = false
     private var isUserMoveCamera = true
+    private var mapFragment: SupportMapFragment? = null
     private val mapInteractionHandler = MapInteractionHandler {
         rotateCamera()
     }
@@ -125,9 +126,12 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.e(TAG, "MapFragment onViewCreated $this")
         super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this@MapFragment)
+        if (mapFragment == null) {
+            mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+            mapFragment?.getMapAsync(this@MapFragment)
+        }
     }
 
     override fun onMapReady(gMap: GoogleMap) {
@@ -254,7 +258,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             mapOverlayManager.createRoute(
                 googleMap.myLocation.getLatLng(),
                 destination,
-                requireContext())
+                requireContext()
+            )
         } catch (e: Exception) {
             makeLongText(getString(R.string.no_gps_connection))
         }
@@ -315,7 +320,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         binding.ibMyLocation.setOnClickListener {
             mapInteractionHandler.onCameraMove(true)
             try {
-                cameraUpdate(googleMap.myLocation.getLatLng(),16f)
+                cameraUpdate(googleMap.myLocation.getLatLng(), 16f)
             } catch (e: Exception) {
                 makeLongText(getString(R.string.no_gps_connection))
             }
@@ -371,8 +376,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     private fun createStaticMarkerDialog(latLng: LatLng) {
-        OnMapClickInfoDialog { result ->
-            mapViewModel.sendMarker(latLng, result.first, result.second)
+        OnMapClickInfoDialog { description, checkedItem ->
+            mapViewModel.sendMarker(latLng, description, checkedItem)
         }.show(this.childFragmentManager, "customDialog")
     }
 
@@ -383,7 +388,9 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         googleMap.uiSettings.isCompassEnabled = true
         googleMap.uiSettings.isMyLocationButtonEnabled = false
         if (requireContext().hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || requireContext().hasPermission(
-                Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        ) {
             googleMap.isMyLocationEnabled = true
         } else {
             (activity as MainActivity).goToRequestsPermissions()

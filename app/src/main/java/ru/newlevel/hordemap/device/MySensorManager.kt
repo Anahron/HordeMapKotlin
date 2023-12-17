@@ -22,10 +22,9 @@ class MySensorManager(private val sensorManager: SensorManager){
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
             }
             sensorManager.registerListener(listener, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_STATUS_ACCURACY_HIGH or 80000)
-
             awaitClose {
                 Log.e(TAG, "sensorManager.unregisterListener(listener)")
-                sensorManager.unregisterListener(listener)
+              //  sensorManager.unregisterListener(listener)
             }
         }
     }

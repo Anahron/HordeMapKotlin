@@ -15,6 +15,7 @@ import ru.newlevel.hordemap.data.db.MyDatabase
 import ru.newlevel.hordemap.data.db.MyLocationEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import java.util.Date
 
 
@@ -39,25 +40,29 @@ class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinCompone
     }
 
     private fun saveLocation(locations: List<Location>) {
-        val userEntity = UserEntityProvider.userEntity
-        val location = locations[locations.lastIndex]
-        CoroutineScope(Dispatchers.IO).launch {
-            val locationDao = getKoin().get<MyDatabase>().locationDao()
-            locations.forEach { location ->
-                if (location.accuracy < 25)
-                    locationDao.addLocation(
-                        MyLocationEntity(
-                            latitude = location.latitude,
-                            longitude = location.longitude,
-                            date = Date(location.time),
-                            sessionId = UserEntityProvider.sessionId.toString()
+        try {
+            val userEntity = getKoin().get<GetUserSettingsUseCase>().execute()
+            val location = locations[locations.lastIndex]
+            CoroutineScope(Dispatchers.IO).launch {
+                val locationDao = getKoin().get<MyDatabase>().locationDao()
+                locations.forEach { location ->
+                    if (location.accuracy < 25)
+                        locationDao.addLocation(
+                            MyLocationEntity(
+                                latitude = location.latitude,
+                                longitude = location.longitude,
+                                date = Date(location.time),
+                                sessionId = UserEntityProvider.sessionId.toString()
+                            )
                         )
-                    )
+                }
+                userEntity.let {
+                    getKoin().get<MarkersRemoteStorage>()
+                        .sendUserMarker(location.toMarker(it))
+                }
             }
-            userEntity.let {
-                getKoin().get<MarkersRemoteStorage>()
-                    .sendUserMarker(location.toMarker(it))
-            }
+        } catch (e: UninitializedPropertyAccessException) {
+            e.printStackTrace()
         }
     }
 }

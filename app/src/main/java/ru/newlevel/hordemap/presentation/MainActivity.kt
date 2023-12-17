@@ -1,16 +1,12 @@
 package ru.newlevel.hordemap.presentation
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.animation.AccelerateInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -18,12 +14,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.ACTION_OPEN_MESSENGER
 import ru.newlevel.hordemap.app.hasPermission
+import ru.newlevel.hordemap.app.hideToBottomAnimation
+import ru.newlevel.hordemap.app.showFromBottomAnimation
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.device.MessageNotificationService
 import ru.newlevel.hordemap.presentation.map.MapFragment
@@ -38,27 +37,34 @@ import ru.newlevel.hordemap.presentation.tracks.TracksFragment
 
 class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationUi {
 
-    private val mainFragment: MapFragment by lazy { MapFragment() }
+    private lateinit var mainFragment: MapFragment
     private val tracksFragment: TracksFragment by lazy { TracksFragment() }
-    private val settingsFragment: SettingsFragment by lazy { SettingsFragment(mainFragment) }
+    private lateinit var settingsFragment: SettingsFragment
     private val messengerFragment: MessengerFragment by lazy { MessengerFragment() }
+    private val fragmentManager: FragmentManager by lazy { FragmentManager(supportFragmentManager) }
     private val googleAuthUiClient by inject<GoogleAuthUiClient>()
     private val mainViewModel by viewModel<MainViewModel>()
     private val notificationService: MessageNotificationService by lazy { MessageNotificationService(applicationContext) }
-    private lateinit var currentFragment: Fragment
-    private val handler = Handler(Looper.getMainLooper())
+    private var currentFragment: Fragment? = null
     private lateinit var navView: BottomNavigationView
     private var syncJob: Job? = null
     private var newMessageJob: Job? = null
     private var isAppInBackground = false
 
+    init {
+        UserEntityProvider.sessionId = System.currentTimeMillis()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        UserEntityProvider.sessionId = System.currentTimeMillis()
         windowSettings()
         setupNavView()
         navView.visibility = ViewGroup.GONE
+        checkSignIn()
+        onBackPressedListener()
+    }
+
+    private fun checkSignIn() {
         var signedUser: UserData?
         lifecycleScope.launch {
             signedUser = googleAuthUiClient.getSignedInUser()
@@ -68,7 +74,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
                 logOut()
             }
         }
-        onBackPressedListener()
     }
 
     override fun onStart() {
@@ -80,10 +85,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         super.onStop()
         isAppInBackground = true
     }
+
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        if (intent?.action == ACTION_OPEN_MESSENGER)
+        if (intent?.action == ACTION_OPEN_MESSENGER) {
             navView.selectedItemId = R.id.messengerFragment
+            mainViewModel.resetNewMessageCount()
+        }
     }
 
     private fun newMessageHandler() {
@@ -95,12 +103,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
                 if (it > 0) {
                     if (isAppInBackground)
                         notificationService.showNotification(it)
-                    navView.getOrCreateBadge(R.id.messengerFragment).apply {
-                        isVisible = true
-                        number = it
-                    }
-                } else
+                    if (currentFragment != messengerFragment)
+                        navView.getOrCreateBadge(R.id.messengerFragment).apply {
+                            isVisible = true
+                            number = it
+                        }
+                } else {
                     navView.getOrCreateBadge(R.id.messengerFragment).isVisible = false
+                    notificationService.hideNotification()
+                }
             }
         }
     }
@@ -108,8 +119,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     private fun onBackPressedListener() {
         this.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (currentFragment != mainFragment)
-                    navView.selectedItemId = R.id.mapFragment
+                currentFragment?.let {
+                    if (currentFragment != mainFragment)
+                        navView.selectedItemId = R.id.mapFragment
+                }
             }
         })
     }
@@ -122,22 +135,25 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
                 R.id.messengerFragment -> {
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
                     showFragment(messengerFragment)
-                    hideNavView()
+                    navView.hideToBottomAnimation()
                     mainViewModel.resetNewMessageCount()
                     true
                 }
 
                 R.id.tracksFragment -> {
+                    navView.showFromBottomAnimation()
                     showFragment(tracksFragment)
                     true
                 }
 
                 R.id.settingsFragment -> {
+                    navView.showFromBottomAnimation()
                     showFragment(settingsFragment)
                     true
                 }
 
                 else -> {
+                    navView.showFromBottomAnimation()
                     showFragment(mainFragment)
                     true
                 }
@@ -145,67 +161,28 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         }
     }
 
-    private fun hideNavView() {
-        navView.translationY = 0f
-        val animator = ObjectAnimator.ofFloat(navView, "translationY", 500f)
-        animator.duration = 500
-        animator.interpolator = AccelerateInterpolator()
-        animator.start()
-    }
-
-    private fun showNavView() {
-        navView.translationY = 500f
-        val animator = ObjectAnimator.ofFloat(navView, "translationY", 0f)
-        animator.duration = 500
-        animator.start()
-    }
-
-    private fun removeFragment(fragment: Fragment) {
-        if (fragment != mainFragment) {
-            supportFragmentManager.clearBackStack("${fragment.id}")
-            supportFragmentManager.beginTransaction().setCustomAnimations(
-                R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom,
-                R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom,
-            ).hide(fragment).commit()
-            handler.postDelayed({
-                supportFragmentManager.beginTransaction().remove(fragment).commit()
-            }, 300)
-        }
-    }
-
-    private fun addAndShowFragment(fragment: Fragment) {
-        if (fragment != mainFragment || !mainFragment.isAdded) {
-            supportFragmentManager.beginTransaction().setCustomAnimations(
-                R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom,
-                R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom,
-            ).add(R.id.container, fragment).addToBackStack("${fragment.id}").show(fragment).commit()
-        }
-    }
 
     private fun showFragment(fragment: Fragment) {
-        if (navView.translationY != 0F) showNavView()
-        if (currentFragment != fragment) {
-            removeFragment(currentFragment)
-            addAndShowFragment(fragment)
-            currentFragment = fragment
+        lifecycleScope.launch {
+            currentFragment?.let {
+                if (it != fragment && it != mainFragment)
+                    fragmentManager.removeFragment(it)
+            }
+            if (fragment != mainFragment) {
+                currentFragment = fragmentManager.addAndShowFragment(fragment)
+            }
         }
     }
 
     private fun checkPermissionAndShowMap() {
         if (applicationContext.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            supportFragmentManager.beginTransaction().setCustomAnimations(
-                R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom,
-                R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom,
-            ).replace(R.id.container, mainFragment).addToBackStack(null).commit()
+            mainFragment = MapFragment()
+            settingsFragment = SettingsFragment(mainFragment)
+            fragmentManager.replaceFragment(mainFragment)
             currentFragment = mainFragment
             navView.visibility = ViewGroup.VISIBLE
             newMessageHandler()
+            navView.selectedItemId = R.id.mapFragment
         } else {
             syncJob?.cancel()
             newMessageJob?.cancel()
@@ -228,11 +205,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 
     override fun displayLocationUI() {
-        handler.postDelayed({
+        lifecycleScope.launch {
+            delay(150)
             checkPermissionAndShowMap()
-            currentFragment = mainFragment
-            navView.selectedItemId = R.id.mapFragment
-        }, 150)
+        }
     }
 
     override fun logOut() {
@@ -241,28 +217,17 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         lifecycleScope.launch {
             googleAuthUiClient.signOut()
         }
-        supportFragmentManager.beginTransaction().setCustomAnimations(
-            R.anim.slide_in_bottom,
-            R.anim.slide_out_bottom,
-            R.anim.slide_in_bottom,
-            R.anim.slide_out_bottom,
-        ).replace(R.id.container, SingInFragment()).addToBackStack(null).commit()
+        fragmentManager.replaceFragment(SingInFragment())
         navView.visibility = ViewGroup.GONE
     }
 
     fun goToRequestsPermissions() {
-        supportFragmentManager.beginTransaction().setCustomAnimations(
-            R.anim.slide_in_bottom,
-            R.anim.slide_out_bottom,
-            R.anim.slide_in_bottom,
-            R.anim.slide_out_bottom,
-        ).replace(R.id.container, PermissionRequestFragment()).addToBackStack(null).commit()
+        fragmentManager.replaceFragment(PermissionRequestFragment())
         navView.visibility = ViewGroup.GONE
     }
 }
 
 interface DisplayLocationUi {
-
     fun changeProfilePhoto(newPhotoUrl: Uri)
     fun displayLocationUI()
     fun logOut()
