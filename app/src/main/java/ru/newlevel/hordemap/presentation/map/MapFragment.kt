@@ -217,11 +217,14 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapOverlayManager.distanceText.collect {
-                    if (it != 0.0) {
+                    if (it.first != 0.0) {
                         binding.distanceTextView.visibility = View.VISIBLE
-                        binding.distanceTextView.text = it.toDistanceText()
+                        binding.distanceTextView.text = it.first.toDistanceText()
+                        binding.bearingTextView.visibility = View.VISIBLE
+                        binding.bearingTextView.text = it.second
                     } else {
                         binding.distanceTextView.visibility = View.GONE
+                        binding.bearingTextView.visibility = View.GONE
                     }
                 }
             }
@@ -256,7 +259,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private fun buildRoute(destination: LatLng) {
         try {
             mapOverlayManager.createRoute(
-                googleMap.myLocation.getLatLng(),
+                googleMap.myLocation,
                 destination,
                 requireContext()
             )
@@ -277,7 +280,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
         googleMap.setOnMyLocationChangeListener { location ->
             if (mapOverlayManager.isRoutePolylineNotNull()) {
-                mapOverlayManager.updateRoute(location.getLatLng())
+                mapOverlayManager.updateRoute(location)
             }
         }
         googleMap.setOnMapLongClickListener { latLng ->

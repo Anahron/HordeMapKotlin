@@ -102,4 +102,5 @@
     <string name="editing">Правка:</string>
     <string name="upload_failed">Загрузка прервалась</string>
     <string name="time_after_restart">Для обновления времени запроса требуется перезапустить приложение</string>
+    <string name="horde_map_gps">Получает GPS данные в фоновом режиме</string>
 </resources>

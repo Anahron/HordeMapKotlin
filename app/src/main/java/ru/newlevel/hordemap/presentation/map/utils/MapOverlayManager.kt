@@ -2,6 +2,7 @@ package ru.newlevel.hordemap.presentation.map.utils
 
 import android.content.Context
 import android.graphics.Color
+import android.location.Location
 import android.net.Uri
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -22,6 +23,7 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.GPX_EXTENSION
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.app.getFileNameFromUri
+import ru.newlevel.hordemap.app.getLatLng
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
@@ -43,11 +45,11 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     private val garminMarkerCollection: MarkerManager.Collection = markerManager.newCollection()
     private val polygonCollection: PolygonManager.Collection = polygonManager.newCollection()
 
-    private var destination: LatLng? = null
+    private var destination: Location? = null
     private var kmlLayer: KmlLayer? = null
 
-    private val _distanceText = MutableStateFlow(0.0)
-    val distanceText: StateFlow<Double> = _distanceText
+    private val _distanceText = MutableStateFlow(Pair(0.0, ""))
+    val distanceText: StateFlow<Pair<Double, String>> = _distanceText
 
     init {
         staticMarkerCollection.setOnInfoWindowClickListener {
@@ -95,19 +97,21 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     }
 
 
-    fun updateRoute(currentLatLng: LatLng) {
+    fun updateRoute(currentLatLng: Location) {
         if (destination != null) {
             polylineCollection.polylines.first {
-                it.points = listOf(currentLatLng, destination)
+                it.points = listOf(currentLatLng.getLatLng(), destination?.getLatLng())
                 true
             }
             setDistanceText(currentLatLng, destination)
         }
     }
 
-    private fun setDistanceText(currentLatLng: LatLng, destination: LatLng?) {
-        val distance = SphericalUtil.computeDistanceBetween(currentLatLng, destination)
-        _distanceText.value = distance
+    private fun setDistanceText(currentLatLng: Location, destination: Location?) {
+        val distance = SphericalUtil.computeDistanceBetween(currentLatLng.getLatLng(), destination?.getLatLng())
+        destination?.let {
+            _distanceText.value = Pair(distance, currentLatLng.bearingTo(it).toInt().toString() + "\u00B0 ")
+        }
     }
 
     fun addPolyline(latLngList: List<LatLng>) {
@@ -124,11 +128,14 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
         return polylineCollection.polylines.isNotEmpty()
     }
 
-    fun createRoute(currentLatLng: LatLng, destination: LatLng, context: Context) {
+    fun createRoute(currentLatLng: Location, destination: LatLng, context: Context) {
         removeRoute()
-        this.destination = destination
-        setDistanceText(currentLatLng, destination)
-        polylineCollection.addPolyline(createRouteUseCase.execute(currentLatLng, destination, context))
+        this.destination = Location("Dest").apply {
+            latitude = destination.latitude
+            longitude = destination.longitude
+        }
+        setDistanceText(currentLatLng, this.destination)
+        polylineCollection.addPolyline(createRouteUseCase.execute(currentLatLng.getLatLng(), destination, context))
     }
 
     fun createUsersMarkers(
@@ -191,7 +198,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
 
     fun removeRoute() {
         destination = null
-        _distanceText.value = 0.0
+        _distanceText.value = Pair(0.0, "")
         polylineCollection.polylines.forEach { polyline -> polyline.remove() }
         polylineCollection.clear()
     }

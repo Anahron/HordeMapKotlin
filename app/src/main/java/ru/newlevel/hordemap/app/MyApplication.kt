@@ -10,6 +10,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.di.dataModule
 import ru.newlevel.hordemap.di.databaseModule
 import ru.newlevel.hordemap.di.domainModule
@@ -19,6 +20,7 @@ import java.io.File
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        UserEntityProvider.sessionId = System.currentTimeMillis()
         createBackgroundWorkNotificationChannel()
         createNewMessagesNotificationChannel()
         val dexOutputDir: File = codeCacheDir

@@ -101,4 +101,5 @@
     <string name="editing">Editing:</string>
     <string name="upload_failed">Upload failed</string>
     <string name="time_after_restart">Restart application required to update time to request</string>
+    <string name="horde_map_gps">Receives GPS data in the background</string>
 </resources>

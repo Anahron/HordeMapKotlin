@@ -2,6 +2,7 @@ package ru.newlevel.hordemap.presentation.messenger
 
 import android.Manifest
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.net.Uri
@@ -60,11 +61,11 @@ import ru.newlevel.hordemap.app.createTempImageFile
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.getFileSizeFromUri
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.app.hideToBottomAnimation
 import ru.newlevel.hordemap.app.hideShadowAnimate
+import ru.newlevel.hordemap.app.hideToBottomAnimation
 import ru.newlevel.hordemap.app.hideToRight
-import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.loadAnimation
+import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.showFromBottomAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
@@ -72,7 +73,7 @@ import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
 
 class MessengerFragment : Fragment(R.layout.fragment_messenger),
-    MessagesAdapter.OnMessageItemClickListener,
+    OnMessageItemClickListener,
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
 
     private val binding: FragmentMessengerBinding by viewBinding()
@@ -98,6 +99,17 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private val handler = Handler(Looper.getMainLooper())
     private var editMessageId: Long? = null
     private var replyMessageId: Long? = null
+
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupUIComponents()
+        requestWriteExternalStoragePermission()
+        setupMessagesUpdates()
+        binding.inputLayout.showFromBottomAnimation()
+        createActivityRegisters()
+    }
 
     private fun createActivityRegisters() {
         mActivityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
@@ -136,15 +148,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     dialogFragment.show(childFragmentManager, "photo_description_dialog")
                 }
             }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setupUIComponents()
-        requestWriteExternalStoragePermission()
-        setupMessagesUpdates()
-        binding.inputLayout.showFromBottomAnimation()
-        createActivityRegisters()
     }
 
     private fun setupUIComponents() {
@@ -187,7 +190,9 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mUsersPopupMenu.contentView?.findViewById<RecyclerView>(R.id.rvUsersCount)?.let {
             mUsersRecyclerView = it
         }
-        mUsersRecyclerViewAdapter = UsersAdapter()
+        mUsersRecyclerViewAdapter = UsersAdapter {
+            onImageClick(it)
+        }
         mUserLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = false
             initialPrefetchItemCount = 30
@@ -391,20 +396,22 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     override fun onImageClick(url: String) {
-        val dialog = Dialog(
-            requireContext(),
-            android.R.style.Theme_DeviceDefault_NoActionBar
-        )
-        dialog.setContentView(R.layout.fragment_full_screen_image)
-        val imageView =
-            dialog.findViewById<ZoomageView>(R.id.myZoomageView)
-        dialog.findViewById<ImageView>(R.id.close_massager).setOnClickListener {
-            dialog.dismiss()
+        if (url.isNotEmpty()) {
+            val dialog = Dialog(
+                requireContext(),
+                android.R.style.Theme_DeviceDefault_NoActionBar
+            )
+            dialog.setContentView(R.layout.fragment_full_screen_image)
+            val imageView =
+                dialog.findViewById<ZoomageView>(R.id.myZoomageView)
+            dialog.findViewById<ImageView>(R.id.close_massager).setOnClickListener {
+                dialog.dismiss()
+            }
+            Glide.with(requireContext())
+                .load(url)
+                .into(imageView)
+            dialog.show()
         }
-        Glide.with(requireContext())
-            .load(url)
-            .into(imageView)
-        dialog.show()
     }
 
     private fun setUpCloseReplyButton() {
@@ -529,7 +536,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     override fun onItemClick(message: MyMessageEntity, itemView: View, x: Float, y: Float, isInMessage: Boolean) {
-        if ( mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+        if (mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         else {
             if (isInMessage && !isPopUpShow)
@@ -540,7 +547,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     override fun onReplyClick(message: MyMessageEntity) {
-        if ( mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+        if (mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         else {
             val handler = Handler(Looper.getMainLooper())
@@ -552,7 +559,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             }, 250)
         }
     }
-
 
     private fun requestWriteExternalStoragePermission() {
         if (!requireContext().hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {

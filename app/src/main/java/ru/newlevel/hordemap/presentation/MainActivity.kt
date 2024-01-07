@@ -23,7 +23,6 @@ import ru.newlevel.hordemap.app.ACTION_OPEN_MESSENGER
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideToBottomAnimation
 import ru.newlevel.hordemap.app.showFromBottomAnimation
-import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.device.MessageNotificationService
 import ru.newlevel.hordemap.presentation.map.MapFragment
 import ru.newlevel.hordemap.presentation.messenger.MessengerFragment
@@ -50,10 +49,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     private var syncJob: Job? = null
     private var newMessageJob: Job? = null
     private var isAppInBackground = false
-
-    init {
-        UserEntityProvider.sessionId = System.currentTimeMillis()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

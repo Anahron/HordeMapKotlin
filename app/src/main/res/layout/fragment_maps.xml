@@ -35,6 +35,24 @@
                 tools:ignore="RtlSymmetry" />
 
             <TextView
+                android:id="@+id/bearing_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="140dp"
+                android:layout_marginTop="47dp"
+                android:background="@drawable/text_view_bg"
+                android:paddingStart="7dp"
+                android:paddingEnd="7dp"
+                android:shadowColor="#a89c6a"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3"
+                android:textColor="@color/main_green"
+                android:textSize="25sp"
+                android:visibility="gone"
+                tools:ignore="RtlSymmetry" />
+
+            <TextView
                 android:id="@+id/tv_compass"
                 android:layout_width="70sp"
                 android:gravity="end"

@@ -27,6 +27,7 @@ const val SHADOW_QUALITY = 0.15f
 const val KML_EXTENSION = ".kml"
 const val KMZ_EXTENSION = ".kmz"
 const val GPX_EXTENSION = ".gpx"
+const val JPG_EXTENSION = ".jpg"
 const val GARMIN_TAG = "Garmin_tag"
 
 //db keys
