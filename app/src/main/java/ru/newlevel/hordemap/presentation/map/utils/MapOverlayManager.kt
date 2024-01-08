@@ -51,16 +51,24 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     private val _distanceText = MutableStateFlow(Pair(0.0, ""))
     val distanceText: StateFlow<Pair<Double, String>> = _distanceText
 
+    private var onInfoWindowLongClickListener: ((Marker) -> Unit)? = null
+
+    fun setOnInfoWindowLongClickListener(listener: (Marker) -> Unit) {
+        onInfoWindowLongClickListener = listener
+    }
+
     init {
         staticMarkerCollection.setOnInfoWindowClickListener {
             it.hideInfoWindow()
         }
-        staticMarkerCollection.setOnMarkerClickListener { marker: Marker ->
-            marker.showInfoWindow()
+        staticMarkerCollection.setOnMarkerClickListener {
+            it.showInfoWindow()
             true
         }
+
         staticMarkerCollection.setOnInfoWindowLongClickListener {
-            deleteMarkerUseCase.execute(it)
+            onInfoWindowLongClickListener?.invoke(it)
+            it.hideInfoWindow()
         }
     }
 
@@ -215,5 +223,9 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
             }
         }
         return Result.failure(Throwable(context.getString(R.string.file_wrong)))
+    }
+
+    fun deleteMarker(marker: Marker) {
+        deleteMarkerUseCase.execute(marker)
     }
 }

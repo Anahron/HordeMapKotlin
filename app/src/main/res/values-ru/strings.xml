@@ -103,4 +103,5 @@
     <string name="upload_failed">Загрузка прервалась</string>
     <string name="time_after_restart">Для обновления времени запроса требуется перезапустить приложение</string>
     <string name="horde_map_gps">Получает GPS данные в фоновом режиме</string>
+    <string name="delete_marker">Удалить маркер</string>
 </resources>

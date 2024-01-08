@@ -25,6 +25,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
 import kotlinx.coroutines.flow.collectLatest
@@ -104,24 +105,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
             isUserMoveCamera = true
         } catch (e: Exception) {
             e.printStackTrace()
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        mapInteractionHandler.onPause()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        mapInteractionHandler.onResume()
-    }
-
-    private fun requestNotificationPermission() {
-        if (!requireContext().hasPermission(Manifest.permission.POST_NOTIFICATIONS) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.requestPermissions(
-                requireActivity(), arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE_POST_NOTIFICATION
-            )
         }
     }
 
@@ -269,6 +252,9 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     private fun mapListenersSetup() {
+        mapOverlayManager.setOnInfoWindowLongClickListener {
+            onMarkerLongClickMenu(it)
+        }
         googleMap.setOnMapClickListener {
             mapInteractionHandler.onCameraMove(true)
         }
@@ -289,6 +275,36 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
 
     }
+
+    private fun onMarkerLongClickMenu(marker: Marker) {
+        // location -> pixels window for popup
+        val projection = googleMap.projection
+        val point = projection.toScreenLocation(marker.position)
+        val markerPopupMenu = PopupWindow(requireContext())
+        markerPopupMenu.contentView = layoutInflater.inflate(
+            R.layout.popup_marker_long_click, binding.root as ViewGroup, false
+        )
+        markerPopupMenu.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(), R.drawable.round_white
+            )
+        )
+        markerPopupMenu.elevation = 18f
+        markerPopupMenu.isFocusable = true
+        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteMarker)?.setOnClickListener {
+            markerPopupMenu.dismiss()
+            mapOverlayManager.deleteMarker(marker)
+        }
+        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMarkerShowDistance)?.setOnClickListener {
+            markerPopupMenu.dismiss()
+            if (!mapOverlayManager.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
+            buildRoute(marker.position)
+        }
+        markerPopupMenu.showAtLocation(
+            binding.root, Gravity.NO_GRAVITY, point.x, point.y
+        )
+    }
+
 
     private fun onMapLongClickMenu(latLng: LatLng) {
         // location -> pixels window for popup
@@ -467,4 +483,21 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         ).show()
     }
 
+    override fun onPause() {
+        super.onPause()
+        mapInteractionHandler.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mapInteractionHandler.onResume()
+    }
+
+    private fun requestNotificationPermission() {
+        if (!requireContext().hasPermission(Manifest.permission.POST_NOTIFICATIONS) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                requireActivity(), arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE_POST_NOTIFICATION
+            )
+        }
+    }
 }
