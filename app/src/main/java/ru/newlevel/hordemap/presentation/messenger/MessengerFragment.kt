@@ -236,7 +236,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 messengerViewModel.usersProfileDataFlow.collect { profiles ->
-                    Log.e(TAG, " usersProfileLiveData.collect $profiles")
                     mUsersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }

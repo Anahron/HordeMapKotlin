@@ -35,7 +35,7 @@ class MarkersUtils {
     ) {
         val markerSize = 70
         for (markerModel in garminGpxMarkersSet.markers) {
-            val icon = MarkersItems.GpxMarkersItem.values()
+            val icon = GpxMarkersItem.values()
                 .find { it.markerType == markerModel.markerType && it.color == markerModel.markerColor }
                 ?.let { createScaledBitmap(context, it.resourceId, markerSize) } ?: createScaledBitmap(
                 context, R.drawable.marker_point0, markerSize
@@ -92,7 +92,7 @@ class MarkersUtils {
     }
 
     private fun findStaticIcon(markerModel: MarkerDataModel, context: Context): BitmapDescriptor {
-        return MarkersItems.StaticMarkersItem.values().find { it.id == markerModel.item }?.let {
+        return StaticMarkersItem.values().find { it.id == markerModel.item }?.let {
             createScaledBitmap(
                 context, it.resourceId, MARKER_SIZE_STATIC
             )
@@ -142,7 +142,7 @@ class MarkersUtils {
     }
 
     private fun findUserIcon(markerModel: MarkerDataModel, context: Context): BitmapDescriptor {
-        return MarkersItems.UsersMarkersItem.values().find { it.id == markerModel.item }?.let {
+        return UsersMarkersItem.values().find { it.id == markerModel.item }?.let {
             createScaledBitmap(
                 context, it.resourceId, MARKER_SIZE_USERS
             )

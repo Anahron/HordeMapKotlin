@@ -8,12 +8,13 @@ import ru.newlevel.hordemap.R
 class FragmentManager(private val fragmentManager: FragmentManager) {
     private val delayToRemoveFragment = 150L
     fun addAndShowFragment(fragment: Fragment): Fragment {
-        fragmentManager.beginTransaction().setCustomAnimations(
-            R.anim.slide_in_bottom,
-            R.anim.slide_out_bottom,
-            R.anim.slide_in_bottom,
-            R.anim.slide_out_bottom,
-        ).add(R.id.container, fragment).addToBackStack(fragment.id.toString()).show(fragment).commit()
+        if (!fragment.isAdded)
+            fragmentManager.beginTransaction().setCustomAnimations(
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+            ).add(R.id.container, fragment).addToBackStack(fragment.id.toString()).show(fragment).commit()
         return fragment
     }
 
