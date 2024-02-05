@@ -142,13 +142,15 @@ class MarkersUtils {
     }
 
     private fun findUserIcon(markerModel: MarkerDataModel, context: Context): BitmapDescriptor {
-        return UsersMarkersItem.values().find { it.id == markerModel.item }?.let {
+        val userMarker = UsersMarkersItem.values().find { it.id == markerModel.item }
+            ?.let {
             createScaledBitmap(
                 context, it.resourceId, MARKER_SIZE_USERS
             )
         } ?: createScaledBitmap(
             context, R.drawable.img_marker_red, MARKER_SIZE_USERS
         )
+        return userMarker
     }
 
     fun createUsersMarkers(

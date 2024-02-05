@@ -24,7 +24,7 @@ import ru.newlevel.hordemap.presentation.MainActivity
 
 class MyLocationManager : Service() {
 
-    private var timeToSendData = 60000L
+    private var timeToUpdate = 60000L
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
     }
@@ -79,20 +79,19 @@ class MyLocationManager : Service() {
         val notification = createNotification()
         startForeground(1, notification)
         handler.postDelayed({
-            timeToSendData = try {
+            timeToUpdate = try {
                 UserEntityProvider.userEntity.timeToSendData.times(1000L)
             } catch (e: Exception) {
                 30000
             }
-            Log.e(TAG, "locationRequest set with $timeToSendData")
-            locationRequest =
-                LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData)
-                    //TODO 0 для теста установить 12
-                    .setMinUpdateDistanceMeters(12F)
-                    .setMinUpdateIntervalMillis(6000L)
-                    .setMaxUpdateAgeMillis(Long.MAX_VALUE)
-                    .setMaxUpdateDelayMillis(timeToSendData)
-                    .build()
+            Log.e(TAG, "locationRequest set with $timeToUpdate")
+            locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToUpdate)
+                //TODO 0 для теста, установить 12
+                .setMinUpdateDistanceMeters(12F)
+                .setMinUpdateIntervalMillis(6000L)
+                .setMaxUpdateAgeMillis(Long.MAX_VALUE)
+                .setMaxUpdateDelayMillis(timeToUpdate)
+                .build()
             startLocationUpdates()
         }, 5000)
     }

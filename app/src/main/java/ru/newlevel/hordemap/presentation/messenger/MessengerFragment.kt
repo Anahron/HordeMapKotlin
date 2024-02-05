@@ -169,7 +169,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             showMainPopupMenu(it)
         }
     }
-
+    
     private fun setupUsersRecyclerView() {
         mUsersPopupMenu = PopupWindow(requireContext())
         mUsersPopupMenu.contentView = layoutInflater.inflate(

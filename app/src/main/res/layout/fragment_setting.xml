@@ -226,187 +226,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/toggleGroup">
 
                 <ru.newlevel.hordemap.presentation.settings.DraggableCardView
-                    android:id="@+id/cardViewLoadMap"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/round_white"
-                    android:elevation="16dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="8dp"
-                    tools:visibility="gone">
-
-                    <androidx.appcompat.widget.LinearLayoutCompat
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/transparent"
-                        android:orientation="vertical"
-                        android:padding="12dp">
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="12dp"
-                            android:text="@string/select_src"
-                            android:textColor="@color/text_green_dark"
-                            android:textSize="18sp" />
-
-                        <androidx.appcompat.widget.LinearLayoutCompat
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="6dp"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:background="@color/transparent"
-                                android:contentDescription="@string/todo"
-                                android:padding="10dp"
-                                android:src="@drawable/vector_load_map_cloud" />
-
-                            <androidx.appcompat.widget.AppCompatButton
-                                android:id="@+id/btn_from_server"
-                                android:layout_width="48dp"
-                                android:layout_height="match_parent"
-                                android:layout_weight="1"
-                                android:background="@drawable/rounded_load_map_btn"
-                                android:elevation="0dp"
-                                android:text="@string/from_server"
-                                android:textAppearance="@style/MyHintText"
-                                android:textColor="@color/main_green"
-                                android:textSize="18sp"
-                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
-
-                        </androidx.appcompat.widget.LinearLayoutCompat>
-
-
-                        <androidx.appcompat.widget.LinearLayoutCompat
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="6dp"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:background="@color/transparent"
-                                android:contentDescription="@string/todo"
-                                android:padding="10dp"
-                                android:src="@drawable/vector_file_dir" />
-
-                            <androidx.appcompat.widget.AppCompatButton
-                                android:id="@+id/btn_from_files"
-                                android:layout_width="48dp"
-                                android:layout_height="match_parent"
-                                android:layout_weight="1"
-                                android:background="@drawable/rounded_load_map_btn"
-                                android:elevation="0dp"
-                                android:text="@string/from_files"
-                                android:textAppearance="@style/MyHintText"
-                                android:textColor="@color/main_green"
-                                android:textSize="18sp"
-                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
-
-                        </androidx.appcompat.widget.LinearLayoutCompat>
-
-                        <androidx.appcompat.widget.LinearLayoutCompat
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="6dp"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:background="@color/transparent"
-                                android:contentDescription="@string/todo"
-                                android:padding="10dp"
-                                android:src="@drawable/vector_reload" />
-
-                            <androidx.appcompat.widget.AppCompatButton
-                                android:id="@+id/btn_last_saved"
-                                android:layout_width="48dp"
-                                android:layout_height="match_parent"
-                                android:layout_weight="1"
-                                android:background="@drawable/rounded_load_map_btn"
-                                android:elevation="0dp"
-                                android:text="@string/last_saved_map"
-                                android:textAppearance="@style/MyHintText"
-                                android:textColor="@color/main_green"
-                                android:textSize="18sp"
-                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
-
-                        </androidx.appcompat.widget.LinearLayoutCompat>
-
-                        <androidx.appcompat.widget.LinearLayoutCompat
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="6dp"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:background="@color/transparent"
-                                android:contentDescription="@string/todo"
-                                android:padding="10dp"
-                                android:src="@drawable/vector_clear" />
-
-                            <androidx.appcompat.widget.AppCompatButton
-                                android:id="@+id/btn_clean_map"
-                                android:layout_width="48dp"
-                                android:layout_height="match_parent"
-                                android:layout_weight="1"
-                                android:background="@drawable/rounded_load_map_btn"
-                                android:elevation="0dp"
-                                android:text="@string/clean_map"
-                                android:textAppearance="@style/MyHintText"
-                                android:textColor="@color/main_green"
-                                android:textSize="18sp"
-                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
-
-                        </androidx.appcompat.widget.LinearLayoutCompat>
-
-                        <androidx.appcompat.widget.LinearLayoutCompat
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="6dp"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="45dp"
-                                android:layout_height="45dp"
-                                android:background="@color/transparent"
-                                android:contentDescription="@string/todo"
-                                android:padding="8dp"
-                                android:src="@drawable/vector_autoload" />
-
-                            <CheckBox
-                                android:id="@+id/checkBox"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:checked="false"
-                                android:gravity="center"
-                                android:padding="5dp"
-                                android:text="@string/auto_load_map"
-                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                                android:textColor="@color/text_green_dark"
-                                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
-
-                        </androidx.appcompat.widget.LinearLayoutCompat>
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="30dp"
-                            android:contentDescription="@string/todo"
-                            android:src="@drawable/swipe_right" />
-                    </androidx.appcompat.widget.LinearLayoutCompat>
-
-                </ru.newlevel.hordemap.presentation.settings.DraggableCardView>
-
-                <ru.newlevel.hordemap.presentation.settings.DraggableCardView
                     android:id="@+id/cardViewSettings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -668,6 +487,188 @@
 
                     </androidx.appcompat.widget.LinearLayoutCompat>
                 </ru.newlevel.hordemap.presentation.settings.DraggableCardView>
+
+                <ru.newlevel.hordemap.presentation.settings.DraggableCardView
+                    android:id="@+id/cardViewLoadMap"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/round_white"
+                    android:elevation="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp"
+                    tools:visibility="gone">
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/transparent"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="12dp"
+                            android:text="@string/select_src"
+                            android:textColor="@color/text_green_dark"
+                            android:textSize="18sp" />
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="6dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="10dp"
+                                android:src="@drawable/vector_load_map_cloud" />
+
+                            <androidx.appcompat.widget.AppCompatButton
+                                android:id="@+id/btn_from_server"
+                                android:layout_width="48dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="@drawable/rounded_load_map_btn"
+                                android:elevation="0dp"
+                                android:text="@string/from_server"
+                                android:textAppearance="@style/MyHintText"
+                                android:textColor="@color/main_green"
+                                android:textSize="18sp"
+                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="6dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="10dp"
+                                android:src="@drawable/vector_file_dir" />
+
+                            <androidx.appcompat.widget.AppCompatButton
+                                android:id="@+id/btn_from_files"
+                                android:layout_width="48dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="@drawable/rounded_load_map_btn"
+                                android:elevation="0dp"
+                                android:text="@string/from_files"
+                                android:textAppearance="@style/MyHintText"
+                                android:textColor="@color/main_green"
+                                android:textSize="18sp"
+                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="6dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="10dp"
+                                android:src="@drawable/vector_reload" />
+
+                            <androidx.appcompat.widget.AppCompatButton
+                                android:id="@+id/btn_last_saved"
+                                android:layout_width="48dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="@drawable/rounded_load_map_btn"
+                                android:elevation="0dp"
+                                android:text="@string/last_saved_map"
+                                android:textAppearance="@style/MyHintText"
+                                android:textColor="@color/main_green"
+                                android:textSize="18sp"
+                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="6dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="10dp"
+                                android:src="@drawable/vector_clear" />
+
+                            <androidx.appcompat.widget.AppCompatButton
+                                android:id="@+id/btn_clean_map"
+                                android:layout_width="48dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="@drawable/rounded_load_map_btn"
+                                android:elevation="0dp"
+                                android:text="@string/clean_map"
+                                android:textAppearance="@style/MyHintText"
+                                android:textColor="@color/main_green"
+                                android:textSize="18sp"
+                                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="6dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="45dp"
+                                android:layout_height="45dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="8dp"
+                                android:src="@drawable/vector_autoload" />
+
+                            <CheckBox
+                                android:id="@+id/checkBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:checked="false"
+                                android:gravity="center"
+                                android:padding="5dp"
+                                android:text="@string/auto_load_map"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/text_green_dark"
+                                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp"
+                            android:contentDescription="@string/todo"
+                            android:src="@drawable/swipe_right" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+
+                </ru.newlevel.hordemap.presentation.settings.DraggableCardView>
+
 
             </ViewFlipper>
 

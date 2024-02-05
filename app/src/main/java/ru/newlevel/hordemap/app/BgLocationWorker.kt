@@ -21,9 +21,7 @@ class BgLocationWorker(context: Context, param: WorkerParameters) :
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)
 
     override suspend fun doWork(): Result {
-        Log.e(
-            TAG, "doWork начала работать ",
-        )
+        Log.e(TAG, "doWork начала работать ")
         val userEntity = UserEntityProvider.userEntity
         if (ActivityCompat.checkSelfPermission(
                 applicationContext,
@@ -36,14 +34,13 @@ class BgLocationWorker(context: Context, param: WorkerParameters) :
             Priority.PRIORITY_BALANCED_POWER_ACCURACY, CancellationTokenSource().token,
         ).addOnSuccessListener { location ->
             location?.let {
-                Log.e(
-                    TAG,
-                    "Current Location = [lat : ${location.latitude}, lng : ${location.longitude}]",
-                )
-                val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
-                if (userEntity != null) {
+                Log.e(TAG, "Current Location = [lat : ${location.latitude}, lng : ${location.longitude}]",)
+                try {
+                    val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
                     userDatabaseReference.child(userEntity.deviceID)
                         .setValue(location.toMarker(userEntity))
+                }catch (e: Exception){
+                    Log.e(TAG, "UserEntityProvider.userEntity not initialized",)
                 }
             }
         }

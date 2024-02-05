@@ -49,6 +49,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     private var checkedRadioButton by Delegates.notNull<Int>()
     private lateinit var currentUserSetting: UserDomainModel
     private var activityListener: DisplayLocationUi? = null
+    private var isAnimatedCardChangeActive = false
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             lifecycleScope.launch {
@@ -116,21 +117,22 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 radioButton.alpha = if (radioButton.tag == checkedRadioButton.toString()) 1.0f else 0.3f
             }
         }
-
+        isAnimatedCardChangeActive = false
         lifecycleScope.launch {
             settingsViewModel.state.collect { state ->
                 settingsViewModel.getUserSettings()
                 when (state) {
                     is UiState.SettingsState -> {
                         setupSegmentButtons(R.id.btnToggleSettings)
-                        if (binding.switcher.currentView.id == binding.cardViewLoadMap.id) changeUiToSettings()
+                        if (binding.switcher.currentView.id != binding.cardViewSettings.id) changeUiToSettings()
                     }
 
                     is UiState.LoadMapState -> {
                         setupSegmentButtons(R.id.btnToggleLoadMap)
-                        if (binding.switcher.currentView.id == binding.cardViewSettings.id) changeUiToLoadMap()
+                        if (binding.switcher.currentView.id != binding.cardViewLoadMap.id) changeUiToLoadMap()
                     }
                 }
+                isAnimatedCardChangeActive = true
             }
         }
     }
@@ -166,15 +168,19 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     }
 
     private fun changeUiToLoadMap() {
-        binding.switcher.setInAnimation(requireContext(), R.anim.slide_in_right)
-        binding.switcher.setOutAnimation(requireContext(), R.anim.slide_out_left)
+        if (isAnimatedCardChangeActive) {
+            binding.switcher.setInAnimation(requireContext(), R.anim.slide_in_right)
+            binding.switcher.setOutAnimation(requireContext(), R.anim.slide_out_left)
+        }
         binding.switcher.showNext()
         Log.e(TAG, "changeUiToLoadMap()")
     }
 
     private fun changeUiToSettings() {
-        binding.switcher.setInAnimation(requireContext(), R.anim.slide_in_left)
-        binding.switcher.setOutAnimation(requireContext(), R.anim.slide_out_right)
+        if (isAnimatedCardChangeActive) {
+            binding.switcher.setInAnimation(requireContext(), R.anim.slide_in_left)
+            binding.switcher.setOutAnimation(requireContext(), R.anim.slide_out_right)
+        }
         binding.switcher.showPrevious()
         Log.e(TAG, "changeUiToSettings")
     }
@@ -437,7 +443,11 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             override fun onStopTrackingTouch(slider: Slider) {
                 lifecycleScope.launch {
                     settingsViewModel.saveUser(currentUserSetting.copy(timeToSendData = slider.value.toInt()))
-                    Toast.makeText(requireContext(), requireContext().getString(R.string.time_after_restart), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        requireContext().getString(R.string.time_after_restart),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         })

@@ -29,7 +29,6 @@ class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinCompone
                     Log.e(TAG, "Location services are no longer available!")
                 }
             }
-            Log.e(TAG, LocationResult.extractResult(intent).toString())
             LocationResult.extractResult(intent)?.let { locationResult ->
                 val locations = locationResult.locations
                 if (locations.isNotEmpty()) {

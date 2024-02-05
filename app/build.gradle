@@ -15,8 +15,8 @@ android {
         applicationId "ru.newlevel.hordemap"
         minSdk 26
         targetSdk 34
-        versionCode 24
-        versionName "4.1"
+        versionCode 25
+        versionName "4.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         kapt {
@@ -55,8 +55,8 @@ apply plugin: 'com.android.application'
 
 dependencies {
     implementation 'androidx.fragment:fragment-ktx:1.6.2'
-    implementation 'androidx.annotation:annotation:1.7.0'
-
+    implementation 'androidx.annotation:annotation:1.7.1'
+    implementation "com.google.android.recaptcha:recaptcha:18.4.0"
     //db
     def room = "2.6.1"
     implementation "androidx.room:room-runtime:$room"
@@ -85,13 +85,13 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.0.0')
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.google.firebase:firebase-database'
-    implementation 'com.google.firebase:firebase-auth:22.3.0'
+    implementation 'com.google.firebase:firebase-auth:22.3.1'
 
     //google
     implementation 'com.google.maps:google-maps-services:0.15.0'
     implementation 'com.google.maps.android:android-maps-utils:3.4.0'
     implementation 'com.google.maps.android:maps-utils-ktx:3.4.0'
-    implementation 'com.google.android.gms:play-services-location:21.0.1'
+    implementation 'com.google.android.gms:play-services-location:21.1.0'
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
 
