@@ -38,17 +38,16 @@ fun Double.toDistanceText(): String{
 
 fun Context.getFileNameFromUri(uri: Uri): String {
     var fileName: String? = null
-    val cursor = contentResolver.query(uri, null, null, null, null)
-    cursor?.use {
-        val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-        it.moveToFirst()
-        fileName = it.getString(nameIndex)
+    contentResolver.query(uri, null, null, null, null)?.use {cursor ->
+        val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        cursor.moveToFirst()
+        fileName = cursor.getString(nameIndex)
     }
-    if (fileName == null) {
+    if (fileName.isNullOrEmpty()) {
         val file = uri.path?.let { File(it) }
-        fileName = file?.name ?: ""
+        fileName = file?.name.orEmpty()
     }
-    return fileName ?: ""
+    return fileName.orEmpty()
 }
 
 fun Context.getFileSizeFromUri(uri: Uri): Long {
