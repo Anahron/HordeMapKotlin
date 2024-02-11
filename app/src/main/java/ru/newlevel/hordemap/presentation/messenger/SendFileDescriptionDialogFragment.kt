@@ -44,11 +44,14 @@ class SendFileDescriptionDialogFragment(
             dismiss()
         }
         btnCancel.setOnClickListener {
+            onFileDescriptionListener.onFileDescriptionDialogDismiss()
             dismiss()
         }
     }
 
     interface OnFileDescriptionListener {
         fun onFileDescriptionReceived(description: String, photoUri: Uri, fileName: String, fileSize: Long)
+
+        fun onFileDescriptionDialogDismiss()
     }
 }

@@ -1,14 +1,11 @@
 package ru.newlevel.hordemap.presentation.messenger
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
@@ -91,12 +88,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var pickImage: ActivityResultLauncher<String>
     private lateinit var takePicture: ActivityResultLauncher<Uri>
     private lateinit var viewBehavior: View
-    private var anim: ObjectAnimator? = null
     private var file: File? = null
     private lateinit var photoUri: Uri
     private var isDownloadingState = false
     private var isPopUpShow = false
-    private val handler = Handler(Looper.getMainLooper())
     private var editMessageId: Long? = null
     private var replyMessageId: Long? = null
 
@@ -114,6 +109,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private fun createActivityRegisters() {
         mActivityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
             if (uri != null) {
+                binding.shadow.showShadowAnimate()
                 val dialogFragment = SendFileDescriptionDialogFragment(
                     uri,
                     requireContext().getFileNameFromUri(uri),
@@ -126,6 +122,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
         pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
+                binding.shadow.showShadowAnimate()
                 val dialogFragment = SendFileDescriptionDialogFragment(
                     uri,
                     requireContext().getFileNameFromUri(uri),
@@ -139,6 +136,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         takePicture =
             registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
                 if (isSuccess) {
+                    binding.shadow.showShadowAnimate()
                     val dialogFragment = SendFileDescriptionDialogFragment(
                         photoUri,
                         requireContext().getFileNameFromUri(photoUri),
@@ -169,7 +167,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             showMainPopupMenu(it)
         }
     }
-    
+
     private fun setupUsersRecyclerView() {
         mUsersPopupMenu = PopupWindow(requireContext())
         mUsersPopupMenu.contentView = layoutInflater.inflate(
@@ -204,7 +202,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             isNestedScrollingEnabled = false
         }
         mUsersPopupMenu.setOnDismissListener {
-            handler.postDelayed({ isPopUpShow = false }, 300)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(300)
+                isPopUpShow = false
+            }
         }
     }
 
@@ -217,7 +218,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             0
         )
         mUsersPopupMenu.setOnDismissListener {
-            handler.postDelayed({ isPopUpShow = false }, 300)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(300)
+                isPopUpShow = false
+            }
             binding.shadow.hideShadowAnimate()
         }
     }
@@ -388,7 +392,11 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 }
             }
         } else {
-            Toast.makeText(requireContext(), requireContext().resources.getString(R.string.wait_download), Toast.LENGTH_LONG)
+            Toast.makeText(
+                requireContext(),
+                requireContext().resources.getString(R.string.wait_download),
+                Toast.LENGTH_LONG
+            )
                 .show()
             return
         }
@@ -469,7 +477,11 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
         mainPopupMenu.setOnDismissListener {
             binding.shadow.hideShadowAnimate()
-            handler.postDelayed({ isPopUpShow = false }, 300)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(300)
+                isPopUpShow = false
+            }
+
         }
     }
 
@@ -504,7 +516,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
         mainPopupMenu.setOnDismissListener {
             binding.shadow.hideShadowAnimate()
-            handler.postDelayed({ isPopUpShow = false }, 300)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(300)
+                isPopUpShow = false
+            }
         }
     }
 
@@ -549,13 +564,13 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         if (mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         else {
-            val handler = Handler(Looper.getMainLooper())
             val position = mMessageAdapter.getPosition(message)
             mRecyclerView.smoothScrollToPosition(position - 1)
-            handler.postDelayed({
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(250)
                 mMessageLayoutManager.findViewByPosition(position)?.findViewById<FrameLayout>(R.id.rootFrame)
                     ?.blinkAndHideShadow()
-            }, 250)
+            }
         }
     }
 
@@ -569,17 +584,24 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
     }
 
+    override fun onFileDescriptionDialogDismiss() {
+        binding.shadow.hideShadowAnimate()
+    }
+
     override fun onFileDescriptionReceived(description: String, photoUri: Uri, fileName: String, fileSize: Long) {
+        binding.shadow.hideShadowAnimate()
         lifecycleScope.launch {
             binding.imgLoading.visibility = View.VISIBLE
-            anim = binding.imgLoading.loadAnimation()
+            val anim = binding.imgLoading.loadAnimation()
             isDownloadingState = true
             messengerViewModel.sendFile(description, photoUri, fileName, fileSize).onFailure {
                 Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
             }
-            isDownloadingState = false
-            anim?.cancel()
-            binding.imgLoading.visibility = GONE
+            if (this@MessengerFragment.isAdded) {
+                isDownloadingState = false
+                anim.cancel()
+                binding.imgLoading.visibility = GONE
+            }
         }
     }
 }

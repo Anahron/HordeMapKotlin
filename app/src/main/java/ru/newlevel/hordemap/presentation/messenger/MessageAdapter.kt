@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.JPG_EXTENSION
 import ru.newlevel.hordemap.app.convertDpToPx
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -144,12 +145,14 @@ class MessagesAdapter(
                 if (isSomeUser) {
                     textViewUsername.visibility = View.GONE
                     imvProfilePhoto.visibility = View.INVISIBLE
-                } else {
+                } else if (messageDataModel.profileImageUrl.isNotEmpty()) {
+                    messageDataModel.profileImageUrl.toUri()
                     glide.load(messageDataModel.profileImageUrl.toUri())
-                        .thumbnail(1f)
                         .timeout(30_000)
                         .placeholder(R.drawable.img_anonymous).into(imvProfilePhoto)
                     bindImageClickListener(messageDataModel.profileImageUrl)
+                } else{
+                    imvProfilePhoto.setBackgroundResource(R.drawable.img_anonymous)
                 }
                 if (messageDataModel.message.isNotEmpty()) {
                     textViewMessage.visibility = View.VISIBLE
@@ -186,9 +189,10 @@ class MessagesAdapter(
             else " (" + String.format(
                 "%.1f", (fileSize.toDouble() / 1000000)
             ) + "Mb)"
-            if (fileName.endsWith(".jpg")) {
+            if (fileName.endsWith(JPG_EXTENSION)) {
                 imageView.visibility = View.VISIBLE
-                glide.load(messageDataModel.url).thumbnail(0.1f).placeholder(R.drawable.downloaded_image)
+                glide.load(messageDataModel.url)
+                    .placeholder(R.drawable.downloaded_image)
                     .timeout(30_000)
                     .into(imageView)
                 if (!isReply) imageView.setOnClickListener {
