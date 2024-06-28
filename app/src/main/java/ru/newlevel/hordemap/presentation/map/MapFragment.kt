@@ -197,6 +197,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
 
     private fun overlayObserver() {
         val lifecycle = viewLifecycleOwner.lifecycle
+        // дистанция и угол до точки
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapOverlayManager.distanceText.collect {

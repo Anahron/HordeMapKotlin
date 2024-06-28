@@ -118,7 +118,10 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     private fun setDistanceText(currentLatLng: Location, destination: Location?) {
         val distance = SphericalUtil.computeDistanceBetween(currentLatLng.getLatLng(), destination?.getLatLng())
         destination?.let {
-            _distanceText.value = Pair(distance, currentLatLng.bearingTo(it).toInt().toString() + "\u00B0 ")
+            var finalBearing = currentLatLng.bearingTo(it).toInt()
+            if (finalBearing < 0)
+                finalBearing += 360
+            _distanceText.value = Pair(distance, "$finalBearing\u00B0 ")
         }
     }
 
