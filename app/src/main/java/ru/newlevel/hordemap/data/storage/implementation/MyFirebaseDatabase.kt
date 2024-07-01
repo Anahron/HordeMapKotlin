@@ -62,9 +62,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                         messages.add(message)
                     }
                 }
-                if (messages.isNotEmpty()) {
                     trySend(messages)
-                }
             }
 
             override fun onCancelled(error: DatabaseError) {
