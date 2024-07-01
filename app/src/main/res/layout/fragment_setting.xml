@@ -105,11 +105,12 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/topCard"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="243dp"
+                android:layout_height="107dp"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginStart="30dp"
                 android:layout_marginTop="35dp"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -126,7 +127,7 @@
 
                     <androidx.appcompat.widget.LinearLayoutCompat
                         android:layout_width="wrap_content"
-                        android:layout_height="36dp"
+                        android:layout_height="32dp"
                         android:layout_marginStart="8dp"
                         android:layout_marginEnd="30dp"
                         android:orientation="horizontal">
@@ -150,7 +151,7 @@
 
                     <androidx.appcompat.widget.LinearLayoutCompat
                         android:layout_width="wrap_content"
-                        android:layout_height="36dp"
+                        android:layout_height="32dp"
                         android:layout_gravity="center_vertical"
                         android:layout_marginEnd="4dp"
                         android:orientation="horizontal">
@@ -174,6 +175,34 @@
                             android:textColor="@color/main_green_dark"
                             android:textSize="16sp"
                             tools:text="Nickname" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="4dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvUserGroup"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginEnd="4dp"
+                            android:text="@string/group"
+                            android:textColor="@color/main_green_dark"
+                            android:textSize="16sp" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tvCurrentUserGroup"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:fontFamily="@font/inter_medium"
+                            android:textColor="@color/main_green_dark"
+                            android:textSize="16sp"
+                            tools:text="GroupNumber" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -279,7 +308,6 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
-                            android:background="@drawable/round_white"
                             android:orientation="horizontal">
 
                             <com.google.android.material.slider.Slider
@@ -486,6 +514,7 @@
                             android:src="@drawable/swipe_left" />
 
                     </androidx.appcompat.widget.LinearLayoutCompat>
+
                 </ru.newlevel.hordemap.presentation.settings.DraggableCardView>
 
                 <ru.newlevel.hordemap.presentation.settings.DraggableCardView

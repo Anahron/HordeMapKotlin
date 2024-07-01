@@ -7,4 +7,7 @@ class LogOutUseCase(private val settingsRepository: SettingsRepository) {
     suspend fun execute(){
         settingsRepository.deleteUserDataRemote(UserEntityProvider.userEntity.deviceID)
     }
+    suspend fun execute(userGroup: Int){
+        settingsRepository.deleteUserDataRemote(UserEntityProvider.userEntity.deviceID, userGroup)
+    }
 }

@@ -21,6 +21,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
+import androidx.core.text.isDigitsOnly
 import androidx.core.view.iterator
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -31,18 +32,21 @@ import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.DEFAULT_GROUP
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.hideShadowAnimate
 import ru.newlevel.hordemap.app.loadAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentSettingBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.presentation.DisplayLocationUi
 import kotlin.properties.Delegates
 
 
-class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layout.fragment_setting) {
+class SettingsFragment(private val callback: OnChangeSettings) :
+    Fragment(R.layout.fragment_setting) {
 
     private val binding by viewBinding<FragmentSettingBinding>()
     private val settingsViewModel: SettingsViewModel by viewModel()
@@ -50,24 +54,25 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     private lateinit var currentUserSetting: UserDomainModel
     private var activityListener: DisplayLocationUi? = null
     private var isAnimatedCardChangeActive = false
-    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        if (uri != null) {
-            lifecycleScope.launch {
-                val progress = binding.imgLoading
-                progress.visibility = View.VISIBLE
-                val anim = progress.loadAnimation()
-                settingsViewModel.loadProfilePhoto(uri, requireContext()).onSuccess {
-                    activityListener?.changeProfilePhoto(it)
-                    anim.cancel()
-                    progress.visibility = View.GONE
-                }.onFailure {
-                    Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
-                    anim.cancel()
-                    progress.visibility = View.GONE
+    private val pickImage =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri != null) {
+                lifecycleScope.launch {
+                    val progress = binding.imgLoading
+                    progress.visibility = View.VISIBLE
+                    val anim = progress.loadAnimation()
+                    settingsViewModel.loadProfilePhoto(uri, requireContext()).onSuccess {
+                        activityListener?.changeProfilePhoto(it)
+                        anim.cancel()
+                        progress.visibility = View.GONE
+                    }.onFailure {
+                        Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
+                        anim.cancel()
+                        progress.visibility = View.GONE
+                    }
                 }
             }
         }
-    }
     private val activityLauncher = registerForActivityResult(SelectFilesContract()) { result ->
         result?.let {
             callback.onSelectFileClick(it)
@@ -106,6 +111,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             tvUserAuthName.text = user.authName
             tvNickName.text = user.name
             binding.checkBox.isChecked = user.autoLoad
+            tvCurrentUserGroup.text =
+                if (user.userGroup == 0) getString(R.string.group_general) else user.userGroup.toString()
             sbTimeToSendData.value = user.timeToSendData.toFloat()
             sbStaticMarkerSize.value = user.staticMarkerSize.toFloat()
             sbUsersMarkerSize.value = user.usersMarkerSize.toFloat()
@@ -114,7 +121,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
             checkedRadioButton = user.selectedMarker
             for (i in 0 until radioGroup.childCount) {
                 val radioButton = radioGroup.getChildAt(i) as ImageButton
-                radioButton.alpha = if (radioButton.tag == checkedRadioButton.toString()) 1.0f else 0.3f
+                radioButton.alpha =
+                    if (radioButton.tag == checkedRadioButton.toString()) 1.0f else 0.3f
             }
         }
         isAnimatedCardChangeActive = false
@@ -149,7 +157,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 settingsViewModel.setState(checkedId)
             }
         }
-        binding.cardViewSettings.setOnCardDragListener(object : DraggableCardView.OnCardDragListener {
+        binding.cardViewSettings.setOnCardDragListener(object :
+            DraggableCardView.OnCardDragListener {
             override fun onCardSwiped(next: Boolean) {
                 if (next) {
                     settingsViewModel.setState(binding.btnToggleLoadMap.id)
@@ -157,7 +166,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                 }
             }
         })
-        binding.cardViewLoadMap.setOnCardDragListener(object : DraggableCardView.OnCardDragListener {
+        binding.cardViewLoadMap.setOnCardDragListener(object :
+            DraggableCardView.OnCardDragListener {
             override fun onCardSwiped(next: Boolean) {
                 if (!next) {
                     settingsViewModel.setState(binding.btnToggleSettings.id)
@@ -224,9 +234,11 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         for (button in binding.toggleGroup) {
             if (button.id == checkedId) {
                 binding.root.findViewById<MaterialButton>(button.id).setTextColor(selectedColor)
-                button.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.main_green_dark)
+                button.backgroundTintList =
+                    ContextCompat.getColorStateList(requireContext(), R.color.main_green_dark)
             } else {
-                button.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.white)
+                button.backgroundTintList =
+                    ContextCompat.getColorStateList(requireContext(), R.color.white)
                 binding.root.findViewById<MaterialButton>(button.id).setTextColor(defaultColor)
             }
         }
@@ -257,11 +269,8 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
 
     private fun loadImageIntoProfile() {
         if (currentUserSetting.profileImageUrl.isNotEmpty()) Glide.with(requireContext())
-            .load(currentUserSetting.profileImageUrl)
-            .thumbnail(0.1f)
-            .timeout(30_000)
-            .placeholder(R.drawable.img_anonymous)
-            .into(binding.circleImageView)
+            .load(currentUserSetting.profileImageUrl).thumbnail(0.1f).timeout(30_000)
+            .placeholder(R.drawable.img_anonymous).into(binding.circleImageView)
     }
 
     private fun saveUserSelectedMarker(selectedMarker: Int) {
@@ -298,8 +307,10 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         val cardViewSettings = binding.cardViewSettings
         val cardViewLoadMap = binding.cardViewLoadMap
         val pixels = requireContext().resources.displayMetrics.widthPixels
-        if (cardViewSettings.translationX.toInt() != 0) cardViewSettings.translationX = -pixels.toFloat()
-        if (cardViewLoadMap.translationX.toInt() != 0) cardViewLoadMap.translationX = pixels.toFloat()
+        if (cardViewSettings.translationX.toInt() != 0) cardViewSettings.translationX =
+            -pixels.toFloat()
+        if (cardViewLoadMap.translationX.toInt() != 0) cardViewLoadMap.translationX =
+            pixels.toFloat()
     }
 
     private fun setUpLogOutButton() {
@@ -316,7 +327,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
 
     private fun showUserPopupMenu(itemDotsView: View) {
         binding.shadow.showShadowAnimate()
-        var onRenameClick = false
+        var onMenuClick = false
         val mainPopupMenu = PopupWindow(requireContext())
         mainPopupMenu.contentView = layoutInflater.inflate(
             R.layout.popup_user_settings, itemDotsView.rootView as ViewGroup, false
@@ -328,29 +339,47 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         )
         mainPopupMenu.elevation = 18f
         mainPopupMenu.isFocusable = true
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserLogPut)?.setOnClickListener {
-            mainPopupMenu.dismiss()
-            activityListener?.logOut()
-        }
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserRename)?.setOnClickListener {
-            onRenameClick = true
-            mainPopupMenu.dismiss()
-            showInputDialog(requireContext(), onConfirm = { enteredText ->
-                val newUser = currentUserSetting.copy(
-                    name = enteredText
-                )
-                lifecycleScope.launch {
-                    settingsViewModel.saveUser(
-                        newUser
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserLogPut)
+            ?.setOnClickListener {
+                mainPopupMenu.dismiss()
+                activityListener?.logOut()
+            }
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnChangeUserGroup)
+            ?.setOnClickListener {
+                onMenuClick = true
+                mainPopupMenu.dismiss()
+                showChangeGroupDialog(requireContext(), onConfirm = { enteredText ->
+                    val newUser = currentUserSetting.copy(
+                        userGroup = enteredText
                     )
-                }
-            })
+                    UserEntityProvider.userEntity = newUser
+                    lifecycleScope.launch {
+                        settingsViewModel.saveUser(
+                            newUser
+                        )
+                    }
+                })
+            }
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserRename)
+            ?.setOnClickListener {
+                onMenuClick = true
+                mainPopupMenu.dismiss()
+                showInputDialog(requireContext(), onConfirm = { enteredText ->
+                    val newUser = currentUserSetting.copy(
+                        name = enteredText
+                    )
+                    lifecycleScope.launch {
+                        settingsViewModel.saveUser(
+                            newUser
+                        )
+                    }
+                })
 
-        }
+            }
         mainPopupMenu.showAsDropDown(itemDotsView)
         mainPopupMenu.setOnDismissListener {
-            Log.e(TAG, "onRenameClick = $onRenameClick")
-            if (!onRenameClick) binding.shadow.hideShadowAnimate()
+            Log.e(TAG, "onRenameClick = $onMenuClick")
+            if (!onMenuClick) binding.shadow.hideShadowAnimate()
         }
     }
 
@@ -358,7 +387,9 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         val customLayout = View.inflate(context, R.layout.rename_user_dialog, null)
         val editText = customLayout.findViewById<EditText>(R.id.description_edit_text)
         val alertDialog = AlertDialog.Builder(context).setView(customLayout).create()
-        val confirmButton = customLayout.findViewById<AppCompatButton>(R.id.btnUserSettingsSaveUserName)
+        val confirmButton =
+            customLayout.findViewById<AppCompatButton>(R.id.btnUserSettingsSaveUserName)
+        editText.setText(currentUserSetting.name)
         confirmButton.isEnabled = false
         confirmButton.alpha = 0.4f
         confirmButton.setOnClickListener {
@@ -398,7 +429,9 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
                         if (inputText.length > 2) {
                             confirmButton.isEnabled = true
                         } else {
-                            Toast.makeText(requireContext(), R.string.name_must_be_3, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                requireContext(), R.string.name_must_be_3, Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                     true
@@ -407,6 +440,73 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
         })
     }
 
+    private fun showChangeGroupDialog(context: Context, onConfirm: (Int) -> Unit) {
+        val customLayout = View.inflate(context, R.layout.change_user_group_dialog, null)
+        val editText = customLayout.findViewById<EditText>(R.id.etGroupNumber)
+        val alertDialog = AlertDialog.Builder(context).setView(customLayout).create()
+        val confirmButton = customLayout.findViewById<AppCompatButton>(R.id.btnUserGroupConfirm)
+        confirmButton.isEnabled = false
+        confirmButton.alpha = 0.4f
+        confirmButton.setOnClickListener {
+            onConfirm(editText.text.toString().toInt())
+            callback.onChangeUserGroup(currentUserSetting.userGroup)
+            activityListener?.onChangeUserGroup()
+            alertDialog.dismiss()
+        }
+        alertDialog.window?.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(), R.drawable.round_white
+            )
+        )
+        alertDialog.show()
+        alertDialog.setOnDismissListener {
+            binding.shadow.hideShadowAnimate()
+        }
+
+        customLayout.findViewById<AppCompatButton>(R.id.btnUserGroupCancel).setOnClickListener {
+            alertDialog.dismiss()
+        }
+        customLayout.findViewById<AppCompatButton>(R.id.btnResetUserGroup).setOnClickListener {
+            onConfirm(DEFAULT_GROUP)
+            callback.onChangeUserGroup(currentUserSetting.userGroup)
+            activityListener?.onChangeUserGroup()
+            alertDialog.dismiss()
+        }
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                confirmButton.isEnabled = (s.toString().trim().isNotEmpty() && s.toString().isDigitsOnly())
+                if (confirmButton.isEnabled)
+                    confirmButton.alpha = 1f
+                else
+                    confirmButton.alpha = 0.4f
+            }
+
+            override fun afterTextChanged(s: Editable) {
+                editText.setOnEditorActionListener { _, actionId, event ->
+                    if (actionId == EditorInfo.IME_ACTION_DONE || (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        val imm =
+                            requireContext().applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.hideSoftInputFromWindow(editText.windowToken, 0)
+                        editText.clearFocus()
+                        val inputText = s.toString()
+                        if (inputText.isNotEmpty() && inputText.isDigitsOnly() && (inputText.toInt() in 1..9)) {
+                            confirmButton.isEnabled = true
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.group_number_must_be_0_10,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                    true
+                }
+            }
+        })
+    }
 
     private fun setupSeekBarListeners() = with(binding) {
         val userMarkerSize = sbUsersMarkerSize
@@ -454,6 +554,7 @@ class SettingsFragment(private val callback: OnChangeSettings) : Fragment(R.layo
     }
 
     interface OnChangeSettings {
+        fun onChangeUserGroup(userGroup: Int)
         fun onSelectFileClick(uri: Uri)
         fun onChangeMarkerSettings()
         fun onLoadLastGameMapClick()

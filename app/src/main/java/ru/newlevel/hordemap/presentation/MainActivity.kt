@@ -191,6 +191,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         supportActionBar?.hide()
     }
 
+    override fun onChangeUserGroup() {
+        syncJob?.cancel()
+        newMessageJob?.cancel()
+        newMessageHandler()
+    }
+
     override fun changeProfilePhoto(newPhotoUrl: Uri) {
         lifecycleScope.launch {
             googleAuthUiClient.profileUpdate(newUserPhoto = newPhotoUrl).errorMessage?.let {
@@ -223,6 +229,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
 }
 
 interface DisplayLocationUi {
+    fun onChangeUserGroup()
     fun changeProfilePhoto(newPhotoUrl: Uri)
     fun displayLocationUI()
     fun logOut()

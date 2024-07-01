@@ -16,6 +16,7 @@ import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.app.MAP_URL
 import ru.newlevel.hordemap.app.MESSAGE_FILE_FOLDER
 import ru.newlevel.hordemap.app.PROFILE_PHOTO_FOLDER
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfilePhotoStorage
@@ -43,12 +44,12 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
     }
 
     override suspend fun uploadProfilePhoto(uri: Uri, fileName: String): Result<Uri> {
-        val messageFilesStorage = storageReference.child("$PROFILE_PHOTO_FOLDER/$fileName")
+        val messageFilesStorage = storageReference.child("$PROFILE_PHOTO_FOLDER${UserEntityProvider.userEntity.userGroup}/$fileName")
         return uploadTask(messageFilesStorage, uri)
     }
 
     override suspend fun uploadFile(uri: Uri, fileName: String?): Result<Uri> {
-        val messageFilesStorage = storageReference.child("$MESSAGE_FILE_FOLDER/$fileName")
+        val messageFilesStorage = storageReference.child("$MESSAGE_FILE_FOLDER${UserEntityProvider.userEntity.userGroup}/$fileName")
         return uploadTask(messageFilesStorage, uri)
     }
 

@@ -11,4 +11,6 @@ data class UserDataModel @JvmOverloads constructor(
     override val deviceID: String,
     override var autoLoad: Boolean = false,
     override val authName: String,
-    override val profileImageUrl: String) : UserModel
+    override val profileImageUrl: String,
+    override val userGroup: Int = 0
+) : UserModel

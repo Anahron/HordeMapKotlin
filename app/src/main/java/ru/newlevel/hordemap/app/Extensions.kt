@@ -80,6 +80,7 @@ fun UserDataModel.mapToDomainModel(): UserDomainModel {
         autoLoad = autoLoad,
         profileImageUrl = profileImageUrl,
         authName = authName,
+        userGroup = userGroup
     )
 }
 
@@ -94,6 +95,7 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
         autoLoad = autoLoad,
         profileImageUrl = profileImageUrl,
         authName = authName,
+        userGroup = userGroup
     )
 }
 

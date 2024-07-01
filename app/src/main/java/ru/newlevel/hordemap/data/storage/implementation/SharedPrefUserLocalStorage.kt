@@ -18,6 +18,7 @@ import ru.newlevel.hordemap.app.KEY_PROFILE_URL
 import ru.newlevel.hordemap.app.KEY_STATIC_MARKER_SIZE
 import ru.newlevel.hordemap.app.KEY_TIME_TO_SEND_DATA
 import ru.newlevel.hordemap.app.KEY_USERS_MARKER_SIZE
+import ru.newlevel.hordemap.app.KEY_USER_GROUP
 import ru.newlevel.hordemap.app.KEY_USER_ID
 import ru.newlevel.hordemap.app.SHARE_PREFS_NAME
 import ru.newlevel.hordemap.app.TAG
@@ -40,6 +41,7 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
         sharedPreferences.edit().putString(KEY_PROFILE_URL, userDataModel.profileImageUrl).apply()
         sharedPreferences.edit().putString(KEY_AUTH_NAME, userDataModel.authName).apply()
         sharedPreferences.edit().putString(KEY_USER_ID, userDataModel.deviceID).apply()
+        sharedPreferences.edit().putInt(KEY_USER_GROUP, userDataModel.userGroup).apply()
     }
 
     override fun getNewMessageCount(): Flow<Int> = callbackFlow {
@@ -78,6 +80,7 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
         val authName = sharedPreferences.getString(KEY_AUTH_NAME, context.getString(R.string.hintAnonim)) ?: ""
         val userId = sharedPreferences.getString(KEY_USER_ID, context.getMyDeviceId()) ?: context.getMyDeviceId()
         val profileUrl = sharedPreferences.getString(KEY_PROFILE_URL, "") ?: ""
+        val userGroup = sharedPreferences.getInt(KEY_USER_GROUP, 0)
         return UserDataModel(
             name = userName,
             timeToSendData = timeToSend,
@@ -87,7 +90,8 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
             deviceID = userId,
             autoLoad = isAutoLoad,
             authName = authName,
-            profileImageUrl = profileUrl
+            profileImageUrl = profileUrl,
+            userGroup = userGroup
         )
     }
 

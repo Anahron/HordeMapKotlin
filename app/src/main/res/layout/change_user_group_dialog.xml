@@ -1,0 +1,92 @@
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/round_white"
+    android:padding="16dp"
+    android:layout_margin="20dp"
+    android:orientation="vertical">
+
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textView2"
+        android:textColor="@color/main_green_dark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/enter_group_number"
+        android:layout_margin="8dp"
+        android:textSize="22sp"/>
+
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        app:boxStrokeColor="@color/main_green_dark"
+        android:layout_marginHorizontal="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:boxCornerRadiusBottomEnd="7dp"
+        app:boxCornerRadiusTopEnd="7dp"
+        app:boxCornerRadiusBottomStart="7dp"
+        app:boxCornerRadiusTopStart="7dp"
+        app:helperTextTextColor="@color/main_green_dark"
+        android:textColorHint="@color/main_green_dark"
+        app:boxStrokeWidth="1dp"
+        android:hint="@string/_1_9">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etGroupNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:maxLength="1"
+            android:textColor="@color/main_green_dark"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnUserGroupCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/border"
+            android:textColor="@color/main_green_dark"
+            android:text="@string/cancel"
+            android:padding="15dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnUserGroupConfirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="6dp"
+            android:fontFamily="@font/inter_semibold"
+            android:background="@drawable/border_dark"
+            android:textColor="@color/main_green"
+            android:text="@string/confirm"
+            android:padding="15dp"
+            style="?android:attr/backgroundDimEnabled" />
+    </LinearLayout>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnResetUserGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_margin="6dp"
+        android:background="@drawable/border"
+        android:textColor="@color/main_green_dark"
+        android:text="@string/stayInDefaultGroup"
+        android:padding="15dp" />
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>

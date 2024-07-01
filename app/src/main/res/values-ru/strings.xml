@@ -104,4 +104,11 @@
     <string name="time_after_restart">Для обновления времени запроса требуется перезапустить приложение</string>
     <string name="horde_map_gps">Получает GPS данные в фоновом режиме</string>
     <string name="delete_marker">Удалить маркер</string>
+    <string name="group">Группа:</string>
+    <string name="group_general">Общая</string>
+    <string name="changeUserGroup">Сменить группу</string>
+    <string name="enter_group_number">Enter group number</string>
+    <string name="_1_9">1–9</string>
+    <string name="stayInDefaultGroup">В общую группу</string>
+    <string name="group_number_must_be_0_10">Group number must be 1–9</string>
 </resources>

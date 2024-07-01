@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 
 import com.google.firebase.FirebaseApp
 import org.koin.android.ext.koin.androidContext
@@ -20,6 +21,7 @@ import java.io.File
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         UserEntityProvider.sessionId = System.currentTimeMillis()
         createBackgroundWorkNotificationChannel()
         createNewMessagesNotificationChannel()

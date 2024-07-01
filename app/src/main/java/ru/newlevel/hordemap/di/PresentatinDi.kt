@@ -26,7 +26,8 @@ val presentationModule = module {
     viewModel {
         MapViewModel(
             mapUseCases = get(),
-            getUserSettingsUseCase = get()
+            getUserSettingsUseCase = get(),
+            logOutUseCase = get()
         )
     }
     viewModel {

@@ -66,6 +66,7 @@ import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.showFromBottomAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
 
@@ -236,21 +237,27 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupMessagesUpdates() {
+        Log.e(TAG, " private fun setupMessagesUpdates() вызван в messenger")
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 messengerViewModel.usersProfileDataFlow.collect { profiles ->
+                    Log.e(TAG, "    messengerViewModel.usersProfileDataFlow.collect { profiles -> = c группой" + UserEntityProvider.userEntity.userGroup )
                     mUsersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }
+
             }
             Log.e(TAG, " messengerViewModel.usersProfileLiveData.collect stop")
         }
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                Log.e(TAG, " lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { c  группой = " + UserEntityProvider.userEntity.userGroup )
                 if (mMessageAdapter.itemCount < 1)
                     delay(350)
                 messengerViewModel.messagesDataFlow.collect { messages ->
+                    Log.e(TAG, "  messengerViewModel.messagesDataFlow.collect { messages -> = c группой" + UserEntityProvider.userEntity.userGroup )
+                    Log.e(TAG,   messages.toString() )
                     handleNewMessages(messages)
                 }
             }
@@ -531,7 +538,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         binding.replyTextMessage.text = message.message
         val userName = requireContext().getString(R.string.reply_to) + " ${message.userName}"
         binding.replyName.text = userName
-        NameColors.values().find { it.id == message.selectedMarker }?.let {
+        NameColors.entries.find { it.id == message.selectedMarker }?.let {
             binding.replyName.setTextColor(ContextCompat.getColor(requireContext(), it.resourceId))
         }
     }
@@ -544,7 +551,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         binding.replyTextMessage.text = message.message
         binding.replyName.text = requireContext().getText(R.string.editing)
         binding.replyTextMessage.tag = message.timestamp
-        NameColors.values().find { it.id == message.selectedMarker }?.let {
+        NameColors.entries.find { it.id == message.selectedMarker }?.let {
             binding.replyName.setTextColor(ContextCompat.getColor(requireContext(), it.resourceId))
         }
     }

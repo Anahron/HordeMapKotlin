@@ -8,12 +8,14 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.MapUseCases
 
 class MapViewModel(
     private val mapUseCases: MapUseCases,
     getUserSettingsUseCase: GetUserSettingsUseCase,
+    private val logOutUseCase: LogOutUseCase
 ) : ViewModel() {
 
 
@@ -37,7 +39,9 @@ class MapViewModel(
     fun sendMarker(latLng: LatLng, description: String, checkedItem: Int) {
         mapUseCases.sendStaticMarkerUseCase.execute(latLng, description, checkedItem)
     }
-
+    suspend fun deleteUserFromOldGroup(userGroup: Int){
+        logOutUseCase.execute(userGroup)
+    }
     fun cleanUriForMap() {
         _mapUri.postValue(null)
     }

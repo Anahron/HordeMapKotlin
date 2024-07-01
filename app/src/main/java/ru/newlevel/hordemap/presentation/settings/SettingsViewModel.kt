@@ -58,9 +58,9 @@ class SettingsViewModel(
     }
 
     suspend fun saveUser(userDomainModel: UserDomainModel) {
+        UserEntityProvider.userEntity = userDomainModel
         sendUserToStorageUseCase.execute(userDomainModel)
         saveUserSettingsUseCase.execute(userDomainModel)
-        UserEntityProvider.userEntity = userDomainModel
         resultLiveDataMutable.value = userDomainModel
     }
 

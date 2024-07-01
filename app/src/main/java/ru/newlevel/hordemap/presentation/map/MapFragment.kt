@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.material.button.MaterialButton
 import com.google.maps.android.PolyUtil
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -43,6 +44,7 @@ import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideToRight
 import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.toDistanceText
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
 import ru.newlevel.hordemap.presentation.map.utils.MapInteractionHandler
@@ -52,7 +54,8 @@ import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
 import kotlin.math.roundToInt
 
 @Suppress("DEPRECATION")
-class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, SettingsFragment.OnChangeSettings {
+class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
+    SettingsFragment.OnChangeSettings {
 
     private val mapViewModel by viewModel<MapViewModel>()
     private val tracksTransferViewModel by viewModel<TrackTransferViewModel>()
@@ -64,6 +67,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private var isCompassActive = false
     private var isUserMoveCamera = true
     private var mapFragment: SupportMapFragment? = null
+    private var jobUsersMarkerUpdate: Job? = null
+    private var jobStaticMarkerUpdate: Job? = null
     private val mapInteractionHandler = MapInteractionHandler {
         rotateCamera()
     }
@@ -130,15 +135,22 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     }
 
     private fun markersObservers() {
+        if (jobUsersMarkerUpdate?.isActive == true) {
+            jobUsersMarkerUpdate?.cancel()
+        }
+        if (jobStaticMarkerUpdate?.isActive == true) {
+            jobStaticMarkerUpdate?.cancel()
+        }
         val lifecycle = viewLifecycleOwner.lifecycle
-        lifecycle.coroutineScope.launch {
+        jobUsersMarkerUpdate = lifecycle.coroutineScope.launch {
+            Log.e(TAG, "  jobUsersMarkerUpdate = lifecycle.coroutineScope.launch c группой" + UserEntityProvider.userEntity.userGroup)
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.userMarkersFlow.collectLatest { data ->
                     mapOverlayManager.createUsersMarkers(data = data, context = requireContext())
                 }
             }
         }
-        lifecycle.coroutineScope.launch {
+        jobStaticMarkerUpdate = lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.staticMarkersFlow.collectLatest { data ->
                     mapOverlayManager.createStaticMarkers(data = data, context = requireContext())
@@ -158,7 +170,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
                     }
                     compassAngle = angle
                     binding.imgCompass.rotation = -angle
-                    binding.tvCompass.text = (if (angle > 0) angle else angle + 360).roundToInt().toString() + "\u00B0 "
+                    binding.tvCompass.text =
+                        (if (angle > 0) angle else angle + 360).roundToInt().toString() + "\u00B0 "
                 }
             }
         }
@@ -292,15 +305,17 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         )
         markerPopupMenu.elevation = 18f
         markerPopupMenu.isFocusable = true
-        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteMarker)?.setOnClickListener {
-            markerPopupMenu.dismiss()
-            mapOverlayManager.deleteMarker(marker)
-        }
-        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMarkerShowDistance)?.setOnClickListener {
-            markerPopupMenu.dismiss()
-            if (!mapOverlayManager.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
-            buildRoute(marker.position)
-        }
+        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteMarker)
+            ?.setOnClickListener {
+                markerPopupMenu.dismiss()
+                mapOverlayManager.deleteMarker(marker)
+            }
+        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMarkerShowDistance)
+            ?.setOnClickListener {
+                markerPopupMenu.dismiss()
+                if (!mapOverlayManager.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
+                buildRoute(marker.position)
+            }
         markerPopupMenu.showAtLocation(
             binding.root, Gravity.NO_GRAVITY, point.x, point.y
         )
@@ -322,15 +337,17 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         )
         mainPopupMenu.elevation = 18f
         mainPopupMenu.isFocusable = true
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMapPutMarker)?.setOnClickListener {
-            mainPopupMenu.dismiss()
-            createStaticMarkerDialog(latLng)
-        }
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMapShowDistance)?.setOnClickListener {
-            mainPopupMenu.dismiss()
-            if (!mapOverlayManager.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
-            buildRoute(latLng)
-        }
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMapPutMarker)
+            ?.setOnClickListener {
+                mainPopupMenu.dismiss()
+                createStaticMarkerDialog(latLng)
+            }
+        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMapShowDistance)
+            ?.setOnClickListener {
+                mainPopupMenu.dismiss()
+                if (!mapOverlayManager.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
+                buildRoute(latLng)
+            }
         mainPopupMenu.showAtLocation(
             binding.root, Gravity.NO_GRAVITY, point.x, point.y
         )
@@ -460,6 +477,21 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
         }
     }
 
+    override fun onChangeUserGroup(userGroup: Int) {
+        Log.e(TAG, "onChangeUserGroup " )
+        lifecycleScope.launch {
+            mapViewModel.deleteUserFromOldGroup(userGroup)
+            Log.e(TAG, "mapViewModel.deleteUserFromOldGroup(userGroup) отработало " )
+            mapOverlayManager.removeMarkers()
+            Log.e(TAG, "   mapOverlayManager.removeMarkers() отработало " )
+            jobStaticMarkerUpdate?.cancel()
+            jobUsersMarkerUpdate?.cancel()
+            jobUsersMarkerUpdate = null
+            jobStaticMarkerUpdate = null
+            markersObservers()
+        }
+    }
+
     override fun onSelectFileClick(uri: Uri) {
         lifecycleScope.launch {
             mapViewModel.saveGameMapToFile(uri, requireContext())?.let {
@@ -497,7 +529,9 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback, Settin
     private fun requestNotificationPermission() {
         if (!requireContext().hasPermission(Manifest.permission.POST_NOTIFICATIONS) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(
-                requireActivity(), arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_CODE_POST_NOTIFICATION
+                requireActivity(),
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                REQUEST_CODE_POST_NOTIFICATION
             )
         }
     }

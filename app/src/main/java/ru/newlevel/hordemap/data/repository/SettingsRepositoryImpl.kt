@@ -27,6 +27,10 @@ class SettingsRepositoryImpl(
     override suspend fun deleteUserDataRemote(deviceId: String) =
         profileRemoteStorage.deleteUserDataRemote(deviceId)
 
+    override suspend fun deleteUserDataRemote(deviceId: String, userGroup: Int) {
+        profileRemoteStorage.deleteUserDataRemote(deviceId, userGroup)
+    }
+
 
     override fun saveAutoLoad(boolean: Boolean) = userLocalStorage.saveAutoLoad(boolean)
 
