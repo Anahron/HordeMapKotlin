@@ -25,6 +25,10 @@ import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfileRemoteStorage
 import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
+import ru.newlevel.hordemap.presentation.settings.GroupInfoModel
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRemoteStorage {
 
@@ -62,7 +66,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                         messages.add(message)
                     }
                 }
-                    trySend(messages)
+                trySend(messages)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -70,13 +74,11 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
             }
         }
         databaseReference.child("$MESSAGE_PATH${UserEntityProvider.userEntity.userGroup}")
-            .orderByChild("timestamp")
-            .addValueEventListener(listener)
+            .orderByChild("timestamp").addValueEventListener(listener)
         awaitClose {
             Log.e(TAG, "awaitClose in getMessageUpdate")
             databaseReference.child("$MESSAGE_PATH${UserEntityProvider.userEntity.userGroup}")
-                .orderByChild("timestamp")
-                .removeEventListener(listener)
+                .orderByChild("timestamp").removeEventListener(listener)
         }
     }
 
@@ -189,16 +191,37 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                 close(error.toException())
             }
         }
-        databaseReference.child("$USERS_PROFILES_PATH${UserEntityProvider.userEntity.userGroup}")
-            .orderByChild("deviceID")
-            .addValueEventListener(listener)
+        databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}")
+            .orderByChild("deviceID").addValueEventListener(listener)
         awaitClose {
             Log.e(TAG, "awaitClose in getProfilesInMessenger")
-            databaseReference.child("$USERS_PROFILES_PATH${UserEntityProvider.userEntity.userGroup}")
-                .orderByChild("deviceID")
-                .removeEventListener(listener)
+            databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}")
+                .orderByChild("deviceID").removeEventListener(listener)
         }
     }
+
+    override suspend fun getProfilesAndChildCounts(): List<GroupInfoModel> =
+        suspendCoroutine { continuation ->
+            val listener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val nodes = snapshot.children.mapNotNull { childSnapshot ->
+                        val nodeName = childSnapshot.key
+                        val childCount = childSnapshot.childrenCount.toInt()
+                        if (nodeName != null) {
+                            GroupInfoModel(nodeName, childCount)
+                        } else {
+                            null
+                        }
+                    }
+                    continuation.resume(nodes)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    continuation.resumeWithException(error.toException())
+                }
+            }
+            databaseReference.child(USERS_PROFILES_PATH).addListenerForSingleValueEvent(listener)
+        }
 
     override fun deleteMessage(message: MyMessageEntity) {
         databaseReference.child("$MESSAGE_PATH${UserEntityProvider.userEntity.userGroup}")
@@ -208,34 +231,66 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     override suspend fun sendUserData(userData: UserDataModel) {
         return withContext(Dispatchers.IO) {
             val updateTask =
-                databaseReference.child("$USERS_PROFILES_PATH${UserEntityProvider.userEntity.userGroup}/${userData.deviceID}")
+                databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}/${userData.deviceID}")
                     .setValue(userData)
             updateTask.await()
-            if (updateTask.isSuccessful)
-                updateAllUserMessages(userData)
+            if (updateTask.isSuccessful) updateAllUserMessages(userData)
         }
     }
 
     override suspend fun deleteUserDataRemote(deviceId: String, userGroup: Int) {
-        databaseReference.child("$USERS_PROFILES_PATH${userGroup}")
-            .child(deviceId)
-            .removeValue()
+        databaseReference.child("$USERS_PROFILES_PATH/${userGroup}").child(deviceId).removeValue()
             .addOnSuccessListener {
                 Log.e(TAG, "Profile deleted successfully")
-            }
-            .addOnFailureListener {
+            }.addOnFailureListener {
                 Log.e(TAG, "Failed to delete profile: ${it.message}")
             }
     }
+    override suspend fun getProfilesInGroup(groupNumber: Int): List<UserDataModel> =
+        suspendCoroutine { continuation ->
+            val listener = object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val savedUsers: ArrayList<UserDataModel> = ArrayList()
+                    for (snapshot in dataSnapshot.children) {
+                        try {
+                            val name = snapshot.child("name").getValue(String::class.java) ?: ""
+                            val authName =
+                                snapshot.child("authName").getValue(String::class.java) ?: ""
+                            val selectedMarker =
+                                snapshot.child("selectedMarker").getValue(Int::class.java) ?: 0
+                            val deviceID =
+                                snapshot.child("deviceID").getValue(String::class.java) ?: ""
+                            val profileImageUrl =
+                                snapshot.child("profileImageUrl").getValue(String::class.java) ?: ""
+                            val user = UserDataModel(
+                                deviceID = deviceID,
+                                name = name,
+                                profileImageUrl = profileImageUrl,
+                                selectedMarker = selectedMarker,
+                                authName = authName
+                            )
+                            savedUsers.add(user)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                    continuation.resume(savedUsers)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    continuation.resumeWithException(error.toException())
+                }
+            }
+
+            databaseReference.child("$USERS_PROFILES_PATH/$groupNumber").orderByChild("deviceID")
+                .addListenerForSingleValueEvent(listener)
+        }
 
     override suspend fun deleteUserDataRemote(deviceId: String) {
-        databaseReference.child("$USERS_PROFILES_PATH${UserEntityProvider.userEntity.userGroup}")
-            .child(deviceId)
-            .removeValue()
-            .addOnSuccessListener {
+        databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}")
+            .child(deviceId).removeValue().addOnSuccessListener {
                 Log.e(TAG, "Profile deleted successfully")
-            }
-            .addOnFailureListener {
+            }.addOnFailureListener {
                 Log.e(TAG, "Failed to delete profile: ${it.message}")
             }
     }

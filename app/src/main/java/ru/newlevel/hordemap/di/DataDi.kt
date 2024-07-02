@@ -91,6 +91,10 @@ val dataModule = module {
         MyFirebaseStorage()
     }
 
+    single<GroupsRepository>{
+        GroupsRepositoryImpl(profileRemoteStorage = get())
+    }
+
     single<ProfileRemoteStorage> {
         MyFirebaseDatabase()
     }

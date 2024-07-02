@@ -3,6 +3,8 @@ package ru.newlevel.hordemap.di
 import com.google.android.gms.auth.api.identity.Identity
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.newlevel.hordemap.domain.usecases.GetProfilesInGroup
+import ru.newlevel.hordemap.domain.usecases.GetUsersProfiles
 import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.CompassInteractor
@@ -136,6 +138,13 @@ val domainModule = module {
     factory {
         DeleteMessageUseCase(messengerRepository = get())
     }
+    factory {
+        GetUsersProfiles(groupsRepository = get())
+    }
+    factory {
+        GetProfilesInGroup(groupsRepository = get())
+    }
+
 
     single {
         GoogleAuthUiClient(

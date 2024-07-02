@@ -5,9 +5,35 @@
     android:layout_height="wrap_content"
     android:background="@drawable/round_white"
     android:padding="16dp"
+    android:minWidth="270dp"
     android:layout_margin="20dp"
     android:orientation="vertical">
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvSelectGroup"
+        android:textColor="@color/main_green_dark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_group"
+        android:layout_margin="8dp"
+        android:textSize="22sp"/>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvGroups"
+            android:layout_gravity="start"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvUsersInGroup"
+            android:layout_gravity="end"
+            android:layout_width="wrap_content"
+            android:layout_height="220dp" />
+    </LinearLayout>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textView2"
@@ -15,9 +41,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/enter_group_number"
-        android:layout_margin="8dp"
-        android:textSize="22sp"/>
-
+        android:layout_marginHorizontal="8dp"
+        android:textSize="18sp"/>
 
 
     <com.google.android.material.textfield.TextInputLayout
@@ -40,12 +65,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
-            android:maxLength="1"
+            android:maxLength="2"
             android:textColor="@color/main_green_dark"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
-
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -56,30 +80,31 @@
             android:id="@+id/btnUserGroupCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_margin="6dp"
+            android:layout_weight="1"
             android:background="@drawable/border"
-            android:textColor="@color/main_green_dark"
+            android:padding="15dp"
             android:text="@string/cancel"
-            android:padding="15dp" />
+            android:textColor="@color/main_green_dark" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnUserGroupConfirm"
+            style="?android:attr/backgroundDimEnabled"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_margin="6dp"
-            android:fontFamily="@font/inter_semibold"
+            android:layout_weight="1"
             android:background="@drawable/border_dark"
-            android:textColor="@color/main_green"
-            android:text="@string/confirm"
+            android:fontFamily="@font/inter_semibold"
             android:padding="15dp"
-            style="?android:attr/backgroundDimEnabled" />
+            android:text="@string/confirm"
+            android:textColor="@color/main_green" />
     </LinearLayout>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnResetUserGroup"
         android:layout_width="wrap_content"
+        android:gravity="center"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_margin="6dp"
@@ -87,6 +112,5 @@
         android:textColor="@color/main_green_dark"
         android:text="@string/stayInDefaultGroup"
         android:padding="15dp" />
-
 
 </androidx.appcompat.widget.LinearLayoutCompat>

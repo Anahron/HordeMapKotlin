@@ -21,7 +21,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
-import androidx.core.text.isDigitsOnly
 import androidx.core.view.iterator
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -32,7 +31,6 @@ import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.DEFAULT_GROUP
 import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.hideShadowAnimate
@@ -348,17 +346,22 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             ?.setOnClickListener {
                 onMenuClick = true
                 mainPopupMenu.dismiss()
-                showChangeGroupDialog(requireContext(), onConfirm = { enteredText ->
-                    val newUser = currentUserSetting.copy(
-                        userGroup = enteredText
-                    )
-                    UserEntityProvider.userEntity = newUser
-                    lifecycleScope.launch {
-                        settingsViewModel.saveUser(
-                            newUser
+                ChangeUserGroupDialogFragment { enteredText ->
+                    binding.shadow.hideShadowAnimate()
+                    if (enteredText >= 0) {
+                        val newUser = currentUserSetting.copy(
+                            userGroup = enteredText
                         )
+                        UserEntityProvider.userEntity = newUser
+                        lifecycleScope.launch {
+                            settingsViewModel.saveUser(
+                                newUser
+                            )
+                        }
+                        callback.onChangeUserGroup(currentUserSetting.userGroup)
+                        activityListener?.onChangeUserGroup()
                     }
-                })
+                }.show(this.childFragmentManager, "userGroupDialog")
             }
         mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnPopUpUserRename)
             ?.setOnClickListener {
@@ -396,9 +399,10 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             onConfirm(editText.text.toString().trim())
             alertDialog.dismiss()
         }
-        customLayout.findViewById<AppCompatButton>(R.id.btnUserSettingsCancel).setOnClickListener {
-            alertDialog.dismiss()
-        }
+        customLayout.findViewById<AppCompatButton>(R.id.btnUserSettingsCancel)
+            .setOnClickListener {
+                alertDialog.dismiss()
+            }
         alertDialog.window?.setBackgroundDrawable(
             ContextCompat.getDrawable(
                 requireContext(), R.drawable.round_white
@@ -409,7 +413,12 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             binding.shadow.hideShadowAnimate()
         }
         editText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+            override fun beforeTextChanged(
+                s: CharSequence,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
             }
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -431,74 +440,6 @@ class SettingsFragment(private val callback: OnChangeSettings) :
                         } else {
                             Toast.makeText(
                                 requireContext(), R.string.name_must_be_3, Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                    true
-                }
-            }
-        })
-    }
-
-    private fun showChangeGroupDialog(context: Context, onConfirm: (Int) -> Unit) {
-        val customLayout = View.inflate(context, R.layout.change_user_group_dialog, null)
-        val editText = customLayout.findViewById<EditText>(R.id.etGroupNumber)
-        val alertDialog = AlertDialog.Builder(context).setView(customLayout).create()
-        val confirmButton = customLayout.findViewById<AppCompatButton>(R.id.btnUserGroupConfirm)
-        confirmButton.isEnabled = false
-        confirmButton.alpha = 0.4f
-        confirmButton.setOnClickListener {
-            onConfirm(editText.text.toString().toInt())
-            callback.onChangeUserGroup(currentUserSetting.userGroup)
-            activityListener?.onChangeUserGroup()
-            alertDialog.dismiss()
-        }
-        alertDialog.window?.setBackgroundDrawable(
-            ContextCompat.getDrawable(
-                requireContext(), R.drawable.round_white
-            )
-        )
-        alertDialog.show()
-        alertDialog.setOnDismissListener {
-            binding.shadow.hideShadowAnimate()
-        }
-
-        customLayout.findViewById<AppCompatButton>(R.id.btnUserGroupCancel).setOnClickListener {
-            alertDialog.dismiss()
-        }
-        customLayout.findViewById<AppCompatButton>(R.id.btnResetUserGroup).setOnClickListener {
-            onConfirm(DEFAULT_GROUP)
-            callback.onChangeUserGroup(currentUserSetting.userGroup)
-            activityListener?.onChangeUserGroup()
-            alertDialog.dismiss()
-        }
-        editText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                confirmButton.isEnabled = (s.toString().trim().isNotEmpty() && s.toString().isDigitsOnly())
-                if (confirmButton.isEnabled)
-                    confirmButton.alpha = 1f
-                else
-                    confirmButton.alpha = 0.4f
-            }
-
-            override fun afterTextChanged(s: Editable) {
-                editText.setOnEditorActionListener { _, actionId, event ->
-                    if (actionId == EditorInfo.IME_ACTION_DONE || (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
-                        val imm =
-                            requireContext().applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                        imm.hideSoftInputFromWindow(editText.windowToken, 0)
-                        editText.clearFocus()
-                        val inputText = s.toString()
-                        if (inputText.isNotEmpty() && inputText.isDigitsOnly() && (inputText.toInt() in 1..9)) {
-                            confirmButton.isEnabled = true
-                        } else {
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.group_number_must_be_0_10,
-                                Toast.LENGTH_SHORT
                             ).show()
                         }
                     }
