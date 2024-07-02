@@ -90,6 +90,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 
     private fun newMessageHandler() {
+        navView.getOrCreateBadge(R.id.messengerFragment).apply {
+            number = 0
+        }
         syncJob = lifecycleScope.launch {
             mainViewModel.syncMessageData()
         }
@@ -192,6 +195,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 
     override fun onChangeUserGroup() {
+        mainViewModel.resetNewMessageCount()
         syncJob?.cancel()
         newMessageJob?.cancel()
         newMessageHandler()
