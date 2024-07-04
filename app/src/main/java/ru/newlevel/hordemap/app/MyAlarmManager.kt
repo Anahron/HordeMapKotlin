@@ -14,7 +14,7 @@ class MyAlarmManager(private val context: Context) {
     fun startAlarmManager() {
         Log.e("AAA", "startAlarmManager at " + Date(System.currentTimeMillis()))
         pendingIntent.let {
-            (context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setExactAndAllowWhileIdle(
+            (context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)?.setAndAllowWhileIdle(
                 AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 240000, it
             )
         }
