@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.MapUseCases
@@ -18,9 +18,12 @@ class MapViewModel(
     private val logOutUseCase: LogOutUseCase
 ) : ViewModel() {
 
+// старый поток из фаербейза
+//    val userMarkersFlow: Flow<List<MarkerDataModel>> = mapUseCases.startMarkerUpdateInteractor.startUserUpdates()
+//    val staticMarkersFlow: Flow<List<MarkerDataModel>> = mapUseCases.startMarkerUpdateInteractor.startStaticUpdates()
 
-    val userMarkersFlow: Flow<List<MarkerDataModel>> = mapUseCases.startMarkerUpdateInteractor.startUserUpdates()
-    val staticMarkersFlow: Flow<List<MarkerDataModel>> = mapUseCases.startMarkerUpdateInteractor.startStaticUpdates()
+    val userMarkersFlow: Flow<List<MarkerEntity>> = mapUseCases.startMarkerUpdateInteractor.startUserUpdates()
+    val staticMarkersFlow: Flow<List<MarkerEntity>> = mapUseCases.startMarkerUpdateInteractor.startStaticUpdates()
     val compassAngleFlow: Flow<Float> = mapUseCases.compassInteractor.getCompassData()
 
     private val _mapUri = MutableLiveData<Uri?>()

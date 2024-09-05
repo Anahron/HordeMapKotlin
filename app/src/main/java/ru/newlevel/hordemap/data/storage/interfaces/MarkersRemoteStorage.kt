@@ -1,16 +1,16 @@
 package ru.newlevel.hordemap.data.storage.interfaces
 
 import kotlinx.coroutines.flow.Flow
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.data.db.MarkerEntity
 
 interface MarkersRemoteStorage {
     fun deleteStaticMarker(key: String)
 
-    fun sendUserMarker(markerModel: MarkerDataModel)
+    fun sendUserMarker(markerModel: MarkerEntity)
 
-    fun getUserMarkerUpdates(): Flow<List<MarkerDataModel>>
+    fun getUserMarkerUpdates(): Flow<List<MarkerEntity>>
 
-    fun getStaticMarkerUpdates(): Flow<List<MarkerDataModel>>
+    fun getStaticMarkerUpdates(): Flow<List<MarkerEntity>>
 
-    fun sendStaticMarker(markerModel: MarkerDataModel)
+    fun sendStaticMarker(markerModel: MarkerEntity)
 }

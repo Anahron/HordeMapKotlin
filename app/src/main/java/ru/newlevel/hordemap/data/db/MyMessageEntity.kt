@@ -15,5 +15,6 @@ data class MyMessageEntity(
     var url: String = "",
     var profileImageUrl: String = "",
     var selectedMarker: Int = 0,
-    var replyOn: Long = 0
+    var replyOn: Long = 0,
+    var isRead: Boolean = false
 )

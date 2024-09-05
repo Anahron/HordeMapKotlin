@@ -26,6 +26,7 @@ val databaseModule = module {
             MyDatabase::class.java,
             "my-location-database"
         )
+            .fallbackToDestructiveMigration()
             .build()
     }
 }
@@ -35,6 +36,11 @@ val dataModule = module {
 
     single {
         MyAlarmManager(context = get())
+    }
+
+    single {
+        val database = get<MyDatabase>()
+        database.markersDao()
     }
 
     single {

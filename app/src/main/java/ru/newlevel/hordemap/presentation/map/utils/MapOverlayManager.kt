@@ -24,7 +24,7 @@ import ru.newlevel.hordemap.app.GPX_EXTENSION
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.getLatLng
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
 
@@ -150,7 +150,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     }
 
     fun createUsersMarkers(
-        data: List<MarkerDataModel>, context: Context
+        data: List<MarkerEntity>, context: Context
     ) {
         markersUtils.createUsersMarkers(
             data,
@@ -161,7 +161,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     }
 
     fun createStaticMarkers(
-        data: List<MarkerDataModel>, context: Context
+        data: List<MarkerEntity>, context: Context
     ) {
         staticMarkerCollection.markers.forEach { marker -> marker.remove() }
         markersUtils.createStaticMarkers(

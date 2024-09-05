@@ -18,12 +18,12 @@ import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.TIMESTAMP_PATH
 import ru.newlevel.hordemap.app.TIME_TO_DELETE_USER_MARKER
 import ru.newlevel.hordemap.app.USERS_PROFILES_PATH
+import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfileRemoteStorage
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.presentation.settings.GroupInfoModel
 import kotlin.coroutines.resume
@@ -39,7 +39,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
             .child(key).removeValue()
     }
 
-    override fun sendStaticMarker(markerModel: MarkerDataModel) {
+    override fun sendStaticMarker(markerModel: MarkerEntity) {
         Log.e(TAG, " sendStaticMarker${UserEntityProvider.userEntity.userGroup}")
         databaseReference.child("$GEO_STATIC_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
             .child(markerModel.timestamp.toString()).setValue(markerModel)
@@ -50,7 +50,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
             .setValue(message)
     }
 
-    override fun sendUserMarker(markerModel: MarkerDataModel) {
+    override fun sendUserMarker(markerModel: MarkerEntity) {
         Log.e(TAG, " sendUserMarker$markerModel")
         databaseReference.child("$GEO_USER_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
             .child(markerModel.deviceId).setValue(markerModel)
@@ -82,12 +82,12 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
         }
     }
 
-    override fun getUserMarkerUpdates(): Flow<List<MarkerDataModel>> = callbackFlow {
+    override fun getUserMarkerUpdates(): Flow<List<MarkerEntity>> = callbackFlow {
         val listener =
             databaseReference.child("$GEO_USER_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
                 .addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
-                        val savedUserMarkers: ArrayList<MarkerDataModel> = ArrayList()
+                        val savedUserMarkers: ArrayList<MarkerEntity> = ArrayList()
                         val timeNow = System.currentTimeMillis()
                         for (snapshot in dataSnapshot.children) {
                             try {
@@ -104,8 +104,8 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                                     // Устанавливаем прозрачность маркера от 0 до 5 минут максимум до 50%
                                     1f - (timeDiffMinutes / 10f).coerceAtMost(0.5f)
                                 }
-                                val myMarker: MarkerDataModel =
-                                    snapshot.getValue(MarkerDataModel::class.java)!!
+                                val myMarker: MarkerEntity =
+                                    snapshot.getValue(MarkerEntity::class.java)!!
                                 myMarker.deviceId = snapshot.key.toString()
                                 myMarker.alpha = alpha
                                 savedUserMarkers.add(myMarker)
@@ -129,14 +129,14 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     }
 
 
-    override fun getStaticMarkerUpdates(): Flow<List<MarkerDataModel>> = callbackFlow {
+    override fun getStaticMarkerUpdates(): Flow<List<MarkerEntity>> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val savedStaticMarkers: ArrayList<MarkerDataModel> = ArrayList()
+                val savedStaticMarkers: ArrayList<MarkerEntity> = ArrayList()
                 for (snapshot in dataSnapshot.children) {
                     try {
-                        val myMarker: MarkerDataModel =
-                            snapshot.getValue(MarkerDataModel::class.java)!!
+                        val myMarker: MarkerEntity =
+                            snapshot.getValue(MarkerEntity::class.java)!!
                         savedStaticMarkers.add(myMarker)
                     } catch (e: Exception) {
                         e.printStackTrace()

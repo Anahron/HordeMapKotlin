@@ -19,8 +19,8 @@ import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.collections.PolygonManager
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.GARMIN_TAG
+import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.domain.models.GarminGpxMarkersSet
 import ru.newlevel.hordemap.domain.models.GarminMarkerModel
 import java.time.Instant
@@ -91,7 +91,7 @@ class MarkersUtils {
         ).setAnchor(0.5f, -0.1f)
     }
 
-    private fun findStaticIcon(markerModel: MarkerDataModel, context: Context): BitmapDescriptor {
+    private fun findStaticIcon(markerModel: MarkerEntity, context: Context): BitmapDescriptor {
         return StaticMarkersItem.values().find { it.id == markerModel.item }?.let {
             createScaledBitmap(
                 context, it.resourceId, MARKER_SIZE_STATIC
@@ -102,7 +102,7 @@ class MarkersUtils {
     }
 
     fun createStaticMarkers(
-        markersModel: List<MarkerDataModel>,
+        markersModel: List<MarkerEntity>,
         markerCollection: MarkerManager.Collection,
         context: Context,
         visibility: Boolean
@@ -122,7 +122,7 @@ class MarkersUtils {
     }
 
     private fun createStaticTextMarker(
-        marker: MarkerDataModel, markerCollection: MarkerManager.Collection, visibility: Boolean
+        marker: MarkerEntity, markerCollection: MarkerManager.Collection, visibility: Boolean
     ) {
         val text = if (marker.title.length > 10) "${marker.title.substring(0, 7)}..." else marker.title
         val paint = createPaint()
@@ -141,7 +141,7 @@ class MarkersUtils {
         }
     }
 
-    private fun findUserIcon(markerModel: MarkerDataModel, context: Context): BitmapDescriptor {
+    private fun findUserIcon(markerModel: MarkerEntity, context: Context): BitmapDescriptor {
         val userMarker = UsersMarkersItem.values().find { it.id == markerModel.item }
             ?.let {
             createScaledBitmap(
@@ -154,7 +154,7 @@ class MarkersUtils {
     }
 
     fun createUsersMarkers(
-        markersModels: List<MarkerDataModel>,
+        markersModels: List<MarkerEntity>,
         markerCollection: MarkerManager.Collection,
         context: Context,
         visibility: Boolean
@@ -193,7 +193,7 @@ class MarkersUtils {
     }
 
     private fun markerModelToMarkerOptions(
-        markerModel: MarkerDataModel, icon: BitmapDescriptor, flagToChooseTitle: Int
+        markerModel: MarkerEntity, icon: BitmapDescriptor, flagToChooseTitle: Int
     ): MarkerOptions {
         return MarkerOptions().title(if (flagToChooseTitle == 0) markerModel.userName else markerModel.title)
             .position(LatLng(markerModel.latitude, markerModel.longitude)).alpha(markerModel.alpha).snippet(

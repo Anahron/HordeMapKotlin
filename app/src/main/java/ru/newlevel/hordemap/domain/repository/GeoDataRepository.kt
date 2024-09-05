@@ -1,19 +1,19 @@
 package ru.newlevel.hordemap.domain.repository
 
 import kotlinx.coroutines.flow.Flow
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.data.db.MarkerEntity
 
 interface GeoDataRepository {
 
-    fun startUserMarkerUpdates(): Flow<List<MarkerDataModel>>
+    fun startUserMarkerUpdates(): Flow<List<MarkerEntity>>
 
-    fun startStaticMarkerUpdates(): Flow<List<MarkerDataModel>>
+    fun startStaticMarkerUpdates(): Flow<List<MarkerEntity>>
 
     fun deleteStaticMarker(key: String)
 
-    fun sendCoordinates(markerModel: MarkerDataModel)
+    fun sendCoordinates(markerModel: MarkerEntity)
 
-    fun createStaticMarker(markerModel: MarkerDataModel)
+    fun createStaticMarker(markerModel: MarkerEntity)
 }
 
 

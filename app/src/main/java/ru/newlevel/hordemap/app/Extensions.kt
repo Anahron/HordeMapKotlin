@@ -13,7 +13,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.LatLng
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.models.UserModel
@@ -108,8 +108,8 @@ fun Context.getMyDeviceId(): String {
 
 fun <T : Any?> MutableLiveData<T>.default(initialValue: T) = apply { setValue(initialValue) }
 
-fun Location.toMarker(userModel: UserModel): MarkerDataModel {
-    val marker = MarkerDataModel()
+fun Location.toMarker(userModel: UserModel): MarkerEntity {
+    val marker = MarkerEntity()
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
     val currentTime = LocalTime.now()
     val formattedTime = currentTime.format(timeFormatter)
