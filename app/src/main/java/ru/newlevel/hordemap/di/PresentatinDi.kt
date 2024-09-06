@@ -21,7 +21,8 @@ val presentationModule = module {
             resetUserSettingsUseCase = get(),
             saveAutoLoadUseCase = get(),
             loadProfilePhotoUseCase = get(),
-            sendUserToStorageUseCase = get()
+            sendUserToStorageUseCase = get(),
+            getAllMapsAsListUseCase = get()
         )
     }
     viewModel {

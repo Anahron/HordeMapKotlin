@@ -5,6 +5,8 @@ import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import kotlinx.coroutines.Dispatchers
@@ -13,9 +15,10 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.app.BASE_LAST_MAP_FILENAME
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
-import ru.newlevel.hordemap.app.MAP_URL
+import ru.newlevel.hordemap.app.MAPS_FOLDER_URL
 import ru.newlevel.hordemap.app.MESSAGE_FILE_FOLDER
 import ru.newlevel.hordemap.app.PROFILE_PHOTO_FOLDER
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
@@ -26,13 +29,12 @@ import kotlin.coroutines.resume
 class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhotoStorage {
 
     private val storageReference = FirebaseStorage.getInstance().reference
-    private val gsReference = storageReference.storage.getReferenceFromUrl(MAP_URL)
 
-    override suspend fun downloadGameMapFromServer(context: Context): Uri? {
+    override suspend fun downloadGameMapFromServer(context: Context, url: String): Uri? {
         return suspendCancellableCoroutine { continuation ->
             val filename = BASE_LAST_MAP_FILENAME + KMZ_EXTENSION
             val file = File(context.filesDir, filename)
-            gsReference.getFile(file).addOnSuccessListener { _ ->
+            storageReference.storage.getReferenceFromUrl(url).getFile(file).addOnSuccessListener { _ ->
                 continuation.resume(Uri.fromFile(file))
             }.addOnFailureListener {
                 continuation.resume(null)
@@ -42,6 +44,44 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
             }
         }
     }
+
+
+    override suspend fun getAllMapsAsList(): List<Triple<String, String, Long>> {
+        return suspendCancellableCoroutine { continuation ->
+            // Получаем ссылку на папку с картами
+            val directoryRef = storageReference.storage.getReferenceFromUrl(MAPS_FOLDER_URL)
+            // Получаем список всех файлов в папке
+            directoryRef.listAll()
+                .addOnSuccessListener { listResult ->
+                    Log.e(TAG, ".addOnSuccessListener  listResult -> ${listResult.items}")
+                    val fileList = mutableListOf<Triple<String, String, Long>>()
+
+                    // Для каждого файла получаем его URL и имя
+                    val tasks = listResult.items.map { itemRef ->
+                        itemRef.metadata.addOnSuccessListener { metadata ->
+                            val fileName = itemRef.name // Имя файла
+                            val fileSize = metadata.sizeBytes // Размер файла
+                            fileList.add(Triple(fileName, itemRef.toString(), fileSize))
+                        }
+                    }
+
+                    // Дожидаемся завершения всех задач по получению URL
+                    Tasks.whenAllComplete(tasks).addOnSuccessListener {
+                        continuation.resume(fileList)
+                    }.addOnFailureListener {
+                        continuation.resume(emptyList())
+                    }
+                }
+                .addOnFailureListener {
+                    continuation.resume(emptyList())
+                }
+
+            continuation.invokeOnCancellation {
+                continuation.resume(emptyList())
+            }
+        }
+    }
+
 
     override suspend fun uploadProfilePhoto(uri: Uri, fileName: String): Result<Uri> {
         val messageFilesStorage = storageReference.child("$PROFILE_PHOTO_FOLDER${UserEntityProvider.userEntity.userGroup}/$fileName")

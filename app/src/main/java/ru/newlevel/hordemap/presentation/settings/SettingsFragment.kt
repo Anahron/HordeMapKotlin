@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,6 +24,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.iterator
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
@@ -32,7 +34,6 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.SelectFilesContract
-import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.hideShadowAnimate
 import ru.newlevel.hordemap.app.loadAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
@@ -181,7 +182,6 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             binding.switcher.setOutAnimation(requireContext(), R.anim.slide_out_left)
         }
         binding.switcher.showNext()
-        Log.e(TAG, "changeUiToLoadMap()")
     }
 
     private fun changeUiToSettings() {
@@ -190,7 +190,6 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             binding.switcher.setOutAnimation(requireContext(), R.anim.slide_out_right)
         }
         binding.switcher.showPrevious()
-        Log.e(TAG, "changeUiToSettings")
     }
 
 
@@ -201,7 +200,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         }
 
         btnFromServer.setOnClickListener {
-            callback.onLoadMapFromServerClick()
+            showFileDialog()
         }
 
         btnFromFiles.setOnClickListener {
@@ -225,6 +224,53 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         }
     }
 
+
+    private fun showFileDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.files_list_dialog, null)
+        val mapRecyclerView: RecyclerView = dialogView.findViewById(R.id.rvMapList)
+        val progress: ImageView = dialogView.findViewById(R.id.img_loading_files)
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+        val anim = progress.loadAnimation()
+        val mMapRecyclerViewAdapter = FileListAdapter {
+            anim.cancel()
+            progress.visibility = View.GONE
+            dialog.dismiss()
+            callback.onLoadMapFromServerClick(it)
+        }
+        val mMapLayoutManager = LinearLayoutManager(requireContext()).apply {
+            stackFromEnd = false
+            initialPrefetchItemCount = 30
+        }
+        mapRecyclerView.apply {
+            layoutManager = mMapLayoutManager
+            adapter = mMapRecyclerViewAdapter
+            setHasFixedSize(true)
+            isNestedScrollingEnabled = false
+        }
+
+        dialog.show()
+
+        progress.visibility = View.VISIBLE
+
+        dialogView.findViewById<AppCompatButton>(R.id.btnSelectMapCancel).setOnClickListener {
+            anim.cancel()
+            progress.visibility = View.GONE
+            dialog.dismiss()
+        }
+        settingsViewModel.mapsList.observe(viewLifecycleOwner) { mapList ->
+            mMapRecyclerViewAdapter.setMessages(mapList)
+        }
+        lifecycleScope.launch {
+            if (settingsViewModel.getAllMapsAsList()) {
+                anim.cancel()
+                progress.visibility = View.GONE
+            }
+        }
+    }
+
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setupSegmentButtons(checkedId: Int) {
         val defaultColor = ContextCompat.getColor(requireContext(), R.color.slate_800)
@@ -247,7 +293,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        
+
     }
 
     private fun setLayoutParams(user: UserDomainModel) {
@@ -383,7 +429,6 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             }
         mainPopupMenu.showAsDropDown(itemDotsView)
         mainPopupMenu.setOnDismissListener {
-            Log.e(TAG, "onRenameClick = $onMenuClick")
             if (!onMenuClick) binding.shadow.hideShadowAnimate()
         }
     }
@@ -501,7 +546,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         fun onSelectFileClick(uri: Uri)
         fun onChangeMarkerSettings()
         fun onLoadLastGameMapClick()
-        fun onLoadMapFromServerClick()
+        fun onLoadMapFromServerClick(url: String)
         fun onAutoLoadClick(isAutoLoad: Boolean)
         fun onClearMapClick()
     }

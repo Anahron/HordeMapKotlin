@@ -9,6 +9,7 @@ import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.CompassInteractor
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetAllMapsAsListUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.InsetMarkersToDBIterator
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadGameMapFromServerUseCase
@@ -147,6 +148,9 @@ val domainModule = module {
     }
     factory {
         InsetMarkersToDBIterator(geoDataRepository = get())
+    }
+    factory {
+        GetAllMapsAsListUseCase(gameMapRepository = get())
     }
 
     single {

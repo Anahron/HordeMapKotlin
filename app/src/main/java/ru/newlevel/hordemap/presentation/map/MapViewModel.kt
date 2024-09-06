@@ -63,13 +63,14 @@ class MapViewModel(
         return result.exceptionOrNull()
     }
 
-    suspend fun loadMapFromServer(context: Context): Throwable? {
-        val result = mapUseCases.loadGameMapFromServerUseCase.execute(context)
+    suspend fun loadMapFromServer(context: Context, url: String): Throwable? {
+        val result = mapUseCases.loadGameMapFromServerUseCase.execute(context, url)
         result.onSuccess {
             _mapUri.postValue(it)
         }
         return result.exceptionOrNull()
     }
+
 
     fun loadLastGameMap(context: Context): Throwable? {
         val result = mapUseCases.loadLastGameMapUseCase.execute(context = context)

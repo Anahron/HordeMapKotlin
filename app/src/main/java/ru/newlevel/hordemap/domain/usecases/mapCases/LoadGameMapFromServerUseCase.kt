@@ -6,8 +6,8 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.domain.repository.GameMapRepository
 
 class LoadGameMapFromServerUseCase(private val gameMapRepository: GameMapRepository) {
-    suspend fun execute(context: Context): Result<Uri> {
-        val uri = gameMapRepository.loadGameMapFromServer(context)
+    suspend fun execute(context: Context, url: String): Result<Uri> {
+        val uri = gameMapRepository.loadGameMapFromServer(context, url)
         return if (uri != null)
             Result.success(uri)
         else

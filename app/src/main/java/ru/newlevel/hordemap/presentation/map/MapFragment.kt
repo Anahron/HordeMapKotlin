@@ -492,22 +492,20 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         }
     }
 
-    override fun onLoadMapFromServerClick() {
+    override fun onLoadMapFromServerClick(url: String) {
+        requireActivity().onBackPressedDispatcher.onBackPressed()
         makeLongText(requireContext().getString(R.string.load_map_started))
         lifecycleScope.launch {
-            mapViewModel.loadMapFromServer(requireContext().applicationContext)?.let {
+            mapViewModel.loadMapFromServer(requireContext().applicationContext, url)?.let {
                 it.message?.let { it1 -> makeLongText(it1) }
             }
         }
     }
 
     override fun onChangeUserGroup(userGroup: Int) {
-        Log.e(TAG, "onChangeUserGroup ")
         lifecycleScope.launch {
             mapViewModel.deleteUserFromOldGroup(userGroup)
-            Log.e(TAG, "mapViewModel.deleteUserFromOldGroup(userGroup) отработало ")
             mapOverlayManager.removeMarkers()
-            Log.e(TAG, "   mapOverlayManager.removeMarkers() отработало ")
             jobStaticMarkerUpdate?.cancel()
             jobUsersMarkerUpdate?.cancel()
             jobUsersMarkerUpdate = null

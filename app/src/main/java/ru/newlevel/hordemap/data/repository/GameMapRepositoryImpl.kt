@@ -11,8 +11,11 @@ class GameMapRepositoryImpl(
     private val gameMapRemoteStorage: GameMapRemoteStorage
 ) : GameMapRepository {
 
-    override suspend fun loadGameMapFromServer(context: Context): Uri? =
-        gameMapRemoteStorage.downloadGameMapFromServer(context)
+
+    override suspend fun loadGameMapFromServer(context: Context, url: String): Uri? =
+        gameMapRemoteStorage.downloadGameMapFromServer(context, url)
+
+    override suspend fun getAllMapsAsList(): List<Triple<String, String, Long>> = gameMapRemoteStorage.getAllMapsAsList()
 
     override suspend fun saveGameMapToFile(uri: Uri, suffix: String): Result<Uri?> =
         gameMapLocalStorage.saveGameMapToFile(uri, suffix)

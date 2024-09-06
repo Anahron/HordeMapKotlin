@@ -35,7 +35,7 @@ const val GARMIN_TAG = "Garmin_tag"
 //db keys
 const val MESSAGE_FILE_FOLDER = "MessengerFiles"
 const val PROFILE_PHOTO_FOLDER = "UsersPhotoStorage"
-const val MAP_URL = "gs://horde-4112c.appspot.com/maps/map.kmz"  // карта полигона
+const val MAPS_FOLDER_URL = "gs://horde-4112c.appspot.com/maps"  // карта полигона
 const val GEO_USER_MARKERS_PATH = "geoData"
 const val GEO_STATIC_MARKERS_PATH = "geoMarkers"
 const val MESSAGE_PATH = "messages"
