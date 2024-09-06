@@ -109,7 +109,7 @@ val dataModule = module {
         SettingsRepositoryImpl(userLocalStorage = get(), profilePhotoStorage = get(), profileRemoteStorage = get())
     }
     single<GeoDataRepository> {
-        GeoDataRepositoryImpl(markersRemoteStorage = get())
+        GeoDataRepositoryImpl(markersRemoteStorage = get(), markersLocalStorage = get())
     }
 
     single<LocationRepository> {

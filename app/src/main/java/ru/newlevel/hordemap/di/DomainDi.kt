@@ -10,6 +10,7 @@ import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.CompassInteractor
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.InsetMarkersToDBIterator
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadGameMapFromServerUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadLastGameMapUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadProfilePhotoUseCase
@@ -144,7 +145,9 @@ val domainModule = module {
     factory {
         GetProfilesInGroup(groupsRepository = get())
     }
-
+    factory {
+        InsetMarkersToDBIterator(geoDataRepository = get())
+    }
 
     single {
         GoogleAuthUiClient(
@@ -165,7 +168,8 @@ val domainModule = module {
             startMarkerUpdateInteractor = get(),
             compassInteractor = get(),
             createRouteUseCase = get(),
-            locationUpdatesInteractor = get()
+            locationUpdatesInteractor = get(),
+            insetMarkersToDBIterator = get()
         )
     }
     single {

@@ -18,12 +18,14 @@ class MapViewModel(
     private val logOutUseCase: LogOutUseCase
 ) : ViewModel() {
 
-// старый поток из фаербейза
-//    val userMarkersFlow: Flow<List<MarkerDataModel>> = mapUseCases.startMarkerUpdateInteractor.startUserUpdates()
-//    val staticMarkersFlow: Flow<List<MarkerDataModel>> = mapUseCases.startMarkerUpdateInteractor.startStaticUpdates()
+    //поток из рума
+    val userMarkersFlowLocal: Flow<List<MarkerEntity>> = mapUseCases.startMarkerUpdateInteractor.getUsersMarkers()
+    val staticMarkersFlowLocal: Flow<List<MarkerEntity>> = mapUseCases.startMarkerUpdateInteractor.getStaticMarkers()
 
+    //поток из фаербейза
     val userMarkersFlow: Flow<List<MarkerEntity>> = mapUseCases.startMarkerUpdateInteractor.startUserUpdates()
     val staticMarkersFlow: Flow<List<MarkerEntity>> = mapUseCases.startMarkerUpdateInteractor.startStaticUpdates()
+
     val compassAngleFlow: Flow<Float> = mapUseCases.compassInteractor.getCompassData()
 
     private val _mapUri = MutableLiveData<Uri?>()
@@ -75,5 +77,13 @@ class MapViewModel(
             _mapUri.postValue(it)
         }
         return result.exceptionOrNull()
+    }
+
+    suspend fun insertUserMarkersToLocalDB(data: List<MarkerEntity>) {
+        mapUseCases.insetMarkersToDBIterator.insertUserMarkers(data)
+    }
+
+    suspend fun insertStaticMarkersToLocalDB(data: List<MarkerEntity>) {
+        mapUseCases.insetMarkersToDBIterator.insertStaticMarkers(data)
     }
 }

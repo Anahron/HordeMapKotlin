@@ -38,7 +38,6 @@ class MyLocationManager : Service() {
 
 
     private fun startLocationUpdates() {
-        Log.e("AAA", "startLocationUpdates() in $this")
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationUpdatePendingIntent)
         } catch (permissionRevoked: SecurityException) {
@@ -75,7 +74,6 @@ class MyLocationManager : Service() {
     }
 
     private fun startService() {
-        Log.e(TAG, "startService() in $this")
         val notification = createNotification()
         startForeground(1, notification)
         handler.postDelayed({
@@ -84,7 +82,6 @@ class MyLocationManager : Service() {
             } catch (e: Exception) {
                 30000
             }
-            Log.e(TAG, "locationRequest set with $timeToUpdate")
             locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToUpdate)
                 //TODO 0 для теста, установить 12
                 .setMinUpdateDistanceMeters(12F)
@@ -97,7 +94,6 @@ class MyLocationManager : Service() {
     }
 
     private fun stopService() {
-        Log.d(TAG, "stopLocationUpdates() in $this")
         fusedLocationClient.removeLocationUpdates(locationUpdatePendingIntent)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -105,7 +101,6 @@ class MyLocationManager : Service() {
 
     private val handler = Handler(Looper.getMainLooper())
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e("AAA", "onStartCommand with " + intent?.action.toString())
         when (intent?.action) {
             ACTION_START -> startService()
             ACTION_STOP -> stopService()

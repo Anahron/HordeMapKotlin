@@ -51,7 +51,6 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     }
 
     override fun sendUserMarker(markerModel: MarkerEntity) {
-        Log.e(TAG, " sendUserMarker$markerModel")
         databaseReference.child("$GEO_USER_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
             .child(markerModel.deviceId).setValue(markerModel)
     }

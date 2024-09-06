@@ -44,7 +44,6 @@ import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideToRight
 import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.toDistanceText
-import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
 import ru.newlevel.hordemap.presentation.map.utils.MapInteractionHandler
@@ -143,17 +142,42 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         }
         val lifecycle = viewLifecycleOwner.lifecycle
         jobUsersMarkerUpdate = lifecycle.coroutineScope.launch {
-            Log.e(TAG, "  jobUsersMarkerUpdate = lifecycle.coroutineScope.launch c группой" + UserEntityProvider.userEntity.userGroup)
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mapViewModel.userMarkersFlow.collectLatest { data ->
-                    mapOverlayManager.createUsersMarkers(data = data, context = requireContext())
+            launch {
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    mapViewModel.userMarkersFlow.collectLatest { data ->
+                            mapViewModel.insertUserMarkersToLocalDB(data)
+                    }
+                }
+            }
+            launch {
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    mapViewModel.userMarkersFlowLocal.collectLatest { data ->
+                        mapOverlayManager.createUsersMarkers(
+                            data = data,
+                            context = requireContext()
+                        )
+                    }
                 }
             }
         }
         jobStaticMarkerUpdate = lifecycle.coroutineScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mapViewModel.staticMarkersFlow.collectLatest { data ->
-                    mapOverlayManager.createStaticMarkers(data = data, context = requireContext())
+            launch {
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    mapViewModel.staticMarkersFlow.collectLatest { data ->
+                        Log.e(TAG, "ИЗ ФАЕРБЕЙЗА staticMarkersFlow.collectLatest  " + data)
+                        mapViewModel.insertStaticMarkersToLocalDB(data)
+                    }
+                }
+            }
+            launch {
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    mapViewModel.staticMarkersFlowLocal.collectLatest { data ->
+                        Log.e(TAG, "ЛОКАЛЬНО staticMarkersFlowLocal  " + data)
+                        mapOverlayManager.createStaticMarkers(
+                            data = data,
+                            context = requireContext()
+                        )
+                    }
                 }
             }
         }
@@ -478,12 +502,12 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
     }
 
     override fun onChangeUserGroup(userGroup: Int) {
-        Log.e(TAG, "onChangeUserGroup " )
+        Log.e(TAG, "onChangeUserGroup ")
         lifecycleScope.launch {
             mapViewModel.deleteUserFromOldGroup(userGroup)
-            Log.e(TAG, "mapViewModel.deleteUserFromOldGroup(userGroup) отработало " )
+            Log.e(TAG, "mapViewModel.deleteUserFromOldGroup(userGroup) отработало ")
             mapOverlayManager.removeMarkers()
-            Log.e(TAG, "   mapOverlayManager.removeMarkers() отработало " )
+            Log.e(TAG, "   mapOverlayManager.removeMarkers() отработало ")
             jobStaticMarkerUpdate?.cancel()
             jobUsersMarkerUpdate?.cancel()
             jobUsersMarkerUpdate = null

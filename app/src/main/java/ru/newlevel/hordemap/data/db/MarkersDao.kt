@@ -11,21 +11,21 @@ import kotlinx.coroutines.flow.Flow
 interface MarkersDao {
     //UserMarkerEntity
     @Transaction
-    suspend fun refreshUserMarkers(userMarkers: List<MarkerEntity>) {
+    suspend fun refreshUserMarkers(userMarkers: List<UserMarkerEntity>) {
         deleteAllUserMarkers()
         insertAllUserMarkers(userMarkers)
     }
 
-    @Query("DELETE FROM staticMarker WHERE local = 0")
+    @Query("DELETE FROM usersMarker WHERE local = 0")
     suspend fun deleteAllUserMarkers()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllUserMarkers(userMarkers: List<MarkerEntity>)
+    suspend fun insertAllUserMarkers(userMarkers: List<UserMarkerEntity>)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUserMarker(userMarkerEntity: MarkerEntity)
+    suspend fun insertUserMarker(userMarkerEntity: UserMarkerEntity)
 
-    @Query("SELECT * FROM usersMarker WHERE deviceId = :deviceId")
-    fun getUserMarker(deviceId: String): Flow<List<MarkerEntity>>
+    @Query("SELECT * FROM usersMarker")
+    fun getUserMarker(): Flow<List<UserMarkerEntity>>
 
 
     //StaticMarkerEntity
@@ -42,7 +42,7 @@ interface MarkersDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMarker(marker: MarkerEntity)
 
-    @Query("SELECT * FROM staticMarker WHERE deviceId = :deviceId")
-    fun getMarker(deviceId: String): Flow<List<MarkerEntity>>
+    @Query("SELECT * FROM staticMarker")
+    fun getMarker(): Flow<List<MarkerEntity>>
 
 }

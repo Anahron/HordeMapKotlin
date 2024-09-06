@@ -10,6 +10,7 @@ data class MapUseCases(
     val loadLastGameMapUseCase: LoadLastGameMapUseCase,
     val loadGameMapFromServerUseCase: LoadGameMapFromServerUseCase,
     val sendStaticMarkerUseCase: SendStaticMarkerUseCase,
+    val insetMarkersToDBIterator: InsetMarkersToDBIterator,
     val startMarkerUpdateInteractor: StartMarkerUpdateInteractor,
     val compassInteractor: CompassInteractor,
     val createRouteUseCase: CreateRouteUseCase,

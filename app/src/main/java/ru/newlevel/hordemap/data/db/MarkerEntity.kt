@@ -5,11 +5,11 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "staticMarker")
 data class MarkerEntity(
-    @PrimaryKey
     var deviceId: String = "",
     var userName: String = "",
     var latitude: Double = 0.0,
     var longitude: Double = 0.0,
+    @PrimaryKey
     var timestamp: Long = 0,
     var item: Int = 0,
     var title: String = "",

@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.LatLng
 import ru.newlevel.hordemap.data.db.MarkerEntity
+import ru.newlevel.hordemap.data.db.UserMarkerEntity
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.models.UserModel
@@ -69,6 +70,32 @@ fun Context.copyTextInSystem(text: String) {
     clipboardManager.setPrimaryClip(clipData)
 }
 
+fun MarkerEntity.mapToUserEntity(): UserMarkerEntity {
+    return UserMarkerEntity(
+        deviceId = deviceId,
+    userName = userName,
+    latitude = latitude,
+    longitude = longitude,
+    timestamp = timestamp,
+    item = item,
+    title = title,
+    alpha = alpha,
+    local = local
+    )
+}
+fun UserMarkerEntity.mapToMarkerEntity(): MarkerEntity {
+    return MarkerEntity(
+        deviceId = deviceId,
+        userName = userName,
+        latitude = latitude,
+        longitude = longitude,
+        timestamp = timestamp,
+        item = item,
+        title = title,
+        alpha = alpha,
+        local = local
+    )
+}
 fun UserDataModel.mapToDomainModel(): UserDomainModel {
     return UserDomainModel(
         name = name,
