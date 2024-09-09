@@ -50,7 +50,9 @@ enum class StaticMarkersItem(val resourceId: Int, val id: Int) {
     MARKER_6(R.drawable.marker_point6, 16),
     MARKER_7(R.drawable.marker_point7, 17),
     MARKER_8(R.drawable.marker_point8, 18),
-    MARKER_9(R.drawable.marker_point9, 19)
+    MARKER_9(R.drawable.marker_point9, 19),
+    MARKER_ARTILLERY(R.drawable.img_marker_artillery, 20),
+    MARKER_EXPLOSION(R.drawable.img_marker_explosion, 21)
 }
 
 enum class UsersMarkersItem(val resourceId: Int, val id: Int) {

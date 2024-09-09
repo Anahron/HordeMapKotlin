@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
+import ru.newlevel.hordemap.data.storage.models.MapFileModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetAllMapsAsListUseCase
@@ -35,8 +36,8 @@ class SettingsViewModel(
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
     val resultData: LiveData<UserDomainModel> = resultLiveDataMutable
 
-    private val _mapsList = MutableLiveData<List<Triple<String, String, Long>>>()
-    val mapsList : LiveData<List<Triple<String, String, Long>>> = _mapsList
+    private val _mapsList = MutableLiveData<List<MapFileModel>>()
+    val mapsList : LiveData<List<MapFileModel>> = _mapsList
 
     private val _state = MutableStateFlow<UiState>(UiState.SettingsState)
     val state = _state.asStateFlow()

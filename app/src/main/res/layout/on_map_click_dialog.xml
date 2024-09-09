@@ -1,36 +1,35 @@
-
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="wrap_content"
     android:layout_width="wrap_content"
-    android:elevation="8dp"
+    android:layout_height="wrap_content"
     android:background="@drawable/round_white"
+    android:elevation="8dp"
     app:cardCornerRadius="8dp">
-<androidx.appcompat.widget.LinearLayoutCompat
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:padding="15dp"
-    android:orientation="vertical">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/textView2"
-        android:textColor="@color/main_green_dark"
-        android:layout_width="match_parent"
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/choose_icon"
-        android:layout_margin="8dp"
-        android:textSize="22sp"/>
+        android:orientation="vertical"
+        android:padding="15dp">
 
-    <RadioGroup
-            android:id="@+id/radioGroup"
-            android:layout_width="wrap_content"
-             android:padding="8dp"
-            android:background="@drawable/border"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:orientation="horizontal">
+            android:text="@string/choose_icon"
+            android:textColor="@color/main_green_dark"
+            android:textSize="22sp" />
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/border"
+            android:orientation="horizontal"
+            android:padding="8dp">
 
             <RadioButton
                 android:id="@+id/icon2_swords"
@@ -98,102 +97,121 @@
                 android:tag="5"
                 tools:ignore="TouchTargetSizeCheck" />
 
+            <RadioButton
+                android:id="@+id/icon7_artillery"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_margin="4dp"
+                android:alpha="0.3"
+                android:button="@null"
+                android:foreground="@drawable/img_marker_artillery"
+                android:tag="20"
+                tools:ignore="TouchTargetSizeCheck" />
+
+
+            <RadioButton
+                android:id="@+id/icon7_explosion"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_margin="4dp"
+                android:alpha="0.5"
+                android:button="@null"
+                android:foreground="@drawable/img_marker_explosion"
+                android:tag="21"
+                tools:ignore="TouchTargetSizeCheck" />
+
         </RadioGroup>
 
 
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        app:boxStrokeColor="@color/main_green_dark"
-        android:layout_marginHorizontal="8dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:boxCornerRadiusBottomEnd="7dp"
-        app:boxCornerRadiusTopEnd="7dp"
-        app:boxCornerRadiusBottomStart="7dp"
-        app:boxCornerRadiusTopStart="7dp"
-        app:helperTextTextColor="@color/main_green_dark"
-        android:textColorHint="@color/main_green_dark"
-        app:boxStrokeWidth="1dp"
-        android:hint="@string/entry_text">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/description_edit_text"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textLongMessage"
-            android:textColor="@color/main_green_dark"
-            />
+            android:layout_marginHorizontal="8dp"
+            android:hint="@string/entry_text"
+            android:textColorHint="@color/main_green_dark"
+            app:boxCornerRadiusBottomEnd="7dp"
+            app:boxCornerRadiusBottomStart="7dp"
+            app:boxCornerRadiusTopEnd="7dp"
+            app:boxCornerRadiusTopStart="7dp"
+            app:boxStrokeColor="@color/main_green_dark"
+            app:boxStrokeWidth="1dp"
+            app:helperTextTextColor="@color/main_green_dark">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/description_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textLongMessage"
+                android:textColor="@color/main_green_dark" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        app:boxStrokeColor="@color/main_green_dark"
-        android:layout_marginHorizontal="8dp"
-        android:layout_marginVertical="4dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:boxCornerRadiusBottomEnd="7dp"
-        app:boxCornerRadiusTopEnd="7dp"
-        app:boxCornerRadiusBottomStart="7dp"
-        app:boxCornerRadiusTopStart="7dp"
-        app:helperTextTextColor="@color/main_green_dark"
-        android:textColorHint="@color/main_green_dark"
-        app:boxStrokeWidth="1dp"
-        android:hint="@string/number09"
-        >
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/description_edit_text_number"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:textColor="@color/main_green_dark"
-            android:maxLength="1"
-            android:visibility="gone"
-            />
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginVertical="4dp"
+            android:hint="@string/number09"
+            android:textColorHint="@color/main_green_dark"
+            app:boxCornerRadiusBottomEnd="7dp"
+            app:boxCornerRadiusBottomStart="7dp"
+            app:boxCornerRadiusTopEnd="7dp"
+            app:boxCornerRadiusTopStart="7dp"
+            app:boxStrokeColor="@color/main_green_dark"
+            app:boxStrokeWidth="1dp"
+            app:helperTextTextColor="@color/main_green_dark">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/description_edit_text_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLength="1"
+                android:textColor="@color/main_green_dark"
+                android:visibility="gone" />
 
-    <CheckBox
-        android:id="@+id/checkBox_for_me"
-        android:layout_marginHorizontal="8dp"
-        android:layout_marginBottom="8dp"
-        android:textColor="@color/slate_800"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/only_for_me" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_cancel"
+        <CheckBox
+            android:id="@+id/checkBox_for_me"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_margin="6dp"
-            android:background="@drawable/border"
-            android:textColor="@color/main_green_dark"
-            android:text="@string/cancel"
-            android:padding="15dp" />
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/only_for_me"
+            android:textColor="@color/slate_800" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_save"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_margin="6dp"
-            android:background="@drawable/border_dark"
-            android:textColor="@color/main_green"
-            android:text="@string/put"
-            android:padding="15dp"
-            style="?android:attr/backgroundDimEnabled" />
-    </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/border"
+                android:padding="15dp"
+                android:text="@string/cancel"
+                android:textColor="@color/main_green_dark" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_save"
+                style="?android:attr/backgroundDimEnabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/border_dark"
+                android:padding="15dp"
+                android:text="@string/put"
+                android:textColor="@color/main_green" />
+        </LinearLayout>
 
 
-
-</androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 </androidx.cardview.widget.CardView>

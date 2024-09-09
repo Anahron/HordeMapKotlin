@@ -267,6 +267,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         }
     }
 
+
+
     private fun cameraUpdate(latLng: LatLng, zoom: Float = 14F) {
         val update = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
         googleMap.animateCamera(update)

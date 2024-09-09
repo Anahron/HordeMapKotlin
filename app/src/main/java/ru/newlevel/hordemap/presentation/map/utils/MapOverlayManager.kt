@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.location.Location
 import android.net.Uri
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.PolylineOptions
@@ -28,7 +29,7 @@ import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
 
-class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
+class MapOverlayManager(private val googleMap: GoogleMap) : KoinComponent {
 
     var isMarkersVisible: Boolean = true
     private val markerManager: MarkerManager = MarkerManager(googleMap)
@@ -44,6 +45,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     private val staticMarkerCollection: MarkerManager.Collection = markerManager.newCollection()
     private val garminMarkerCollection: MarkerManager.Collection = markerManager.newCollection()
     private val polygonCollection: PolygonManager.Collection = polygonManager.newCollection()
+    private var circleList: List<Circle> = mutableListOf()
 
     private var destination: Location? = null
     private var kmlLayer: KmlLayer? = null
@@ -164,12 +166,19 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
         data: List<MarkerEntity>, context: Context
     ) {
         staticMarkerCollection.markers.forEach { marker -> marker.remove() }
-        markersUtils.createStaticMarkers(
+        circleList.forEach {
+            it.remove()
+        }
+       val circleList = markersUtils.createStaticMarkers(
             data,
             markerCollection = staticMarkerCollection,
             context = context,
-            visibility = isMarkersVisible
+            visibility = isMarkersVisible,
+            googleMap = googleMap
         )
+        if (circleList.isNotEmpty())
+            this.circleList = circleList
+
     }
 
     private suspend fun createGpxLayer(context: Context, uri: Uri): Result<LatLng> {
@@ -189,16 +198,23 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
     fun showAllMarkers() {
         staticMarkerCollection.showAll()
         userMarkerCollection.showAll()
+        circleList.forEach {
+            it.isVisible = true
+        }
     }
 
     fun hideAllMarkers() {
         staticMarkerCollection.hideAll()
         userMarkerCollection.hideAll()
+        circleList.forEach {
+            it.isVisible = false
+        }
     }
 
     fun removeMarkers() {
         userMarkerCollection.markers.forEach { marker -> marker.remove() }
         staticMarkerCollection.markers.forEach { marker -> marker.remove() }
+        circleList.forEach { it.remove() }
     }
 
     fun removeOverlays() {

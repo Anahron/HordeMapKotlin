@@ -21,6 +21,7 @@ import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfilePhotoStorage
+import ru.newlevel.hordemap.data.storage.models.MapFileModel
 import java.io.File
 import kotlin.coroutines.resume
 
@@ -44,20 +45,19 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
     }
 
 
-    override suspend fun getAllMapsAsList(): List<Triple<String, String, Long>> {
+    override suspend fun getAllMapsAsList(): List<MapFileModel> {
         return suspendCancellableCoroutine { continuation ->
             // Получаем ссылку на папку с картами
             val directoryRef = storageReference.storage.getReferenceFromUrl(MAPS_FOLDER_URL)
             // Получаем список всех файлов в папке
             directoryRef.listAll()
                 .addOnSuccessListener { listResult ->
-                    val fileList = mutableListOf<Triple<String, String, Long>>()
+                    val fileList = mutableListOf<MapFileModel>()
                     val tasks = listResult.items.map { itemRef ->
                         itemRef.metadata.addOnSuccessListener { metadata ->
-                            fileList.add(Triple(itemRef.name, itemRef.toString(), metadata.sizeBytes))
+                            fileList.add(MapFileModel(itemRef.name, itemRef.toString(), metadata.sizeBytes))
                         }
                     }
-
                     Tasks.whenAllComplete(tasks).addOnSuccessListener {
                         continuation.resume(fileList)
                     }.addOnFailureListener {

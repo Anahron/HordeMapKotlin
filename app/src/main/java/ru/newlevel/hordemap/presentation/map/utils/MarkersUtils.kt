@@ -9,8 +9,11 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Build
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -18,6 +21,7 @@ import com.google.android.gms.maps.model.PolygonOptions
 import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.collections.PolygonManager
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.ARTILLERY_RADIUS
 import ru.newlevel.hordemap.app.GARMIN_TAG
 import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -35,8 +39,7 @@ class MarkersUtils {
     ) {
         val markerSize = 70
         for (markerModel in garminGpxMarkersSet.markers) {
-            val icon = GpxMarkersItem.entries
-                .find { it.markerType == markerModel.markerType && it.color == markerModel.markerColor }
+            val icon = GpxMarkersItem.entries.find { it.markerType == markerModel.markerType && it.color == markerModel.markerColor }
                 ?.let { createScaledBitmap(context, it.resourceId, markerSize) } ?: createScaledBitmap(
                 context, R.drawable.marker_point0, markerSize
             )
@@ -48,8 +51,7 @@ class MarkersUtils {
     }
 
     fun createGarminBounds(
-        garminGpxMarkersSet: GarminGpxMarkersSet,
-        polygonCollection: PolygonManager.Collection
+        garminGpxMarkersSet: GarminGpxMarkersSet, polygonCollection: PolygonManager.Collection
     ) {
         polygonCollection.addPolygon(PolygonOptions().add(garminGpxMarkersSet.bounds?.let {
             LatLng(
@@ -82,12 +84,10 @@ class MarkersUtils {
         val canvas = Canvas(bitmap)
         canvas.drawText(text, (bitmap.width - textWidth) / 2f, 25f, paint)
         if (marker.markerType == "Navaid" && marker.name.length < 3) markerCollection.addMarker(
-            MarkerOptions().position(LatLng(marker.latLng.latitude, marker.latLng.longitude))
-                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+            MarkerOptions().position(LatLng(marker.latLng.latitude, marker.latLng.longitude)).icon(BitmapDescriptorFactory.fromBitmap(bitmap))
         ).setAnchor(0.55f, 0.5f)
         else markerCollection.addMarker(
-            MarkerOptions().position(LatLng(marker.latLng.latitude, marker.latLng.longitude))
-                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+            MarkerOptions().position(LatLng(marker.latLng.latitude, marker.latLng.longitude)).icon(BitmapDescriptorFactory.fromBitmap(bitmap))
         ).setAnchor(0.5f, -0.1f)
     }
 
@@ -101,12 +101,16 @@ class MarkersUtils {
         )
     }
 
+    private fun createRadiusInMeters(
+        location: LatLng,
+    ): CircleOptions {
+        return CircleOptions().center(location).radius(ARTILLERY_RADIUS).strokeColor(Color.RED).fillColor(0x15FF0000).strokeWidth(2f)
+    }
+
     fun createStaticMarkers(
-        markersModel: List<MarkerEntity>,
-        markerCollection: MarkerManager.Collection,
-        context: Context,
-        visibility: Boolean
-    ) {
+        markersModel: List<MarkerEntity>, markerCollection: MarkerManager.Collection, context: Context, visibility: Boolean, googleMap: GoogleMap
+    ): List<Circle> {
+        val circleList = mutableListOf<Circle>()
         val userEntity = UserEntityProvider.userEntity
         MARKER_SIZE_STATIC = userEntity.staticMarkerSize
         for (markerModel in markersModel) {
@@ -114,11 +118,21 @@ class MarkersUtils {
                 markerModel, markerCollection, visibility
             )
             val icon = findStaticIcon(markerModel, context)
-            val marker: Marker? =
-                markerCollection.addMarker(markerModelToMarkerOptions(markerModel, icon, 1).visible(visibility))
+            val marker: Marker? = markerCollection.addMarker(
+                markerModelToMarkerOptions(markerModel, icon, 1).visible(
+                    visibility
+                )
+            )
             marker?.tag = markerModel.timestamp
             marker?.isVisible = visibility
+            if (markerModel.item == 20) {
+                circleList.add(googleMap.addCircle(createRadiusInMeters(LatLng(markerModel.latitude, markerModel.longitude))).apply {
+                    tag = markerModel.timestamp
+                    zIndex = 100f
+                })
+            }
         }
+        return circleList
     }
 
     private fun createStaticTextMarker(
@@ -133,8 +147,7 @@ class MarkersUtils {
         val canvas = Canvas(bitmap)
         canvas.drawText(text, (bitmap.width - textWidth) / 2f, 25f, paint)
         markerCollection.addMarker(
-            MarkerOptions().position(LatLng(marker.latitude, marker.longitude))
-                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)).visible(visibility)
+            MarkerOptions().position(LatLng(marker.latitude, marker.longitude)).icon(BitmapDescriptorFactory.fromBitmap(bitmap)).visible(visibility)
         ).apply {
             setAnchor(0.5f, 0f)
             isVisible = visibility
@@ -142,8 +155,7 @@ class MarkersUtils {
     }
 
     private fun findUserIcon(markerModel: MarkerEntity, context: Context): BitmapDescriptor {
-        val userMarker = UsersMarkersItem.entries.find { it.id == markerModel.item }
-            ?.let {
+        val userMarker = UsersMarkersItem.entries.find { it.id == markerModel.item }?.let {
             createScaledBitmap(
                 context, it.resourceId, MARKER_SIZE_USERS
             )
@@ -154,10 +166,7 @@ class MarkersUtils {
     }
 
     fun createUsersMarkers(
-        markersModels: List<MarkerEntity>,
-        markerCollection: MarkerManager.Collection,
-        context: Context,
-        visibility: Boolean
+        markersModels: List<MarkerEntity>, markerCollection: MarkerManager.Collection, context: Context, visibility: Boolean
     ) {
         val userEntity = UserEntityProvider.userEntity
         MARKER_SIZE_USERS = userEntity.usersMarkerSize
@@ -176,9 +185,14 @@ class MarkersUtils {
                     it.position = LatLng(markerModel.latitude, markerModel.longitude)
                     if (it.title != markerModel.userName) it.title = markerModel.userName
                     it.alpha = markerModel.alpha
-                    it.snippet = LocalDateTime.ofInstant(Instant.ofEpochMilli(markerModel.timestamp), ZoneId.systemDefault())
-                        .format(timeFormatter)
-                    if (markerInfo[1].toInt() != markerModel.item) it.setIcon(findUserIcon(markerModel, context))
+                    it.snippet = LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(markerModel.timestamp), ZoneId.systemDefault()
+                    ).format(timeFormatter)
+                    if (markerInfo[1].toInt() != markerModel.item) it.setIcon(
+                        findUserIcon(
+                            markerModel, context
+                        )
+                    )
                 }
                 markerInfo[0] == markerModel.deviceId
             }
@@ -197,8 +211,9 @@ class MarkersUtils {
     ): MarkerOptions {
         return MarkerOptions().title(if (flagToChooseTitle == 0) markerModel.userName else markerModel.title)
             .position(LatLng(markerModel.latitude, markerModel.longitude)).alpha(markerModel.alpha).snippet(
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(markerModel.timestamp), ZoneId.systemDefault())
-                    .format(timeFormatter)
+                LocalDateTime.ofInstant(
+                    Instant.ofEpochMilli(markerModel.timestamp), ZoneId.systemDefault()
+                ).format(timeFormatter)
             ).icon(icon)
 
     }
@@ -220,7 +235,11 @@ class MarkersUtils {
         markerModel: GarminMarkerModel,
         icon: BitmapDescriptor,
     ): MarkerOptions {
-        return MarkerOptions().position(LatLng(markerModel.latLng.latitude, markerModel.latLng.longitude)).icon(icon)
+        return MarkerOptions().position(
+            LatLng(
+                markerModel.latLng.latitude, markerModel.latLng.longitude
+            )
+        ).icon(icon)
     }
 
     private fun createScaledBitmap(

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapLocalStorage
+import ru.newlevel.hordemap.data.storage.models.MapFileModel
 import ru.newlevel.hordemap.domain.repository.GameMapRepository
 
 class GameMapRepositoryImpl(
@@ -15,7 +16,7 @@ class GameMapRepositoryImpl(
     override suspend fun loadGameMapFromServer(context: Context, url: String): Uri? =
         gameMapRemoteStorage.downloadGameMapFromServer(context, url)
 
-    override suspend fun getAllMapsAsList(): List<Triple<String, String, Long>> = gameMapRemoteStorage.getAllMapsAsList()
+    override suspend fun getAllMapsAsList(): List<MapFileModel> = gameMapRemoteStorage.getAllMapsAsList()
 
     override suspend fun saveGameMapToFile(uri: Uri, suffix: String): Result<Uri?> =
         gameMapLocalStorage.saveGameMapToFile(uri, suffix)
