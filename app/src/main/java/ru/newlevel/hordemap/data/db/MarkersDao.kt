@@ -37,10 +37,14 @@ interface MarkersDao {
     @Query("DELETE FROM staticMarker WHERE local = 0")
     suspend fun deleteAllStaticMarkers()
 
+    @Query("DELETE FROM staticMarker WHERE timestamp = :id")
+    suspend fun deleteMarker(id: Long)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllMarkers(markers: List<MarkerEntity>)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMarker(marker: MarkerEntity)
+    @Query("SELECT * FROM staticMarker WHERE timestamp = :id")
+    suspend fun getSingleMarker(id: Long): MarkerEntity
 
     @Query("SELECT * FROM staticMarker")
     fun getMarker(): Flow<List<MarkerEntity>>

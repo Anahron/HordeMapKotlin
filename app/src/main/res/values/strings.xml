@@ -115,4 +115,5 @@
     <string name="select_group">Select group:</string>
     <string name="numara">№</string>
     <string name="map_list">Map list:</string>
+    <string name="only_for_me">Only for me</string>
 </resources>

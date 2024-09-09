@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import ru.newlevel.hordemap.data.db.MarkerEntity
 
 interface MarkersRemoteStorage {
-    fun deleteStaticMarker(key: String)
+    suspend fun deleteStaticMarker(key: String)
 
     fun sendUserMarker(markerModel: MarkerEntity)
 

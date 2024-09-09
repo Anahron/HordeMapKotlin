@@ -228,7 +228,7 @@ class MapOverlayManager(googleMap: GoogleMap) : KoinComponent {
         return Result.failure(Throwable(context.getString(R.string.file_wrong)))
     }
 
-    fun deleteMarker(marker: Marker) {
+    suspend fun deleteMarker(marker: Marker) {
         deleteMarkerUseCase.execute(marker)
     }
 }

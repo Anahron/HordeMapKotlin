@@ -34,7 +34,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
 
     private val databaseReference = FirebaseDatabase.getInstance().reference
 
-    override fun deleteStaticMarker(key: String) {
+    override suspend fun deleteStaticMarker(key: String) {
         databaseReference.child("$GEO_STATIC_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
             .child(key).removeValue()
     }

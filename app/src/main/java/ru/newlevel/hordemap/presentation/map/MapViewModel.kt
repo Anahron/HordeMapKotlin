@@ -41,8 +41,9 @@ class MapViewModel(
     fun startLocationUpdates() = mapUseCases.locationUpdatesInteractor.startLocationUpdates()
     fun stopLocationUpdates() = mapUseCases.locationUpdatesInteractor.stopLocationUpdates()
 
-    fun sendMarker(latLng: LatLng, description: String, checkedItem: Int) {
-        mapUseCases.sendStaticMarkerUseCase.execute(latLng, description, checkedItem)
+    suspend fun sendMarker(latLng: LatLng, description: String, checkedItem: Int, isLocal: Boolean) {
+            mapUseCases.sendStaticMarkerUseCase.execute(latLng, description, checkedItem, isLocal)
+
     }
     suspend fun deleteUserFromOldGroup(userGroup: Int){
         logOutUseCase.execute(userGroup)

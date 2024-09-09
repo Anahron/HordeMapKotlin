@@ -5,7 +5,6 @@ import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
-import android.util.Log
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -18,7 +17,6 @@ import ru.newlevel.hordemap.app.KMZ_EXTENSION
 import ru.newlevel.hordemap.app.MAPS_FOLDER_URL
 import ru.newlevel.hordemap.app.MESSAGE_FILE_FOLDER
 import ru.newlevel.hordemap.app.PROFILE_PHOTO_FOLDER
-import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.GameMapRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageFilesStorage
@@ -53,19 +51,13 @@ class MyFirebaseStorage : GameMapRemoteStorage, MessageFilesStorage, ProfilePhot
             // Получаем список всех файлов в папке
             directoryRef.listAll()
                 .addOnSuccessListener { listResult ->
-                    Log.e(TAG, ".addOnSuccessListener  listResult -> ${listResult.items}")
                     val fileList = mutableListOf<Triple<String, String, Long>>()
-
-                    // Для каждого файла получаем его URL и имя
                     val tasks = listResult.items.map { itemRef ->
                         itemRef.metadata.addOnSuccessListener { metadata ->
-                            val fileName = itemRef.name // Имя файла
-                            val fileSize = metadata.sizeBytes // Размер файла
-                            fileList.add(Triple(fileName, itemRef.toString(), fileSize))
+                            fileList.add(Triple(itemRef.name, itemRef.toString(), metadata.sizeBytes))
                         }
                     }
 
-                    // Дожидаемся завершения всех задач по получению URL
                     Tasks.whenAllComplete(tasks).addOnSuccessListener {
                         continuation.resume(fileList)
                     }.addOnFailureListener {

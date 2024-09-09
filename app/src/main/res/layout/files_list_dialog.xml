@@ -5,8 +5,9 @@
     android:layout_height="wrap_content"
     android:background="@drawable/round_white"
     android:padding="16dp"
+    android:maxWidth="400dp"
     android:minWidth="270dp"
-    android:layout_margin="20dp"
+    android:layout_margin="48dp"
     android:orientation="vertical">
 
     <com.google.android.material.textview.MaterialTextView
@@ -48,6 +49,7 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnSelectMapCancel"
             android:layout_width="0dp"
+            android:maxWidth="400dp"
             android:layout_height="wrap_content"
             android:layout_margin="6dp"
             android:layout_weight="1"

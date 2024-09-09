@@ -145,7 +145,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
             launch {
                 lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                     mapViewModel.userMarkersFlow.collectLatest { data ->
-                            mapViewModel.insertUserMarkersToLocalDB(data)
+                        mapViewModel.insertUserMarkersToLocalDB(data)
                     }
                 }
             }
@@ -332,7 +332,9 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteMarker)
             ?.setOnClickListener {
                 markerPopupMenu.dismiss()
-                mapOverlayManager.deleteMarker(marker)
+                lifecycleScope.launch {
+                    mapOverlayManager.deleteMarker(marker)
+                }
             }
         markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMarkerShowDistance)
             ?.setOnClickListener {
@@ -437,8 +439,10 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
     }
 
     private fun createStaticMarkerDialog(latLng: LatLng) {
-        OnMapClickInfoDialog { description, checkedItem ->
-            mapViewModel.sendMarker(latLng, description, checkedItem)
+        OnMapClickInfoDialog { description, checkedItem, isLocal ->
+            lifecycleScope.launch {
+                mapViewModel.sendMarker(latLng, description, checkedItem, isLocal)
+            }
         }.show(this.childFragmentManager, "customDialog")
     }
 

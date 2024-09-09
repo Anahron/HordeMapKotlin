@@ -10,7 +10,7 @@ import by.kirich1409.viewbindingdelegate.viewBinding
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.OnMapClickDialogBinding
 
-class OnMapClickInfoDialog(private val dialogResult: (description: String, checkedItem: Int) -> Unit) :
+class OnMapClickInfoDialog(private val dialogResult: (description: String, checkedItem: Int, isLocal: Boolean) -> Unit) :
     DialogFragment(R.layout.on_map_click_dialog) {
 
     private val binding: OnMapClickDialogBinding by viewBinding()
@@ -55,7 +55,7 @@ class OnMapClickInfoDialog(private val dialogResult: (description: String, check
             if (descriptionEditText.text.toString().isNotEmpty()) {
                 description = descriptionEditText.text.toString()
             }
-            dialogResult(description, checkedRadioButton)
+            dialogResult(description, checkedRadioButton, binding.checkBoxForMe.isChecked)
             dialog?.dismiss()
         }
     }

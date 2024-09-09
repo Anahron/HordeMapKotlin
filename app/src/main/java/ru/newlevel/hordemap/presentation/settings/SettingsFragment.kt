@@ -251,9 +251,11 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         }
 
         dialog.show()
-
-        progress.visibility = View.VISIBLE
-
+        dialog.window?.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(), R.drawable.round_white
+            )
+        )
         dialogView.findViewById<AppCompatButton>(R.id.btnSelectMapCancel).setOnClickListener {
             anim.cancel()
             progress.visibility = View.GONE
@@ -268,6 +270,9 @@ class SettingsFragment(private val callback: OnChangeSettings) :
                 progress.visibility = View.GONE
             }
         }
+        if (mMapRecyclerViewAdapter.itemCount < 1)
+            progress.visibility = View.VISIBLE
+
     }
 
 

@@ -6,8 +6,8 @@ import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.domain.repository.GeoDataRepository
 
 class SendStaticMarkerUseCase(private val geoDataRepository: GeoDataRepository) {
-    fun execute(latLng: LatLng, description: String, checkedItem: Int) {
-        geoDataRepository.createStaticMarker(MarkerEntity().apply {
+    suspend fun execute(latLng: LatLng, description: String, checkedItem: Int, isLocal: Boolean) {
+        val marker = MarkerEntity().apply {
             latitude = latLng.latitude
             longitude = latLng.longitude
             title = description
@@ -15,6 +15,11 @@ class SendStaticMarkerUseCase(private val geoDataRepository: GeoDataRepository) 
             deviceId = UserEntityProvider.userEntity.deviceID
             timestamp = System.currentTimeMillis()
             item = checkedItem
-        })
+            local = isLocal
+        }
+        if (isLocal)
+            geoDataRepository.insertStaticMarkerLocal(marker)
+        else
+            geoDataRepository.sendStaticMarkerRemote(marker)
     }
 }
