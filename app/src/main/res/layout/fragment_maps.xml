@@ -35,6 +35,24 @@
                 tools:ignore="RtlSymmetry" />
 
             <TextView
+                android:id="@+id/bearing_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="140dp"
+                android:layout_marginTop="47dp"
+                android:background="@drawable/text_view_bg"
+                android:paddingStart="7dp"
+                android:paddingEnd="7dp"
+                android:shadowColor="#a89c6a"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3"
+                android:textColor="@color/main_green"
+                android:textSize="25sp"
+                android:visibility="gone"
+                tools:ignore="RtlSymmetry" />
+
+            <TextView
                 android:id="@+id/tv_compass"
                 android:layout_width="70sp"
                 android:gravity="end"
@@ -95,12 +113,33 @@
 
 
             <ImageView
+                android:visibility="visible"
+                android:id="@+id/imgMapRotate"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="55dp"
+                android:background="@drawable/img_map_rotate_off"
+                android:contentDescription="@string/todo" />
+
+            <ImageView
+                android:visibility="gone"
+                android:id="@+id/imgCompassBackground"
+                android:layout_width="55dp"
+                android:layout_height="65dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="115dp"
+                android:background="@drawable/img_map_empty"
+                android:contentDescription="@string/todo" />
+
+            <ImageView
                 android:visibility="gone"
                 android:id="@+id/imgCompass"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="50dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="115dp"
+                android:foregroundGravity="center"
                 app:srcCompat="@drawable/compas"
                 android:contentDescription="@string/todo" />
         </fragment>

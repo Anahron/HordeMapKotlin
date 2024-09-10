@@ -44,7 +44,7 @@ fun View.hideShadowAnimate() {
     }
 }
 
-fun View.showInputTextAnimation() {
+fun View.showFromBottomAnimation() {
     if (visibility != View.VISIBLE) {
         translationY = context.convertDpToPx(55).toFloat()
         val animator = ObjectAnimator.ofFloat(this, "translationY", 0f)
@@ -93,7 +93,7 @@ fun View.animateButtonPaddingReverse() {
     }
 }
 
-fun View.hideInputTextAnimation() {
+fun View.hideToBottomAnimation() {
     if (visibility == View.VISIBLE) {
         val animator = ObjectAnimator.ofFloat(this, "translationY", context.convertDpToPx(55).toFloat())
         animator.duration = 300

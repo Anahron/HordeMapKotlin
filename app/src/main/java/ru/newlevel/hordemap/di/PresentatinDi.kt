@@ -2,9 +2,11 @@ package ru.newlevel.hordemap.di
 
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import ru.newlevel.hordemap.presentation.MainViewModel
 import ru.newlevel.hordemap.presentation.map.MapViewModel
 import ru.newlevel.hordemap.presentation.messenger.MessengerViewModel
 import ru.newlevel.hordemap.presentation.permissions.PermissionViewModel
+import ru.newlevel.hordemap.presentation.settings.ChangeGroupViewModel
 import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
 import ru.newlevel.hordemap.presentation.sign_in.SignInViewModel
 import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
@@ -19,14 +21,20 @@ val presentationModule = module {
             resetUserSettingsUseCase = get(),
             saveAutoLoadUseCase = get(),
             loadProfilePhotoUseCase = get(),
-            sendUserToStorageUseCase = get()
+            sendUserToStorageUseCase = get(),
+            getAllMapsAsListUseCase = get()
         )
     }
     viewModel {
         MapViewModel(
             mapUseCases = get(),
-            markersUtils = get(),
-            getUserSettingsUseCase = get()
+            getUserSettingsUseCase = get(),
+            logOutUseCase = get()
+        )
+    }
+    viewModel {
+        MainViewModel(
+            messageUpdateInteractor = get()
         )
     }
 
@@ -49,6 +57,13 @@ val presentationModule = module {
 
     single {
         TrackTransferViewModel()
+    }
+
+    viewModel {
+        ChangeGroupViewModel(
+            getUsersProfiles = get(),
+            getProfilesInGroup = get()
+        )
     }
 
     viewModel {

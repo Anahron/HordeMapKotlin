@@ -1,13 +1,11 @@
 package ru.newlevel.hordemap.presentation.messenger
 
 import android.Manifest
-import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
@@ -60,19 +58,20 @@ import ru.newlevel.hordemap.app.createTempImageFile
 import ru.newlevel.hordemap.app.getFileNameFromUri
 import ru.newlevel.hordemap.app.getFileSizeFromUri
 import ru.newlevel.hordemap.app.hasPermission
-import ru.newlevel.hordemap.app.hideInputTextAnimation
 import ru.newlevel.hordemap.app.hideShadowAnimate
+import ru.newlevel.hordemap.app.hideToBottomAnimation
 import ru.newlevel.hordemap.app.hideToRight
-import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.loadAnimation
-import ru.newlevel.hordemap.app.showInputTextAnimation
+import ru.newlevel.hordemap.app.showAtRight
+import ru.newlevel.hordemap.app.showFromBottomAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
 
 class MessengerFragment : Fragment(R.layout.fragment_messenger),
-    MessagesAdapter.OnMessageItemClickListener,
+    OnMessageItemClickListener,
     SendFileDescriptionDialogFragment.OnFileDescriptionListener {
 
     private val binding: FragmentMessengerBinding by viewBinding()
@@ -90,18 +89,28 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var pickImage: ActivityResultLauncher<String>
     private lateinit var takePicture: ActivityResultLauncher<Uri>
     private lateinit var viewBehavior: View
-    private var anim: ObjectAnimator? = null
     private var file: File? = null
     private lateinit var photoUri: Uri
     private var isDownloadingState = false
     private var isPopUpShow = false
-    private val handler = Handler(Looper.getMainLooper())
     private var editMessageId: Long? = null
     private var replyMessageId: Long? = null
+
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupUIComponents()
+        requestWriteExternalStoragePermission()
+        setupMessagesUpdates()
+        binding.inputLayout.showFromBottomAnimation()
+        createActivityRegisters()
+    }
 
     private fun createActivityRegisters() {
         mActivityLauncher = registerForActivityResult(SelectFilesContract()) { uri: Uri? ->
             if (uri != null) {
+                binding.shadow.showShadowAnimate()
                 val dialogFragment = SendFileDescriptionDialogFragment(
                     uri,
                     requireContext().getFileNameFromUri(uri),
@@ -114,6 +123,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
         pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri != null) {
+                binding.shadow.showShadowAnimate()
                 val dialogFragment = SendFileDescriptionDialogFragment(
                     uri,
                     requireContext().getFileNameFromUri(uri),
@@ -127,6 +137,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         takePicture =
             registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess: Boolean ->
                 if (isSuccess) {
+                    binding.shadow.showShadowAnimate()
                     val dialogFragment = SendFileDescriptionDialogFragment(
                         photoUri,
                         requireContext().getFileNameFromUri(photoUri),
@@ -136,15 +147,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     dialogFragment.show(childFragmentManager, "photo_description_dialog")
                 }
             }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setupUIComponents()
-        requestWriteExternalStoragePermission()
-        setupMessagesUpdates()
-        binding.inputLayout.showInputTextAnimation()
-        createActivityRegisters()
     }
 
     private fun setupUIComponents() {
@@ -187,7 +189,9 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mUsersPopupMenu.contentView?.findViewById<RecyclerView>(R.id.rvUsersCount)?.let {
             mUsersRecyclerView = it
         }
-        mUsersRecyclerViewAdapter = UsersAdapter()
+        mUsersRecyclerViewAdapter = UsersAdapter {
+            onImageClick(it)
+        }
         mUserLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = false
             initialPrefetchItemCount = 30
@@ -199,7 +203,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             isNestedScrollingEnabled = false
         }
         mUsersPopupMenu.setOnDismissListener {
-            handler.postDelayed({ isPopUpShow = false }, 300)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(300)
+                isPopUpShow = false
+            }
         }
     }
 
@@ -212,7 +219,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             0
         )
         mUsersPopupMenu.setOnDismissListener {
-            handler.postDelayed({ isPopUpShow = false }, 300)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(300)
+                isPopUpShow = false
+            }
             binding.shadow.hideShadowAnimate()
         }
     }
@@ -227,25 +237,31 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupMessagesUpdates() {
+        Log.e(TAG, " private fun setupMessagesUpdates() вызван в messenger")
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (mMessageAdapter.itemCount < 1)
-                    delay(350)
-                messengerViewModel.startMessageUpdate()
-                messengerViewModel.messagesLiveData.observe(viewLifecycleOwner) { messages ->
-                    handleNewMessages(messages)
-                }
-                messengerViewModel.usersProfileLiveData.observe(viewLifecycleOwner) { profiles ->
+                messengerViewModel.usersProfileDataFlow.collect { profiles ->
+                    Log.e(TAG, "    messengerViewModel.usersProfileDataFlow.collect { profiles -> = c группой" + UserEntityProvider.userEntity.userGroup )
                     mUsersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }
+
             }
-            Log.e(
-                TAG,
-                " messengerViewModel.stopMessageUpdate()"
-            )
-            messengerViewModel.stopMessageUpdate()
+            Log.e(TAG, " messengerViewModel.usersProfileLiveData.collect stop")
+        }
+        lifecycle.coroutineScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                Log.e(TAG, " lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { c  группой = " + UserEntityProvider.userEntity.userGroup )
+                if (mMessageAdapter.itemCount < 1)
+                    delay(350)
+                messengerViewModel.messagesDataFlow.collect { messages ->
+                    Log.e(TAG, "  messengerViewModel.messagesDataFlow.collect { messages -> = c группой" + UserEntityProvider.userEntity.userGroup )
+                    Log.e(TAG,   messages.toString() )
+                    handleNewMessages(messages)
+                }
+            }
+            Log.e(TAG, "messengerViewModel.messagesLiveData.collect stop")
         }
     }
 
@@ -383,27 +399,33 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 }
             }
         } else {
-            Toast.makeText(requireContext(), requireContext().resources.getString(R.string.wait_download), Toast.LENGTH_LONG)
+            Toast.makeText(
+                requireContext(),
+                requireContext().resources.getString(R.string.wait_download),
+                Toast.LENGTH_LONG
+            )
                 .show()
             return
         }
     }
 
     override fun onImageClick(url: String) {
-        val dialog = Dialog(
-            requireContext(),
-            android.R.style.Theme_DeviceDefault_NoActionBar
-        )
-        dialog.setContentView(R.layout.fragment_full_screen_image)
-        val imageView =
-            dialog.findViewById<ZoomageView>(R.id.myZoomageView)
-        dialog.findViewById<ImageView>(R.id.close_massager).setOnClickListener {
-            dialog.dismiss()
+        if (url.isNotEmpty()) {
+            val dialog = Dialog(
+                requireContext(),
+                android.R.style.Theme_DeviceDefault_NoActionBar
+            )
+            dialog.setContentView(R.layout.fragment_full_screen_image)
+            val imageView =
+                dialog.findViewById<ZoomageView>(R.id.myZoomageView)
+            dialog.findViewById<ImageView>(R.id.close_massager).setOnClickListener {
+                dialog.dismiss()
+            }
+            Glide.with(requireContext())
+                .load(url)
+                .into(imageView)
+            dialog.show()
         }
-        Glide.with(requireContext())
-            .load(url)
-            .into(imageView)
-        dialog.show()
     }
 
     private fun setUpCloseReplyButton() {
@@ -414,7 +436,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     private fun closeBottomInfoWindow() {
         binding.recyclerViewMessages.animateButtonPaddingReverse()
-        binding.rootLinearReply.hideInputTextAnimation()
+        binding.rootLinearReply.hideToBottomAnimation()
         editMessageId = null
         replyMessageId = null
         binding.replyTextMessage.text = ""
@@ -462,7 +484,11 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
         mainPopupMenu.setOnDismissListener {
             binding.shadow.hideShadowAnimate()
-            handler.postDelayed({ isPopUpShow = false }, 300)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(300)
+                isPopUpShow = false
+            }
+
         }
     }
 
@@ -497,7 +523,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
         mainPopupMenu.setOnDismissListener {
             binding.shadow.hideShadowAnimate()
-            handler.postDelayed({ isPopUpShow = false }, 300)
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(300)
+                isPopUpShow = false
+            }
         }
     }
 
@@ -505,11 +534,11 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         replyMessageId = message.timestamp
         editMessageId = null
         binding.recyclerViewMessages.animateButtonPadding()
-        binding.rootLinearReply.showInputTextAnimation()
+        binding.rootLinearReply.showFromBottomAnimation()
         binding.replyTextMessage.text = message.message
         val userName = requireContext().getString(R.string.reply_to) + " ${message.userName}"
         binding.replyName.text = userName
-        NameColors.values().find { it.id == message.selectedMarker }?.let {
+        NameColors.entries.find { it.id == message.selectedMarker }?.let {
             binding.replyName.setTextColor(ContextCompat.getColor(requireContext(), it.resourceId))
         }
     }
@@ -518,17 +547,17 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         replyMessageId = if (message.replyOn > 0L) message.replyOn else null
         editMessageId = message.timestamp
         binding.recyclerViewMessages.animateButtonPadding()
-        binding.rootLinearReply.showInputTextAnimation()
+        binding.rootLinearReply.showFromBottomAnimation()
         binding.replyTextMessage.text = message.message
         binding.replyName.text = requireContext().getText(R.string.editing)
         binding.replyTextMessage.tag = message.timestamp
-        NameColors.values().find { it.id == message.selectedMarker }?.let {
+        NameColors.entries.find { it.id == message.selectedMarker }?.let {
             binding.replyName.setTextColor(ContextCompat.getColor(requireContext(), it.resourceId))
         }
     }
 
     override fun onItemClick(message: MyMessageEntity, itemView: View, x: Float, y: Float, isInMessage: Boolean) {
-        if ( mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+        if (mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         else {
             if (isInMessage && !isPopUpShow)
@@ -539,19 +568,18 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     override fun onReplyClick(message: MyMessageEntity) {
-        if ( mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+        if (mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         else {
-            val handler = Handler(Looper.getMainLooper())
             val position = mMessageAdapter.getPosition(message)
             mRecyclerView.smoothScrollToPosition(position - 1)
-            handler.postDelayed({
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(250)
                 mMessageLayoutManager.findViewByPosition(position)?.findViewById<FrameLayout>(R.id.rootFrame)
                     ?.blinkAndHideShadow()
-            }, 250)
+            }
         }
     }
-
 
     private fun requestWriteExternalStoragePermission() {
         if (!requireContext().hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -563,17 +591,24 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
     }
 
+    override fun onFileDescriptionDialogDismiss() {
+        binding.shadow.hideShadowAnimate()
+    }
+
     override fun onFileDescriptionReceived(description: String, photoUri: Uri, fileName: String, fileSize: Long) {
+        binding.shadow.hideShadowAnimate()
         lifecycleScope.launch {
             binding.imgLoading.visibility = View.VISIBLE
-            anim = binding.imgLoading.loadAnimation()
+            val anim = binding.imgLoading.loadAnimation()
             isDownloadingState = true
             messengerViewModel.sendFile(description, photoUri, fileName, fileSize).onFailure {
                 Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
             }
-            isDownloadingState = false
-            anim?.cancel()
-            binding.imgLoading.visibility = GONE
+            if (this@MessengerFragment.isAdded) {
+                isDownloadingState = false
+                anim.cancel()
+                binding.imgLoading.visibility = GONE
+            }
         }
     }
 }

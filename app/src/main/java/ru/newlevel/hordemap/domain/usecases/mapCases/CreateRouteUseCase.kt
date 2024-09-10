@@ -17,13 +17,13 @@ class CreateRouteUseCase {
         val bitmapCustomCapIcon = BitmapDescriptorFactory.fromBitmap(
             Bitmap.createScaledBitmap(
                 bitmapCustomCap,
-                60,
-                60,
+                70,
+                70,
                 false
             )
         )
         val customCap = CustomCap(bitmapCustomCapIcon)
         return PolylineOptions().addAll(listOf(currentLatLng, destination)).endCap(customCap)
-            .geodesic(true).color(Color.BLUE).width(6f)
+            .geodesic(true).color(Color.BLUE).width(9f).zIndex(100f)
     }
 }

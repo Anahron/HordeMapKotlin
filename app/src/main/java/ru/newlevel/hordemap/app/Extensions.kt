@@ -12,7 +12,9 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import com.google.android.gms.maps.model.LatLng
+import ru.newlevel.hordemap.data.db.MarkerEntity
+import ru.newlevel.hordemap.data.db.UserMarkerEntity
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.models.UserModel
@@ -25,19 +27,28 @@ import java.util.*
 import kotlin.math.roundToInt
 
 
+fun Location.getLatLng(): LatLng{
+    return LatLng(this.latitude, this.longitude)
+}
+
+
+fun Double.toDistanceText(): String{
+   return if (this.toInt() > 1000) ((this / 10).roundToInt() / 100.0).toString() + " км." else this.toInt()
+        .toString() + " м."
+}
+
 fun Context.getFileNameFromUri(uri: Uri): String {
     var fileName: String? = null
-    val cursor = contentResolver.query(uri, null, null, null, null)
-    cursor?.use {
-        val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-        it.moveToFirst()
-        fileName = it.getString(nameIndex)
+    contentResolver.query(uri, null, null, null, null)?.use {cursor ->
+        val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        cursor.moveToFirst()
+        fileName = cursor.getString(nameIndex)
     }
-    if (fileName == null) {
+    if (fileName.isNullOrEmpty()) {
         val file = uri.path?.let { File(it) }
-        fileName = file?.name ?: ""
+        fileName = file?.name.orEmpty()
     }
-    return fileName ?: ""
+    return fileName.orEmpty()
 }
 
 fun Context.getFileSizeFromUri(uri: Uri): Long {
@@ -59,6 +70,32 @@ fun Context.copyTextInSystem(text: String) {
     clipboardManager.setPrimaryClip(clipData)
 }
 
+fun MarkerEntity.mapToUserEntity(): UserMarkerEntity {
+    return UserMarkerEntity(
+        deviceId = deviceId,
+    userName = userName,
+    latitude = latitude,
+    longitude = longitude,
+    timestamp = timestamp,
+    item = item,
+    title = title,
+    alpha = alpha,
+    local = local
+    )
+}
+fun UserMarkerEntity.mapToMarkerEntity(): MarkerEntity {
+    return MarkerEntity(
+        deviceId = deviceId,
+        userName = userName,
+        latitude = latitude,
+        longitude = longitude,
+        timestamp = timestamp,
+        item = item,
+        title = title,
+        alpha = alpha,
+        local = local
+    )
+}
 fun UserDataModel.mapToDomainModel(): UserDomainModel {
     return UserDomainModel(
         name = name,
@@ -70,6 +107,7 @@ fun UserDataModel.mapToDomainModel(): UserDomainModel {
         autoLoad = autoLoad,
         profileImageUrl = profileImageUrl,
         authName = authName,
+        userGroup = userGroup
     )
 }
 
@@ -84,6 +122,7 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
         autoLoad = autoLoad,
         profileImageUrl = profileImageUrl,
         authName = authName,
+        userGroup = userGroup
     )
 }
 
@@ -96,8 +135,8 @@ fun Context.getMyDeviceId(): String {
 
 fun <T : Any?> MutableLiveData<T>.default(initialValue: T) = apply { setValue(initialValue) }
 
-fun Location.toMarker(userModel: UserModel): MarkerDataModel {
-    val marker = MarkerDataModel()
+fun Location.toMarker(userModel: UserModel): MarkerEntity {
+    val marker = MarkerEntity()
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
     val currentTime = LocalTime.now()
     val formattedTime = currentTime.format(timeFormatter)

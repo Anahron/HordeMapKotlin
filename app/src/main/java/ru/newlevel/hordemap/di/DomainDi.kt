@@ -3,11 +3,15 @@ package ru.newlevel.hordemap.di
 import com.google.android.gms.auth.api.identity.Identity
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.newlevel.hordemap.domain.usecases.GetProfilesInGroup
+import ru.newlevel.hordemap.domain.usecases.GetUsersProfiles
 import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.CompassInteractor
 import ru.newlevel.hordemap.domain.usecases.mapCases.CreateRouteUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetAllMapsAsListUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.InsetMarkersToDBIterator
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadGameMapFromServerUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadLastGameMapUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.LoadProfilePhotoUseCase
@@ -20,14 +24,12 @@ import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.DeleteMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateInteractor
-import ru.newlevel.hordemap.domain.usecases.markersCases.StopMarkerUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.messengerCases.DeleteMessageUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.DownloadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
 import ru.newlevel.hordemap.domain.usecases.messengerCases.UploadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.SendMessageUseCase
-import ru.newlevel.hordemap.domain.usecases.messengerCases.StartMessageUpdateInteractor
-import ru.newlevel.hordemap.domain.usecases.messengerCases.StopMessageUpdateInteractor
+import ru.newlevel.hordemap.domain.usecases.messengerCases.MessageUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteAllTracksUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteSessionLocationUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.GetSessionLocationsUseCase
@@ -43,12 +45,9 @@ import ru.newlevel.hordemap.presentation.sign_in.GoogleAuthUiClient
 val domainModule = module {
 
     factory {
-        StartMessageUpdateInteractor(messengerRepository = get())
+        MessageUpdateInteractor(messengerRepository = get())
     }
 
-    factory {
-        StopMessageUpdateInteractor(messengerRepository = get())
-    }
     factory {
         SendMessageUseCase(messengerRepository = get())
     }
@@ -69,13 +68,14 @@ val domainModule = module {
     factory {
         ResetUserSettingsUseCase(settingsRepository = get())
     }
-    factory {
+    single {
         DeleteMarkerUseCase(geoDataRepository = get())
     }
 
     factory {
         LoadLastGameMapUseCase()
     }
+
 
     factory {
         DownloadFileUseCase(messengerRepository = get())
@@ -97,9 +97,6 @@ val domainModule = module {
     }
     factory {
         StartMarkerUpdateInteractor(geoDataRepository = get())
-    }
-    factory {
-        StopMarkerUpdateInteractor(geoDataRepository = get())
     }
 
     factory {
@@ -129,7 +126,7 @@ val domainModule = module {
         DeleteAllTracksUseCase(locationRepository = get())
     }
     factory {
-        MarkersUtils(garminGpxParser = get())
+        MarkersUtils()
     }
     factory {
         GarminGpxParser()
@@ -143,11 +140,25 @@ val domainModule = module {
     factory {
         DeleteMessageUseCase(messengerRepository = get())
     }
+    factory {
+        GetUsersProfiles(groupsRepository = get())
+    }
+    factory {
+        GetProfilesInGroup(groupsRepository = get())
+    }
+    factory {
+        InsetMarkersToDBIterator(geoDataRepository = get())
+    }
+    factory {
+        GetAllMapsAsListUseCase(gameMapRepository = get())
+    }
 
     single {
         GoogleAuthUiClient(
             androidContext().applicationContext,
-            Identity.getSignInClient(androidContext().applicationContext), logOutUseCase = get(), getUserSettingsUseCase = get()
+            Identity.getSignInClient(androidContext().applicationContext),
+            logOutUseCase = get(),
+            getUserSettingsUseCase = get()
         )
     }
 
@@ -159,10 +170,10 @@ val domainModule = module {
             loadGameMapFromServerUseCase = get(),
             sendStaticMarkerUseCase = get(),
             startMarkerUpdateInteractor = get(),
-            stopMarkerUpdateInteractor = get(),
             compassInteractor = get(),
             createRouteUseCase = get(),
-            locationUpdatesInteractor = get()
+            locationUpdatesInteractor = get(),
+            insetMarkersToDBIterator = get()
         )
     }
     single {
@@ -177,8 +188,7 @@ val domainModule = module {
     }
     single {
         MessengerUseCases(
-            startMessageUpdateInteractor = get(),
-            stopMessageUpdateInteractor = get(),
+            messageUpdateInteractor = get(),
             sendMessageUseCase = get(),
             uploadFileUseCase = get(),
             downloadFileUseCase = get(),

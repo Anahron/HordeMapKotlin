@@ -1,6 +1,8 @@
 package ru.newlevel.hordemap.device
 
-import android.app.*
+import android.app.Notification
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
@@ -14,6 +16,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.ACTION_PROCESS_UPDATES
+import ru.newlevel.hordemap.app.CHANEL_GPS
 import ru.newlevel.hordemap.app.LocationUpdatesBroadcastReceiver
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -21,12 +24,10 @@ import ru.newlevel.hordemap.presentation.MainActivity
 
 class MyLocationManager : Service() {
 
-    private var timeToSendData = 60000L
-
+    private var timeToUpdate = 60000L
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
     }
-
     private lateinit var locationRequest: LocationRequest
 
     private val locationUpdatePendingIntent: PendingIntent by lazy {
@@ -37,7 +38,6 @@ class MyLocationManager : Service() {
 
 
     private fun startLocationUpdates() {
-        Log.e("AAA", "startLocationUpdates()")
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationUpdatePendingIntent)
         } catch (permissionRevoked: SecurityException) {
@@ -56,15 +56,13 @@ class MyLocationManager : Service() {
                 intent,
                 PendingIntent.FLAG_IMMUTABLE
             )
-        val channel = NotificationChannel("CHANNEL_1", "GPS", NotificationManager.IMPORTANCE_LOW)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.createNotificationChannel(channel)
 
-        val builder = NotificationCompat.Builder(this.applicationContext, "CHANNEL_1")
-            .setSmallIcon(R.mipmap.hordecircle_round)
-            .setContentTitle("Horde Map")
-            .setContentText("Horde Map получает GPS данные в фоновом режиме")
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+        val builder = NotificationCompat.Builder(this.applicationContext, CHANEL_GPS)
+            .setSmallIcon(R.mipmap.hordecircle_foreground)
+            .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.horde_map_gps))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setTimeoutAfter(500)
@@ -76,30 +74,26 @@ class MyLocationManager : Service() {
     }
 
     private fun startService() {
-        Log.e(TAG, "startService()")
         val notification = createNotification()
         startForeground(1, notification)
         handler.postDelayed({
-            timeToSendData = try {
+            timeToUpdate = try {
                 UserEntityProvider.userEntity.timeToSendData.times(1000L)
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 30000
             }
-            Log.e(TAG, "locationRequest set with $timeToSendData")
-            locationRequest =
-                LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToSendData)
-                    //TODO 0 для теста установить 10
-                    .setMinUpdateDistanceMeters(12F)
-                    .setMinUpdateIntervalMillis(6000L)
-                    .setMaxUpdateAgeMillis(Long.MAX_VALUE)
-                    .setMaxUpdateDelayMillis(timeToSendData)
-                    .build()
+            locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, timeToUpdate)
+                //TODO 0 для теста, установить 12
+                .setMinUpdateDistanceMeters(12F)
+                .setMinUpdateIntervalMillis(6000L)
+                .setMaxUpdateAgeMillis(Long.MAX_VALUE)
+                .setMaxUpdateDelayMillis(timeToUpdate)
+                .build()
             startLocationUpdates()
-        }, 10000)
+        }, 5000)
     }
 
     private fun stopService() {
-        Log.d(TAG, "stopLocationUpdates()")
         fusedLocationClient.removeLocationUpdates(locationUpdatePendingIntent)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -107,7 +101,6 @@ class MyLocationManager : Service() {
 
     private val handler = Handler(Looper.getMainLooper())
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e("AAA", "onStartCommand c " + intent?.action.toString())
         when (intent?.action) {
             ACTION_START -> startService()
             ACTION_STOP -> stopService()

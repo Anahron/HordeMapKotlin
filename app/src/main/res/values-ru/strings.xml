@@ -102,4 +102,18 @@
     <string name="editing">Правка:</string>
     <string name="upload_failed">Загрузка прервалась</string>
     <string name="time_after_restart">Для обновления времени запроса требуется перезапустить приложение</string>
+    <string name="horde_map_gps">Получает GPS данные в фоновом режиме</string>
+    <string name="delete_marker">Удалить маркер</string>
+    <string name="group">Группа:</string>
+    <string name="group_general">Общая</string>
+    <string name="changeUserGroup">Сменить группу</string>
+    <string name="enter_group_number">Или ведите номер</string>
+    <string name="_1_9">1–99</string>
+    <string name="stayInDefaultGroup">В общую группу</string>
+    <string name="group_number_must_be_0_10">Номер группы должен быть 1–99</string>
+    <string name="group_general_short">Общ</string>
+    <string name="select_group">Выберите группу:</string>
+    <string name="numara">№</string>
+    <string name="map_list">Список карт:</string>
+    <string name="only_for_me">Только для меня</string>
 </resources>

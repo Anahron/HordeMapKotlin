@@ -10,4 +10,5 @@ interface UserModel {
     var autoLoad: Boolean
     val authName: String
     val profileImageUrl: String
+    val userGroup: Int
 }

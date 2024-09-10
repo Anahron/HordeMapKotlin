@@ -19,7 +19,6 @@ import androidx.fragment.app.Fragment
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import ru.newlevel.hordemap.BuildConfig
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.REQUEST_BACKGROUND_LOCATION_PERMISSIONS_REQUEST_CODE
 import ru.newlevel.hordemap.app.REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE
@@ -197,7 +196,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
                 intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                 val uri = Uri.fromParts(
                     "package",
-                    BuildConfig.APPLICATION_ID,
+                    requireContext().packageName,
                     null
                 )
                 intent.data = uri

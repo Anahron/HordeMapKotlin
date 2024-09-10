@@ -13,13 +13,9 @@ import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.domain.models.TrackItemDomainModel
 import ru.newlevel.hordemap.domain.usecases.tracksCases.TracksUseCases
 
-enum class SortState {
-    DATA_SORT, DURATION_SORT, DISTANCE_SORT
-}
+enum class SortState { DATA_SORT, DURATION_SORT, DISTANCE_SORT }
 
-class TracksViewModel(
-    private val tracksUseCases: TracksUseCases
-) : ViewModel() {
+class TracksViewModel(private val tracksUseCases: TracksUseCases) : ViewModel() {
 
    val currentTrack: LiveData<TrackItemDomainModel> = tracksUseCases.getSessionLocationsUseCase.getCurrentSessionLocationsLiveData(UserEntityProvider.sessionId.toString())
 

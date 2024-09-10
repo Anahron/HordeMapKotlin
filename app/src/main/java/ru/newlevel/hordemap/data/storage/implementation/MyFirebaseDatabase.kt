@@ -1,12 +1,14 @@
 package ru.newlevel.hordemap.data.storage.implementation
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import ru.newlevel.hordemap.app.GEO_STATIC_MARKERS_PATH
@@ -16,224 +18,304 @@ import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.TIMESTAMP_PATH
 import ru.newlevel.hordemap.app.TIME_TO_DELETE_USER_MARKER
 import ru.newlevel.hordemap.app.USERS_PROFILES_PATH
+import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.data.db.MyMessageEntity
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.MessageRemoteStorage
 import ru.newlevel.hordemap.data.storage.interfaces.ProfileRemoteStorage
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
-import java.time.Instant
-import java.util.Date
+import ru.newlevel.hordemap.presentation.settings.GroupInfoModel
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRemoteStorage {
 
     private val databaseReference = FirebaseDatabase.getInstance().reference
-    private val staticDatabaseReference = databaseReference.child(GEO_STATIC_MARKERS_PATH)
-    private val userDatabaseReference = databaseReference.child(GEO_USER_MARKERS_PATH)
-    private val liveDataStaticMarkers = MutableLiveData<List<MarkerDataModel>>()
-    private val liveDataUserMarkers = MutableLiveData<List<MarkerDataModel>>()
-    private val liveDataMessageDataModel = MutableLiveData<List<MyMessageEntity>>()
-    private val liveDataUsersProfiles = MutableLiveData<List<UserDataModel>>()
-    override fun deleteStaticMarker(key: String) {
-        staticDatabaseReference.child(key).removeValue()
+
+    override suspend fun deleteStaticMarker(key: String) {
+        databaseReference.child("$GEO_STATIC_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
+            .child(key).removeValue()
     }
 
-    override fun sendUserMarker(markerModel: MarkerDataModel) {
-        Log.e(TAG, " sendUserMarker$markerModel")
-        userDatabaseReference.child(markerModel.deviceId).setValue(markerModel)
-    }
-
-    override fun getMessageUpdate(): MutableLiveData<List<MyMessageEntity>> {
-        Log.e(TAG, "startMessageUpdate() вызван")
-        databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
-            .addValueEventListener(messageEventListener)
-        return liveDataMessageDataModel
-    }
-
-    override fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        userDatabaseReference.addValueEventListener(valueUserEventListener)
-        return liveDataUserMarkers
-    }
-
-    override fun startStaticMarkerUpdates(): MutableLiveData<List<MarkerDataModel>> {
-        staticDatabaseReference.addValueEventListener(valueStaticEventListener)
-        return liveDataStaticMarkers
-    }
-
-    override fun sendStaticMarker(markerModel: MarkerDataModel) {
-        staticDatabaseReference.child(markerModel.timestamp.toString()).setValue(markerModel)
+    override fun sendStaticMarker(markerModel: MarkerEntity) {
+        Log.e(TAG, " sendStaticMarker${UserEntityProvider.userEntity.userGroup}")
+        databaseReference.child("$GEO_STATIC_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
+            .child(markerModel.timestamp.toString()).setValue(markerModel)
     }
 
     override fun sendMessage(message: MyMessageEntity) {
-        databaseReference.child("$MESSAGE_PATH/${message.timestamp}").setValue(message)
-    }
-    override fun stopMarkerUpdates() {
-        Log.e(TAG, "stopMarkerUpdates in StorageImpl вызван")
-        userDatabaseReference.removeEventListener(valueUserEventListener)
-        staticDatabaseReference.removeEventListener(valueStaticEventListener)
+        databaseReference.child("$MESSAGE_PATH${UserEntityProvider.userEntity.userGroup}/${message.timestamp}")
+            .setValue(message)
     }
 
-    override fun stopMessageUpdate() {
-        Log.e(TAG, "stopMessageUpdate вызван")
-        databaseReference.child(MESSAGE_PATH).orderByChild("timestamp")
-            .removeEventListener(messageEventListener)
-        databaseReference.child(USERS_PROFILES_PATH).orderByChild("deviceID")
-            .removeEventListener(valueUsersProfilesEventListener)
+    override fun sendUserMarker(markerModel: MarkerEntity) {
+        databaseReference.child("$GEO_USER_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
+            .child(markerModel.deviceId).setValue(markerModel)
     }
 
-    override fun getProfilesInMessenger(): MutableLiveData<List<UserDataModel>> {
-        databaseReference.child(USERS_PROFILES_PATH).orderByChild("deviceID")
-            .addValueEventListener(valueUsersProfilesEventListener)
-        return liveDataUsersProfiles
+    override fun getMessageUpdate(): Flow<List<MyMessageEntity>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val messages = ArrayList<MyMessageEntity>()
+                for (snap in snapshot.children) {
+                    val message: MyMessageEntity? = snap.getValue(MyMessageEntity::class.java)
+                    if (message != null) {
+                        messages.add(message)
+                    }
+                }
+                trySend(messages)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        databaseReference.child("$MESSAGE_PATH${UserEntityProvider.userEntity.userGroup}")
+            .orderByChild("timestamp").addValueEventListener(listener)
+        awaitClose {
+            Log.e(TAG, "awaitClose in getMessageUpdate")
+            databaseReference.child("$MESSAGE_PATH${UserEntityProvider.userEntity.userGroup}")
+                .orderByChild("timestamp").removeEventListener(listener)
+        }
     }
+
+    override fun getUserMarkerUpdates(): Flow<List<MarkerEntity>> = callbackFlow {
+        val listener =
+            databaseReference.child("$GEO_USER_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
+                .addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        val savedUserMarkers: ArrayList<MarkerEntity> = ArrayList()
+                        val timeNow = System.currentTimeMillis()
+                        for (snapshot in dataSnapshot.children) {
+                            try {
+                                var alpha: Float
+                                val timestamp: Long? =
+                                    snapshot.child(TIMESTAMP_PATH).getValue(Long::class.java)
+                                val timeDiffMillis = timeNow - (timestamp ?: 0L)
+                                val timeDiffMinutes = timeDiffMillis / 60000
+                                // Удаляем маркера в базе, которым больше TIME_TO_DELETE_USER_MARKER минут
+                                alpha = if (timeDiffMinutes >= TIME_TO_DELETE_USER_MARKER) {
+                                    snapshot.ref.removeValue()
+                                    continue
+                                } else {
+                                    // Устанавливаем прозрачность маркера от 0 до 5 минут максимум до 50%
+                                    1f - (timeDiffMinutes / 10f).coerceAtMost(0.5f)
+                                }
+                                val myMarker: MarkerEntity =
+                                    snapshot.getValue(MarkerEntity::class.java)!!
+                                myMarker.deviceId = snapshot.key.toString()
+                                myMarker.alpha = alpha
+                                savedUserMarkers.add(myMarker)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                        trySend(savedUserMarkers).isSuccess
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        close(error.toException())
+                    }
+
+                })
+        awaitClose {
+            Log.e(TAG, " awaitClose in userDatabaseReference")
+            databaseReference.child("$GEO_USER_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
+                .removeEventListener(listener)
+        }
+    }
+
+
+    override fun getStaticMarkerUpdates(): Flow<List<MarkerEntity>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val savedStaticMarkers: ArrayList<MarkerEntity> = ArrayList()
+                for (snapshot in dataSnapshot.children) {
+                    try {
+                        val myMarker: MarkerEntity =
+                            snapshot.getValue(MarkerEntity::class.java)!!
+                        savedStaticMarkers.add(myMarker)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                trySend(savedStaticMarkers).isSuccess
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        databaseReference.child("$GEO_STATIC_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
+            .addValueEventListener(listener)
+        awaitClose {
+            Log.e(TAG, "awaitClose in staticDatabaseReference")
+            databaseReference.child("$GEO_STATIC_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
+                .removeEventListener(listener)
+        }
+    }
+
+
+    override fun getProfilesInMessenger(): Flow<List<UserDataModel>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val savedUsers: ArrayList<UserDataModel> = ArrayList()
+                for (snapshot in dataSnapshot.children) {
+                    try {
+                        val name = snapshot.child("name").getValue(String::class.java) ?: ""
+                        val authName = snapshot.child("authName").getValue(String::class.java) ?: ""
+                        val selectedMarker =
+                            snapshot.child("selectedMarker").getValue(Int::class.java) ?: 0
+                        val deviceID = snapshot.child("deviceID").getValue(String::class.java) ?: ""
+                        val profileImageUrl =
+                            snapshot.child("profileImageUrl").getValue(String::class.java) ?: ""
+                        val user = UserDataModel(
+                            deviceID = deviceID,
+                            name = name,
+                            profileImageUrl = profileImageUrl,
+                            selectedMarker = selectedMarker,
+                            authName = authName
+                        )
+                        savedUsers.add(user)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                trySend(savedUsers).isSuccess
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}")
+            .orderByChild("deviceID").addValueEventListener(listener)
+        awaitClose {
+            Log.e(TAG, "awaitClose in getProfilesInMessenger")
+            databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}")
+                .orderByChild("deviceID").removeEventListener(listener)
+        }
+    }
+
+    override suspend fun getProfilesAndChildCounts(): List<GroupInfoModel> =
+        suspendCoroutine { continuation ->
+            val listener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val nodes = snapshot.children.mapNotNull { childSnapshot ->
+                        val nodeName = childSnapshot.key
+                        val childCount = childSnapshot.childrenCount.toInt()
+                        if (nodeName != null) {
+                            GroupInfoModel(nodeName, childCount)
+                        } else {
+                            null
+                        }
+                    }
+                    continuation.resume(nodes)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    continuation.resumeWithException(error.toException())
+                }
+            }
+            databaseReference.child(USERS_PROFILES_PATH).addListenerForSingleValueEvent(listener)
+        }
 
     override fun deleteMessage(message: MyMessageEntity) {
-        databaseReference.child(MESSAGE_PATH).child(message.timestamp.toString()).removeValue()
+        databaseReference.child("$MESSAGE_PATH${UserEntityProvider.userEntity.userGroup}")
+            .child(message.timestamp.toString()).removeValue()
     }
 
     override suspend fun sendUserData(userData: UserDataModel) {
         return withContext(Dispatchers.IO) {
-            val updateTask =  databaseReference.child("$USERS_PROFILES_PATH/${userData.deviceID}").setValue(userData)
+            val updateTask =
+                databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}/${userData.deviceID}")
+                    .setValue(userData)
             updateTask.await()
-            if (updateTask.isSuccessful)
-                updateAllUserMessages(userData)
+            if (updateTask.isSuccessful) updateAllUserMessages(userData)
         }
     }
 
-    override suspend fun deleteUserDataRemote(deviceId: String) {
-        databaseReference.child(USERS_PROFILES_PATH).child(deviceId)
-            .removeValue()
+    override suspend fun deleteUserDataRemote(deviceId: String, userGroup: Int) {
+        databaseReference.child("$USERS_PROFILES_PATH/${userGroup}").child(deviceId).removeValue()
             .addOnSuccessListener {
                 Log.e(TAG, "Profile deleted successfully")
+            }.addOnFailureListener {
+                Log.e(TAG, "Failed to delete profile: ${it.message}")
             }
-            .addOnFailureListener {
+    }
+    override suspend fun getProfilesInGroup(groupNumber: Int): List<UserDataModel> =
+        suspendCoroutine { continuation ->
+            val listener = object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val savedUsers: ArrayList<UserDataModel> = ArrayList()
+                    for (snapshot in dataSnapshot.children) {
+                        try {
+                            val name = snapshot.child("name").getValue(String::class.java) ?: ""
+                            val authName =
+                                snapshot.child("authName").getValue(String::class.java) ?: ""
+                            val selectedMarker =
+                                snapshot.child("selectedMarker").getValue(Int::class.java) ?: 0
+                            val deviceID =
+                                snapshot.child("deviceID").getValue(String::class.java) ?: ""
+                            val profileImageUrl =
+                                snapshot.child("profileImageUrl").getValue(String::class.java) ?: ""
+                            val user = UserDataModel(
+                                deviceID = deviceID,
+                                name = name,
+                                profileImageUrl = profileImageUrl,
+                                selectedMarker = selectedMarker,
+                                authName = authName
+                            )
+                            savedUsers.add(user)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                    continuation.resume(savedUsers)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    continuation.resumeWithException(error.toException())
+                }
+            }
+
+            databaseReference.child("$USERS_PROFILES_PATH/$groupNumber").orderByChild("deviceID")
+                .addListenerForSingleValueEvent(listener)
+        }
+
+    override suspend fun deleteUserDataRemote(deviceId: String) {
+        databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}")
+            .child(deviceId).removeValue().addOnSuccessListener {
+                Log.e(TAG, "Profile deleted successfully")
+            }.addOnFailureListener {
                 Log.e(TAG, "Failed to delete profile: ${it.message}")
             }
     }
 
-
     private fun updateAllUserMessages(userData: UserDataModel) {
         val deviceId = userData.deviceID
-        databaseReference.child(MESSAGE_PATH).orderByChild("deviceID").equalTo(deviceId)
+        databaseReference.child("$MESSAGE_PATH${UserEntityProvider.userEntity.userGroup}")
+            .orderByChild("deviceID").equalTo(deviceId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     for (messageSnapshot in dataSnapshot.children) {
                         messageSnapshot.ref.child("userName").setValue(userData.name)
-                        messageSnapshot.ref.child("selectedMarker").setValue(userData.selectedMarker)
-                        messageSnapshot.ref.child("profileImageUrl").setValue(userData.profileImageUrl)
+                        messageSnapshot.ref.child("selectedMarker")
+                            .setValue(userData.selectedMarker)
+                        messageSnapshot.ref.child("profileImageUrl")
+                            .setValue(userData.profileImageUrl)
                     }
                 }
+
                 override fun onCancelled(databaseError: DatabaseError) {
-                    Log.e(TAG, "MyFirebaseDatabase updateAllUserMessages onCancelled = " + databaseError.message)
+                    Log.e(
+                        TAG,
+                        "MyFirebaseDatabase updateAllUserMessages onCancelled = " + databaseError.message
+                    )
                 }
             })
-    }
-
-
-    private var valueUsersProfilesEventListener = object : ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot) {
-            val savedUsers: ArrayList<UserDataModel> = ArrayList()
-            for (snapshot in dataSnapshot.children) {
-                try {
-                    val name = snapshot.child("name").getValue(String::class.java) ?: ""
-                    val authName = snapshot.child("authName").getValue(String::class.java) ?: ""
-                    val selectedMarker = snapshot.child("selectedMarker").getValue(Int::class.java) ?: 0
-                    val deviceID = snapshot.child("deviceID").getValue(String::class.java) ?: ""
-                    val profileImageUrl = snapshot.child("profileImageUrl").getValue(String::class.java) ?: ""
-                    val user = UserDataModel(
-                        deviceID = deviceID,
-                        name = name,
-                        profileImageUrl = profileImageUrl,
-                        selectedMarker = selectedMarker,
-                        authName = authName,
-                    )
-                    savedUsers.add(user)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-            liveDataUsersProfiles.postValue(savedUsers)
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-        }
-    }
-
-
-    private var valueUserEventListener = object : ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot) {
-            val savedUserMarkers: ArrayList<MarkerDataModel> = ArrayList()
-            val timeNow = System.currentTimeMillis()
-            for (snapshot in dataSnapshot.children) {
-                try {
-                    var alpha: Float
-                    val timestamp: Long? =
-                        snapshot.child(TIMESTAMP_PATH).getValue(Long::class.java)
-                    val timeDiffMillis = timeNow - timestamp!!
-                    val timeDiffMinutes = timeDiffMillis / 60000
-                    // Удаляем маркера в базе, которым больше TIME_TO_DELETE_USER_MARKER минут
-                    alpha = if (timeDiffMinutes >= TIME_TO_DELETE_USER_MARKER) {
-                        snapshot.ref.removeValue()
-                        continue
-                    } else {
-                        // Устанавливаем прозрачность маркера от 0 до 5 минут максимум до 50%
-                        1f - (timeDiffMinutes / 10f).coerceAtMost(0.5f)
-                    }
-                    val myMarker: MarkerDataModel =
-                        snapshot.getValue(MarkerDataModel::class.java)!!
-                    myMarker.deviceId = snapshot.key.toString()
-                    myMarker.alpha = alpha
-                    savedUserMarkers.add(myMarker)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-            liveDataUserMarkers.postValue(savedUserMarkers)
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-
-        }
-    }
-
-    private var valueStaticEventListener = object : ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot) {
-            val savedStaticMarkers: ArrayList<MarkerDataModel> = ArrayList()
-            for (snapshot in dataSnapshot.children) {
-                try {
-                    val myMarker: MarkerDataModel =
-                        snapshot.getValue(MarkerDataModel::class.java)!!
-                    savedStaticMarkers.add(myMarker)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-            liveDataStaticMarkers.postValue(savedStaticMarkers)
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-        }
-    }
-
-    private val messageEventListener = object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            var countMessage = 0
-            Log.e(TAG, "startMessageUpdate пришло обновление сообщений")
-            val messages = ArrayList<MyMessageEntity>()
-            for (snap in snapshot.children) {
-                val message: MyMessageEntity? = snap.getValue(MyMessageEntity::class.java)
-                Log.e(TAG, "Date message:$countMessage = " + Date.from(message?.timestamp?.let { Instant.ofEpochMilli(it) }))
-                countMessage++
-                if (message != null) {
-                    messages.add(message)
-                }
-            }
-            if (messages.isNotEmpty()) {
-                liveDataMessageDataModel.postValue(messages)
-            }
-        }
-
-        override fun onCancelled(error: DatabaseError) {}
     }
 }
 

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.JPG_EXTENSION
 import ru.newlevel.hordemap.app.convertDpToPx
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -45,10 +46,19 @@ class MessagesAdapter(
         parent: ViewGroup, viewType: Int
     ): MessageViewHolder {
         return when (viewType) {
-            ITEM_IN ->  MessageViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_message_in, parent, false)
-                , onMessageItemClickListener, glide, true)
-            else -> MessageViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_message_out, parent, false)
-                , onMessageItemClickListener, glide, false)
+            ITEM_IN -> MessageViewHolder(
+                LayoutInflater.from(parent.context).inflate(R.layout.item_message_in, parent, false),
+                onMessageItemClickListener,
+                glide,
+                true
+            )
+
+            else -> MessageViewHolder(
+                LayoutInflater.from(parent.context).inflate(R.layout.item_message_out, parent, false),
+                onMessageItemClickListener,
+                glide,
+                false
+            )
         }
     }
 
@@ -67,7 +77,8 @@ class MessagesAdapter(
         holder.itemView.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 x = event.rawX
-                y = if (position+1 == messageDataModels.size) event.rawY- bottomPadding else event.rawY - (bottomPadding/2)
+                y =
+                    if (position + 1 == messageDataModels.size) event.rawY - bottomPadding else event.rawY - (bottomPadding / 2)
             }
             false
         }
@@ -86,7 +97,10 @@ class MessagesAdapter(
     }
 
     class MessageViewHolder(
-        view: View, private val onMessageItemClickListener: OnMessageItemClickListener, private val glide: RequestManager, val isInMessage: Boolean
+        view: View,
+        private val onMessageItemClickListener: OnMessageItemClickListener,
+        private val glide: RequestManager,
+        val isInMessage: Boolean
     ) : RecyclerView.ViewHolder(view) {
 
         private val binding = ItemMessageInBinding.bind(view)
@@ -131,18 +145,27 @@ class MessagesAdapter(
                 if (isSomeUser) {
                     textViewUsername.visibility = View.GONE
                     imvProfilePhoto.visibility = View.INVISIBLE
-                } else if (messageDataModel.profileImageUrl.isNotEmpty())
+                } else if (messageDataModel.profileImageUrl.isNotEmpty()) {
+                    messageDataModel.profileImageUrl.toUri()
                     glide.load(messageDataModel.profileImageUrl.toUri())
-                        .thumbnail(1f)
                         .timeout(30_000)
                         .placeholder(R.drawable.img_anonymous).into(imvProfilePhoto)
-                else binding.imvProfilePhoto.setImageResource(R.drawable.img_anonymous)
+                    bindImageClickListener(messageDataModel.profileImageUrl)
+                } else{
+                    imvProfilePhoto.setBackgroundResource(R.drawable.img_anonymous)
+                }
                 if (messageDataModel.message.isNotEmpty()) {
                     textViewMessage.visibility = View.VISIBLE
                     textViewMessage.text = messageDataModel.message
                 }
                 if (messageDataModel.url.isNotEmpty())
                     setUpItemWithUrl(messageDataModel, onMessageItemClickListener, false)
+            }
+        }
+
+        private fun bindImageClickListener(url: String) {
+            binding.imvProfilePhoto.setOnClickListener {
+                onMessageItemClickListener.onImageClick(url)
             }
         }
 
@@ -166,15 +189,15 @@ class MessagesAdapter(
             else " (" + String.format(
                 "%.1f", (fileSize.toDouble() / 1000000)
             ) + "Mb)"
-            if (fileName.endsWith(".jpg")) {
+            if (fileName.endsWith(JPG_EXTENSION)) {
                 imageView.visibility = View.VISIBLE
-                glide.load(messageDataModel.url).thumbnail(0.1f).placeholder(R.drawable.downloaded_image)
+                glide.load(messageDataModel.url)
+                    .placeholder(R.drawable.downloaded_image)
                     .timeout(30_000)
                     .into(imageView)
                 if (!isReply) imageView.setOnClickListener {
                     onMessageItemClickListener.onImageClick(messageDataModel.url)
                 }
-
             } else {
                 downloadButton.visibility = View.VISIBLE
                 val downloadBtnText = "$fileName $fileSizeText"
@@ -202,13 +225,6 @@ class MessagesAdapter(
             val newMessage = newList[newItemPosition]
             return oldMessage.message == newMessage.message && oldMessage.profileImageUrl == newMessage.profileImageUrl && oldMessage.selectedMarker == newMessage.selectedMarker && oldMessage.userName == newMessage.userName
         }
-    }
-
-    interface OnMessageItemClickListener {
-        fun onButtonSaveClick(uri: String, fileName: String)
-        fun onImageClick(url: String)
-        fun onItemClick(message: MyMessageEntity, itemView: View, x: Float, y: Float, isInMessage: Boolean)
-        fun onReplyClick(message: MyMessageEntity)
     }
 
     companion object {

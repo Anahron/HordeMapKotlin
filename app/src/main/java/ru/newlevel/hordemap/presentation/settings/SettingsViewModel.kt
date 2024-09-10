@@ -9,13 +9,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
+import ru.newlevel.hordemap.data.storage.models.MapFileModel
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetAllMapsAsListUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
+import ru.newlevel.hordemap.domain.usecases.mapCases.LoadProfilePhotoUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.ResetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveAutoLoadUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
-import ru.newlevel.hordemap.domain.usecases.mapCases.LoadProfilePhotoUseCase
 
 sealed class UiState {
     data object SettingsState : UiState()
@@ -28,10 +30,14 @@ class SettingsViewModel(
     private val resetUserSettingsUseCase: ResetUserSettingsUseCase,
     private val saveAutoLoadUseCase: SaveAutoLoadUseCase,
     private val loadProfilePhotoUseCase: LoadProfilePhotoUseCase,
-    private val sendUserToStorageUseCase: SendUserToStorageUseCase
+    private val sendUserToStorageUseCase: SendUserToStorageUseCase,
+    private val getAllMapsAsListUseCase: GetAllMapsAsListUseCase
 ) : ViewModel() {
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
     val resultData: LiveData<UserDomainModel> = resultLiveDataMutable
+
+    private val _mapsList = MutableLiveData<List<MapFileModel>>()
+    val mapsList : LiveData<List<MapFileModel>> = _mapsList
 
     private val _state = MutableStateFlow<UiState>(UiState.SettingsState)
     val state = _state.asStateFlow()
@@ -42,6 +48,14 @@ class SettingsViewModel(
             R.id.btnToggleLoadMap -> _state.value = UiState.LoadMapState
         }
 
+    }
+
+    suspend fun getAllMapsAsList(): Boolean {
+        val result = getAllMapsAsListUseCase.execute()
+        result.onSuccess {
+            _mapsList.postValue(it)
+        }
+        return true
     }
 
     suspend fun loadProfilePhoto(uri: Uri, context: Context): Result<Uri> {
@@ -58,9 +72,9 @@ class SettingsViewModel(
     }
 
     suspend fun saveUser(userDomainModel: UserDomainModel) {
+        UserEntityProvider.userEntity = userDomainModel
         sendUserToStorageUseCase.execute(userDomainModel)
         saveUserSettingsUseCase.execute(userDomainModel)
-        UserEntityProvider.userEntity = userDomainModel
         resultLiveDataMutable.value = userDomainModel
     }
 

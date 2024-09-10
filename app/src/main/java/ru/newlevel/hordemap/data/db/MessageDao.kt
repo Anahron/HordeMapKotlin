@@ -1,12 +1,12 @@
 package ru.newlevel.hordemap.data.db
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MessageDao {
@@ -14,8 +14,10 @@ interface MessageDao {
     suspend fun insertMessage(message: MyMessageEntity)
 
     @Query("SELECT * FROM messages ORDER BY timestamp ASC")
-    fun getAllMessagesLiveData(): LiveData<List<MyMessageEntity>>
+    fun getAllMessagesLiveData(): Flow<List<MyMessageEntity>>
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertMessages(messages: List<MyMessageEntity>)
     @Delete
     suspend fun deleteMessage(message: MyMessageEntity)
     @Update

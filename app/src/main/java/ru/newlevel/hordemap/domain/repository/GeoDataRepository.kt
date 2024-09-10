@@ -1,21 +1,24 @@
 package ru.newlevel.hordemap.domain.repository
 
-import androidx.lifecycle.MutableLiveData
-import ru.newlevel.hordemap.data.storage.models.MarkerDataModel
+import kotlinx.coroutines.flow.Flow
+import ru.newlevel.hordemap.data.db.MarkerEntity
+import ru.newlevel.hordemap.data.db.UserMarkerEntity
 
 interface GeoDataRepository {
 
-    fun stopMarkerUpdates()
+    fun startUserMarkerUpdates(): Flow<List<MarkerEntity>>
 
-    fun startUserMarkerUpdates(): MutableLiveData<List<MarkerDataModel>>
+    fun startStaticMarkerUpdates(): Flow<List<MarkerEntity>>
+    suspend fun insertUserMarkers(data: List<UserMarkerEntity>)
+    suspend fun insertStaticMarkers(data: List<MarkerEntity>)
+    suspend fun deleteStaticMarker(key: String)
 
-    fun startStaticMarkerUpdates(): MutableLiveData<List<MarkerDataModel>>
+    fun sendCoordinates(markerModel: MarkerEntity)
 
-    fun deleteStaticMarker(key: String)
-
-    fun sendCoordinates(markerModel: MarkerDataModel)
-
-    fun createStaticMarker(markerModel: MarkerDataModel)
+    fun sendStaticMarkerRemote(markerModel: MarkerEntity)
+    fun startUserMarkerUpdatesLocal(): Flow<List<UserMarkerEntity>>
+    fun startStaticMarkerUpdatesLocal(): Flow<List<MarkerEntity>>
+    suspend fun insertStaticMarkerLocal(marker: MarkerEntity)
 }
 
 

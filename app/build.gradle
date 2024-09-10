@@ -15,8 +15,8 @@ android {
         applicationId "ru.newlevel.hordemap"
         minSdk 26
         targetSdk 34
-        versionCode 23
-        versionName "4.0"
+        versionCode 30
+        versionName "4.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         kapt {
@@ -30,12 +30,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    kapt {
-        javacOptions {
-            sourceCompatibility 1.8
-            targetCompatibility 1.8
-        }
-    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -45,7 +39,7 @@ android {
         jvmTarget = '17'
     }
     buildFeatures {
-        viewBinding true
+        viewBinding = true
     }
 }
 
@@ -55,9 +49,8 @@ apply plugin: 'com.android.application'
 
 dependencies {
     implementation 'androidx.fragment:fragment-ktx:1.6.2'
-    implementation 'com.google.android.gms:play-services-auth:20.7.0'
-    implementation 'androidx.annotation:annotation:1.7.0'
-
+    implementation 'androidx.annotation:annotation:1.7.1'
+    implementation "com.google.android.recaptcha:recaptcha:18.4.0"
     //db
     def room = "2.6.1"
     implementation "androidx.room:room-runtime:$room"
@@ -75,8 +68,8 @@ dependencies {
     implementation "io.insert-koin:koin-test:$koin_version"
 
     //nav
-    implementation "androidx.navigation:navigation-ui-ktx:2.7.5"
-    implementation "androidx.navigation:navigation-fragment-ktx:2.7.5"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.6"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.7.6"
 
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
@@ -86,20 +79,24 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.0.0')
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.google.firebase:firebase-database'
-    implementation 'com.google.firebase:firebase-auth:22.3.0'
+    implementation 'com.google.firebase:firebase-auth:22.3.1'
 
     //google
     implementation 'com.google.maps:google-maps-services:0.15.0'
     implementation 'com.google.maps.android:android-maps-utils:3.4.0'
     implementation 'com.google.maps.android:maps-utils-ktx:3.4.0'
-    implementation 'com.google.android.gms:play-services-location:21.0.1'
+    implementation 'com.google.android.gms:play-services-location:21.1.0'
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3'
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'com.google.android.material:material:1.11.0'
+
+    //glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
 
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.fragment:fragment-ktx:1.6.2'
@@ -108,7 +105,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.7.0")
 
 
-    def lifecycle_version = "2.4.0"
+    def lifecycle_version = "2.7.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"

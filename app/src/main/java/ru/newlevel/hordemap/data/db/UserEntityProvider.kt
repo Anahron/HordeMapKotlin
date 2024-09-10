@@ -4,5 +4,5 @@ import ru.newlevel.hordemap.domain.models.UserDomainModel
 
 object UserEntityProvider {
     var sessionId = 0L
-    lateinit var userEntity: UserDomainModel
+    var userEntity: UserDomainModel = UserDomainModel()
 }

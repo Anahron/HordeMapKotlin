@@ -42,7 +42,7 @@ class SignInViewModel(
             authName = authName,
             profileImageUrl = userPhoto,
             deviceID = newDeviceID,
-            name = newUserName
+            name = newUserName,
         )
         userData?.userId.let {
             saveUserSettingsUseCase.execute(newUser)

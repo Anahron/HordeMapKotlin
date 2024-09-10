@@ -12,7 +12,7 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.databinding.ItemUserBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
 
-class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
+class UsersAdapter(private val onImageClick: (String) -> Unit) : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
 
     private var usersData: List<UserDomainModel> = ArrayList()
 
@@ -31,7 +31,7 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-        holder.bind(usersData[position])
+        holder.bind(usersData[position], onImageClick)
     }
 
 
@@ -40,7 +40,10 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
     ) : RecyclerView.ViewHolder(view) {
 
         private val binding = ItemUserBinding.bind(view)
-        fun bind(userData: UserDomainModel) {
+        fun bind(userData: UserDomainModel, onImageClick: (String) -> Unit) {
+            binding.imgUserPhoto.setOnClickListener {
+                onImageClick.invoke(userData.profileImageUrl)
+            }
             binding.tvUserName.text = userData.name
             NameColors.values().find { it.id ==userData.selectedMarker }?.let {
                 binding.tvUserName.setTextColor(ContextCompat.getColor(itemView.context, it.resourceId))

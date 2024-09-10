@@ -5,6 +5,7 @@ import android.hardware.SensorManager
 import androidx.room.Room.databaseBuilder
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.newlevel.hordemap.app.MyAlarmManager
 import ru.newlevel.hordemap.data.db.MyDatabase
 import ru.newlevel.hordemap.data.repository.*
 import ru.newlevel.hordemap.data.storage.implementation.FilesLocalStorage
@@ -25,11 +26,22 @@ val databaseModule = module {
             MyDatabase::class.java,
             "my-location-database"
         )
+            .fallbackToDestructiveMigration()
             .build()
     }
 }
 
 val dataModule = module {
+
+
+    single {
+        MyAlarmManager(context = get())
+    }
+
+    single {
+        val database = get<MyDatabase>()
+        database.markersDao()
+    }
 
     single {
         val database = get<MyDatabase>()
@@ -47,6 +59,10 @@ val dataModule = module {
 
     //Storages
     single<UserLocalStorage> {
+        SharedPrefUserLocalStorage(context = get())
+    }
+
+    single<MessagesCountLocalStorage> {
         SharedPrefUserLocalStorage(context = get())
     }
 
@@ -77,11 +93,15 @@ val dataModule = module {
         get()
     }
 
-    single<ProfilePhotoStorage>{
+    single<ProfilePhotoStorage> {
         MyFirebaseStorage()
     }
 
-    single<ProfileRemoteStorage>{
+    single<GroupsRepository>{
+        GroupsRepositoryImpl(profileRemoteStorage = get())
+    }
+
+    single<ProfileRemoteStorage> {
         MyFirebaseDatabase()
     }
     // Repos
@@ -89,7 +109,7 @@ val dataModule = module {
         SettingsRepositoryImpl(userLocalStorage = get(), profilePhotoStorage = get(), profileRemoteStorage = get())
     }
     single<GeoDataRepository> {
-        GeoDataRepositoryImpl(markersRemoteStorage = get())
+        GeoDataRepositoryImpl(markersRemoteStorage = get(), markersLocalStorage = get())
     }
 
     single<LocationRepository> {
@@ -105,6 +125,11 @@ val dataModule = module {
     }
 
     single<MessengerRepository> {
-        MessengerRepositoryImpl(messageRemoteStorage = get(), messageFilesStorage = get(), messageDao = get())
+        MessengerRepositoryImpl(
+            messageRemoteStorage = get(),
+            messageFilesStorage = get(),
+            messageDao = get(),
+            messagesCountLocalStorage = get()
+        )
     }
 }

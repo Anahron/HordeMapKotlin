@@ -101,4 +101,18 @@
     <string name="editing">Editing:</string>
     <string name="upload_failed">Upload failed</string>
     <string name="time_after_restart">Restart application required to update time to request</string>
+    <string name="horde_map_gps">Receives GPS data in the background</string>
+    <string name="delete_marker">Delete Marker</string>
+    <string name="group">Group:</string>
+    <string name="group_general">General</string>
+    <string name="changeUserGroup">Change Group</string>
+    <string name="enter_group_number">Or enter group number</string>
+    <string name="_1_9">1–99</string>
+    <string name="stayInDefaultGroup">Stay in the general group</string>
+    <string name="group_number_must_be_0_10">Group number must be 1–99</string>
+    <string name="group_general_short">Gen</string>
+    <string name="select_group">Select group:</string>
+    <string name="numara">№</string>
+    <string name="map_list">Map list:</string>
+    <string name="only_for_me">Only for me</string>
 </resources>

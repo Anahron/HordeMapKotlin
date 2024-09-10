@@ -5,6 +5,6 @@ import ru.newlevel.hordemap.domain.repository.MessengerRepository
 
 class DeleteMessageUseCase(private val messengerRepository: MessengerRepository) {
     fun execute(message: MyMessageEntity) {
-        messengerRepository.deleteMessage(message)
+        messengerRepository.deleteRemoteMessage(message)
     }
 }
