@@ -26,10 +26,11 @@ import ru.newlevel.hordemap.domain.usecases.markersCases.SendStaticMarkerUseCase
 import ru.newlevel.hordemap.domain.usecases.markersCases.StartMarkerUpdateInteractor
 import ru.newlevel.hordemap.domain.usecases.messengerCases.DeleteMessageUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.DownloadFileUseCase
-import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
-import ru.newlevel.hordemap.domain.usecases.messengerCases.UploadFileUseCase
-import ru.newlevel.hordemap.domain.usecases.messengerCases.SendMessageUseCase
 import ru.newlevel.hordemap.domain.usecases.messengerCases.MessageUpdateInteractor
+import ru.newlevel.hordemap.domain.usecases.messengerCases.MessengerUseCases
+import ru.newlevel.hordemap.domain.usecases.messengerCases.SendMessageUseCase
+import ru.newlevel.hordemap.domain.usecases.messengerCases.SetMessageReadUseCase
+import ru.newlevel.hordemap.domain.usecases.messengerCases.UploadFileUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteAllTracksUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.DeleteSessionLocationUseCase
 import ru.newlevel.hordemap.domain.usecases.tracksCases.GetSessionLocationsUseCase
@@ -153,6 +154,11 @@ val domainModule = module {
         GetAllMapsAsListUseCase(gameMapRepository = get())
     }
 
+    factory {
+        SetMessageReadUseCase(messengerRepository = get())
+    }
+
+
     single {
         GoogleAuthUiClient(
             androidContext().applicationContext,
@@ -192,7 +198,8 @@ val domainModule = module {
             sendMessageUseCase = get(),
             uploadFileUseCase = get(),
             downloadFileUseCase = get(),
-            deleteMessageUseCase = get()
+            deleteMessageUseCase = get(),
+            setMessageReadUseCase = get()
         )
     }
 }

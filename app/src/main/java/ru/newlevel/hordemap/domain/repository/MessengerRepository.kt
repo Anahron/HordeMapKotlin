@@ -16,8 +16,8 @@ interface MessengerRepository {
     fun getRemoteMessagesUpdate(): Flow<List<MyMessageEntity>>
     fun deleteRemoteMessage(message: MyMessageEntity)
     fun getNewMessageCount(): Flow<Int>
-    fun incrementNewMessageCount(increment: Int)
     suspend fun uploadFile(uri: Uri, fileName: String?): Result<Uri>
     suspend fun downloadFile(context: Context, uri: Uri, fileName: String?): Result<Boolean>
     fun getUsersProfilesUpdate(): Flow<List<UserDataModel>>
+   suspend fun setMessageRead(id: Long)
 }

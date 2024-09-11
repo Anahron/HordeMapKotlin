@@ -9,9 +9,6 @@ class MainViewModel(private val messageUpdateInteractor: MessageUpdateInteractor
     private val _newMessageAnnounced: Flow<Int> = messageUpdateInteractor.getNewMessageCountUpdate()
         val newMessageAnnounced: Flow<Int> = _newMessageAnnounced
 
-    fun resetNewMessageCount(){
-        messageUpdateInteractor.resetNewMessageCount()
-    }
    suspend fun syncMessageData(){
         messageUpdateInteractor.syncMessagesData()
     }

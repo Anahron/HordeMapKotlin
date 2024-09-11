@@ -66,7 +66,6 @@ import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.showFromBottomAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
-import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
 import java.io.File
 
@@ -93,9 +92,15 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var photoUri: Uri
     private var isDownloadingState = false
     private var isPopUpShow = false
+    private var isFirstLaunch = true
     private var editMessageId: Long? = null
     private var replyMessageId: Long? = null
 
+
+    override fun onResume() {
+        super.onResume()
+        isFirstLaunch = true
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -227,22 +232,30 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
     }
 
-    private fun handleNewMessages(messages: List<MyMessageEntity>) {
+    private fun handleNewMessages(messages: MutableList<MyMessageEntity>) {
         val onDown = !mRecyclerView.canScrollVertically(1)
                 && mRecyclerView.computeVerticalScrollRange() > mRecyclerView.height
-        mMessageAdapter.setMessages(messages as ArrayList<MyMessageEntity>)
+        mMessageAdapter.setMessages(messages)
         if (onDown) {
             mRecyclerView.scrollToPosition(mMessageAdapter.itemCount - 1)
+        } else if (isFirstLaunch && mMessageAdapter.getFirstUnReadPosition() != -1) {
+            goToFirstUnreadMessage()
         }
+        isFirstLaunch = false
     }
 
+    private fun goToFirstUnreadMessage() {
+        mRecyclerView.scrollToPosition(mMessageAdapter.getFirstUnReadPosition() + 2)
+        // binding.btnGoDown.showAtRight(500f)
+        isFirstLaunch = false
+    }
+
+
     private fun setupMessagesUpdates() {
-        Log.e(TAG, " private fun setupMessagesUpdates() вызван в messenger")
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 messengerViewModel.usersProfileDataFlow.collect { profiles ->
-                    Log.e(TAG, "    messengerViewModel.usersProfileDataFlow.collect { profiles -> = c группой" + UserEntityProvider.userEntity.userGroup )
                     mUsersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }
@@ -252,13 +265,10 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                Log.e(TAG, " lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { c  группой = " + UserEntityProvider.userEntity.userGroup )
                 if (mMessageAdapter.itemCount < 1)
                     delay(350)
                 messengerViewModel.messagesDataFlow.collect { messages ->
-                    Log.e(TAG, "  messengerViewModel.messagesDataFlow.collect { messages -> = c группой" + UserEntityProvider.userEntity.userGroup )
-                    Log.e(TAG,   messages.toString() )
-                    handleNewMessages(messages)
+                    handleNewMessages(messages as MutableList)
                 }
             }
             Log.e(TAG, "messengerViewModel.messagesLiveData.collect stop")
@@ -288,10 +298,20 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             setHasFixedSize(false)
             isNestedScrollingEnabled = false
             setOnScrollChangeListener { _, _, _, _, _ ->
-                if (!mRecyclerView.canScrollVertically(1) && (mRecyclerView.computeVerticalScrollRange() > mRecyclerView.height))
+                if (!mRecyclerView.canScrollVertically(1) && (mRecyclerView.computeVerticalScrollRange() > mRecyclerView.height)) {
+                    if (binding.btnGoDown.translationX != 500f)
+                        lifecycleScope.launch {
+                            delay(1000)
+                            mMessageAdapter.deleteSeparator()
+                        }
                     binding.btnGoDown.hideToRight(500f)
-                else
+                } else {
                     binding.btnGoDown.showAtRight(500f)
+                    lifecycleScope.launch {
+                        delay(1000)
+                        mMessageAdapter.deleteSeparator()
+                    }
+                }
             }
         }
     }
@@ -578,6 +598,12 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 mMessageLayoutManager.findViewByPosition(position)?.findViewById<FrameLayout>(R.id.rootFrame)
                     ?.blinkAndHideShadow()
             }
+        }
+    }
+
+    override fun isRead(id: Long) {
+        lifecycleScope.launch {
+            messengerViewModel.setMessageRead(id)
         }
     }
 

@@ -34,4 +34,8 @@ class MessengerViewModel(private val messengerUseCases: MessengerUseCases) : Vie
        return if (fileName != null) messengerUseCases.downloadFileUseCase.execute(context, uri, fileName) else Result.failure(
            Throwable("Unknown file"))
     }
+
+    suspend fun setMessageRead(id: Long) {
+            messengerUseCases.setMessageReadUseCase.execute(id)
+    }
 }

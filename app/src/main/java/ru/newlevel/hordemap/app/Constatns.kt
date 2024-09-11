@@ -19,7 +19,6 @@ const val KEY_USER_GROUP = "keyUserGroup"
 const val KEY_AUTH_NAME = "keyAuthName"
 const val KEY_PROFILE_URL = "keyProfileUrl"
 const val KEY_IS_AUTO_LOAD = "isAutoLoad"
-const val KEY_NEW_MESSAGES_COUNT = "keyNewMessages_count"
 
 const val DEFAULT_SIZE = 60
 const val DEFAULT_TIME = 30
@@ -31,6 +30,7 @@ const val KMZ_EXTENSION = ".kmz"
 const val GPX_EXTENSION = ".gpx"
 const val JPG_EXTENSION = ".jpg"
 const val GARMIN_TAG = "Garmin_tag"
+const val ARTILLERY_RADIUS = 100.0
 
 //db keys
 const val MESSAGE_FILE_FOLDER = "MessengerFiles"

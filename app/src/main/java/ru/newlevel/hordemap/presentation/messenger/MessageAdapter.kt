@@ -2,6 +2,7 @@ package ru.newlevel.hordemap.presentation.messenger
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -14,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.JPG_EXTENSION
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.convertDpToPx
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
@@ -27,19 +29,52 @@ class MessagesAdapter(
     private val onMessageItemClickListener: OnMessageItemClickListener, context: Context
 ) : RecyclerView.Adapter<MessagesAdapter.MessageViewHolder>() {
 
-    private var messageDataModels: ArrayList<MyMessageEntity> = ArrayList()
+    private var messageDataModels: List<MyMessageEntity> = mutableListOf()
     private var glide: RequestManager = Glide.with(context)
     private var bottomPadding = context.convertDpToPx(80)
+    private var isFirstLaunch = true
 
-    fun setMessages(newList: ArrayList<MyMessageEntity>) {
+    fun setMessages(newList: MutableList<MyMessageEntity>) {
+        if (isFirstLaunch) {
+            val firstUnreadPosition = getFirstUnReadPosition()
+            if (firstUnreadPosition != -1) {
+                val separator = MyMessageEntity(0L)
+                newList.add(firstUnreadPosition, separator)
+            }
+        }
         val diffCallback = MessageDiffCallback(messageDataModels, newList)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
         messageDataModels = newList
         diffResult.dispatchUpdatesTo(this)
     }
 
+    fun deleteSeparator() {
+        Log.e(TAG, "!!!!!!!!!!!!deleteSeparator")
+        val messageSeparator = messageDataModels.find { it.timestamp == 0L }
+        val separatorIndex = messageDataModels.indexOf(messageSeparator)
+        if (separatorIndex != -1) {
+            val newList = messageDataModels.toMutableList()
+            newList.removeAt(separatorIndex)
+            val diffCallback = MessageDiffCallback(messageDataModels, newList)
+            val diffResult = DiffUtil.calculateDiff(diffCallback)
+            messageDataModels = newList
+            diffResult.dispatchUpdatesTo(this)
+        }
+    }
+
     fun getPosition(message: MyMessageEntity): Int {
         return messageDataModels.indexOf(message)
+    }
+
+    fun getFirstUnReadPosition(): Int {
+        val firstUnRead = messageDataModels.firstOrNull { !it.isRead }
+        return if (firstUnRead == null)
+            -1
+        else if (firstUnRead.deviceID != UserEntityProvider.userEntity.deviceID)
+            messageDataModels.indexOf(firstUnRead)
+        else -1
+
+
     }
 
     override fun onCreateViewHolder(
@@ -50,14 +85,19 @@ class MessagesAdapter(
                 LayoutInflater.from(parent.context).inflate(R.layout.item_message_in, parent, false),
                 onMessageItemClickListener,
                 glide,
-                true
+                true, ITEM_IN
+            )
+
+            ITEM_SEPARATOR -> MessageViewHolder(
+                LayoutInflater.from(parent.context).inflate(R.layout.item_message_separator, parent, false),
+                onMessageItemClickListener, glide, false, ITEM_SEPARATOR
             )
 
             else -> MessageViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.item_message_out, parent, false),
                 onMessageItemClickListener,
                 glide,
-                false
+                false, ITEM_OUT
             )
         }
     }
@@ -66,7 +106,12 @@ class MessagesAdapter(
     override fun onBindViewHolder(
         holder: MessageViewHolder, position: Int
     ) {
+        if (holder.itemViewType == ITEM_SEPARATOR) {
+            holder.bindSeparator()
+            return
+        }
         val message = messageDataModels[position]
+
         var someUserMessage = false
         if (position > 0) if (messageDataModels[position - 1].deviceID == message.deviceID) someUserMessage = true
         val replyMessage = if (message.replyOn > 0) messageDataModels.find {
@@ -89,7 +134,13 @@ class MessagesAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (messageDataModels[position].deviceID == UserEntityProvider.userEntity.deviceID) ITEM_OUT else ITEM_IN
+        return when {
+            messageDataModels[position].deviceID == UserEntityProvider.userEntity.deviceID -> ITEM_OUT
+            messageDataModels[position].timestamp == 0L -> {
+                isFirstLaunch = false
+                ITEM_SEPARATOR}
+            else -> ITEM_IN
+        }
     }
 
     override fun getItemCount(): Int {
@@ -100,29 +151,34 @@ class MessagesAdapter(
         view: View,
         private val onMessageItemClickListener: OnMessageItemClickListener,
         private val glide: RequestManager,
-        val isInMessage: Boolean
+        val isInMessage: Boolean,
+        private val viewType: Int
     ) : RecyclerView.ViewHolder(view) {
 
-        private val binding = ItemMessageInBinding.bind(view)
+        private val binding = if (viewType != ITEM_SEPARATOR) ItemMessageInBinding.bind(view) else null
         private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
         private fun setUpTimeAndTimeZone(timestamp: Long) {
             val localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
-            binding.textViewTime.text = localDateTime.format(formatter)
+            binding?.textViewTime?.text = localDateTime.format(formatter)
+        }
+
+        fun bindSeparator() {
+
         }
 
         private fun bindReply(messageDataModel: MyMessageEntity) {
             resetVisibilities()
-            binding.textViewUsername.text = messageDataModel.userName
-            NameColors.values().find { it.id == messageDataModel.selectedMarker }?.let {
-                binding.textViewUsername.setTextColor(ContextCompat.getColor(itemView.context, it.resourceId))
+            binding?.textViewUsername?.text = messageDataModel.userName
+            NameColors.entries.find { it.id == messageDataModel.selectedMarker }?.let {
+                binding?.textViewUsername?.setTextColor(ContextCompat.getColor(itemView.context, it.resourceId))
             }
             if (messageDataModel.message.isNotEmpty()) {
-                binding.textViewMessage.visibility = View.VISIBLE
-                binding.textViewMessage.text = messageDataModel.message
+                binding?.textViewMessage?.visibility = View.VISIBLE
+                binding?.textViewMessage?.text = messageDataModel.message
             }
             if (messageDataModel.url.isNotEmpty()) setUpItemWithUrl(messageDataModel, onMessageItemClickListener, true)
-            binding.rootLinear.setOnClickListener {
+            binding?.rootLinear?.setOnClickListener {
                 onMessageItemClickListener.onReplyClick(messageDataModel)
             }
         }
@@ -130,16 +186,18 @@ class MessagesAdapter(
         fun bind(messageDataModel: MyMessageEntity, isSomeUser: Boolean, replyMessageDataModel: MyMessageEntity?) {
             resetVisibilities()
             setUpTimeAndTimeZone(messageDataModel.timestamp)
-            binding.apply {
+            if (!messageDataModel.isRead)
+                onMessageItemClickListener.isRead(messageDataModel.timestamp)
+            binding?.apply {
                 replyMessageDataModel?.let {
                     val inflatedView =
                         LayoutInflater.from(itemView.context).inflate(R.layout.item_message_reply, replyView, false)
-                    MessageViewHolder(inflatedView, onMessageItemClickListener, glide, isInMessage).bindReply(it)
+                    MessageViewHolder(inflatedView, onMessageItemClickListener, glide, isInMessage, viewType).bindReply(it)
                     replyView.addView(inflatedView)
                     replyView.visibility = View.VISIBLE
                 }
                 textViewUsername.text = messageDataModel.userName
-                NameColors.values().find { it.id == messageDataModel.selectedMarker }?.let {
+                NameColors.entries.find { it.id == messageDataModel.selectedMarker }?.let {
                     textViewUsername.setTextColor(ContextCompat.getColor(itemView.context, it.resourceId))
                 }
                 if (isSomeUser) {
@@ -151,7 +209,7 @@ class MessagesAdapter(
                         .timeout(30_000)
                         .placeholder(R.drawable.img_anonymous).into(imvProfilePhoto)
                     bindImageClickListener(messageDataModel.profileImageUrl)
-                } else{
+                } else {
                     imvProfilePhoto.setBackgroundResource(R.drawable.img_anonymous)
                 }
                 if (messageDataModel.message.isNotEmpty()) {
@@ -164,20 +222,23 @@ class MessagesAdapter(
         }
 
         private fun bindImageClickListener(url: String) {
-            binding.imvProfilePhoto.setOnClickListener {
+            binding?.imvProfilePhoto?.setOnClickListener {
                 onMessageItemClickListener.onImageClick(url)
             }
         }
 
-        private fun resetVisibilities() = with(binding) {
-            replyView.removeAllViews()
-            replyView.visibility = View.GONE
-            textViewUsername.visibility = View.VISIBLE
-            downloadButton.visibility = View.GONE
-            imvProfilePhoto.visibility = View.VISIBLE
-            imageView.visibility = View.GONE
-            textViewMessage.visibility = View.GONE
-            textViewUsername.setTextColor(ContextCompat.getColor(itemView.context, R.color.red))
+        private fun resetVisibilities() {
+            binding?.apply {
+                replyView.removeAllViews()
+                replyView.visibility = View.GONE
+                textViewUsername.visibility = View.VISIBLE
+                downloadButton.visibility = View.GONE
+                imvProfilePhoto.visibility = View.VISIBLE
+                imageView.visibility = View.GONE
+                textViewMessage.visibility = View.GONE
+                textViewUsername.setTextColor(ContextCompat.getColor(itemView.context, R.color.red))
+            }
+
         }
 
         private fun setUpItemWithUrl(
@@ -190,19 +251,21 @@ class MessagesAdapter(
                 "%.1f", (fileSize.toDouble() / 1000000)
             ) + "Mb)"
             if (fileName.endsWith(JPG_EXTENSION)) {
-                imageView.visibility = View.VISIBLE
-                glide.load(messageDataModel.url)
-                    .placeholder(R.drawable.downloaded_image)
-                    .timeout(30_000)
-                    .into(imageView)
-                if (!isReply) imageView.setOnClickListener {
+                this?.imageView?.visibility = View.VISIBLE
+                this?.imageView?.let {
+                    glide.load(messageDataModel.url)
+                        .placeholder(R.drawable.downloaded_image)
+                        .timeout(30_000)
+                        .into(it)
+                }
+                if (!isReply) this?.imageView?.setOnClickListener {
                     onMessageItemClickListener.onImageClick(messageDataModel.url)
                 }
             } else {
-                downloadButton.visibility = View.VISIBLE
+                this?.downloadButton?.visibility = View.VISIBLE
                 val downloadBtnText = "$fileName $fileSizeText"
-                downloadButton.text = downloadBtnText
-                if (!isReply) downloadButton.setOnClickListener {
+                this?.downloadButton?.text = downloadBtnText
+                if (!isReply) this?.downloadButton?.setOnClickListener {
                     onMessageItemClickListener.onButtonSaveClick(
                         messageDataModel.url, fileName
                     )
@@ -230,5 +293,6 @@ class MessagesAdapter(
     companion object {
         private const val ITEM_IN = 1
         private const val ITEM_OUT = 2
+        private const val ITEM_SEPARATOR = 3
     }
 }

@@ -3,9 +3,6 @@ package ru.newlevel.hordemap.data.storage.implementation
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.DEFAULT_SIZE
 import ru.newlevel.hordemap.app.DEFAULT_TIME
@@ -13,7 +10,6 @@ import ru.newlevel.hordemap.app.KEY_AUTH_NAME
 import ru.newlevel.hordemap.app.KEY_IS_AUTO_LOAD
 import ru.newlevel.hordemap.app.KEY_MARKER
 import ru.newlevel.hordemap.app.KEY_NAME
-import ru.newlevel.hordemap.app.KEY_NEW_MESSAGES_COUNT
 import ru.newlevel.hordemap.app.KEY_PROFILE_URL
 import ru.newlevel.hordemap.app.KEY_STATIC_MARKER_SIZE
 import ru.newlevel.hordemap.app.KEY_TIME_TO_SEND_DATA
@@ -23,11 +19,10 @@ import ru.newlevel.hordemap.app.KEY_USER_ID
 import ru.newlevel.hordemap.app.SHARE_PREFS_NAME
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.getMyDeviceId
-import ru.newlevel.hordemap.data.storage.interfaces.MessagesCountLocalStorage
 import ru.newlevel.hordemap.data.storage.interfaces.UserLocalStorage
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
 
-class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorage, MessagesCountLocalStorage {
+class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorage {
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(SHARE_PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -42,31 +37,6 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
         sharedPreferences.edit().putString(KEY_AUTH_NAME, userDataModel.authName).apply()
         sharedPreferences.edit().putString(KEY_USER_ID, userDataModel.deviceID).apply()
         sharedPreferences.edit().putInt(KEY_USER_GROUP, userDataModel.userGroup).apply()
-    }
-
-    override fun getNewMessageCount(): Flow<Int> = callbackFlow {
-        var value = sharedPreferences.getInt(KEY_NEW_MESSAGES_COUNT, 0)
-        trySend(value)
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-            if (key == KEY_NEW_MESSAGES_COUNT) {
-                value = sharedPreferences.getInt(KEY_NEW_MESSAGES_COUNT, 0)
-                trySend(value)
-            }
-        }
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-        awaitClose {
-            Log.e(TAG, "awaitClose in getProfilesInMessenger")
-            sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
-
-    override fun incrementNewMessageCount(increment: Int) {
-        var newCount = 0
-        if (increment >= 0) {
-            val currentCount = sharedPreferences.getInt(KEY_NEW_MESSAGES_COUNT, 0)
-            newCount = currentCount + increment
-        }
-        sharedPreferences.edit().putInt(KEY_NEW_MESSAGES_COUNT, newCount).apply()
     }
 
     override fun get(): UserDataModel {

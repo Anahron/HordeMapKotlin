@@ -52,7 +52,7 @@ import ru.newlevel.hordemap.presentation.settings.SettingsFragment
 import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
 import kotlin.math.roundToInt
 
-@Suppress("DEPRECATION")
+
 class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
     SettingsFragment.OnChangeSettings {
 
@@ -164,7 +164,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
             launch {
                 lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                     mapViewModel.staticMarkersFlow.collectLatest { data ->
-                        Log.e(TAG, "ИЗ ФАЕРБЕЙЗА staticMarkersFlow.collectLatest  " + data)
                         mapViewModel.insertStaticMarkersToLocalDB(data)
                     }
                 }
@@ -172,7 +171,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
             launch {
                 lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                     mapViewModel.staticMarkersFlowLocal.collectLatest { data ->
-                        Log.e(TAG, "ЛОКАЛЬНО staticMarkersFlowLocal  " + data)
                         mapOverlayManager.createStaticMarkers(
                             data = data,
                             context = requireContext()

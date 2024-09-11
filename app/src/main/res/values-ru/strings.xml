@@ -116,4 +116,5 @@
     <string name="numara">№</string>
     <string name="map_list">Список карт:</string>
     <string name="only_for_me">Только для меня</string>
+    <string name="new_messages">Новые сообщения</string>
 </resources>

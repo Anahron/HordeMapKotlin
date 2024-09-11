@@ -5,5 +5,6 @@ data class MessengerUseCases(
     val sendMessageUseCase: SendMessageUseCase,
     val uploadFileUseCase: UploadFileUseCase,
     val downloadFileUseCase: DownloadFileUseCase,
-    val deleteMessageUseCase: DeleteMessageUseCase
+    val deleteMessageUseCase: DeleteMessageUseCase,
+    val setMessageReadUseCase: SetMessageReadUseCase,
 )

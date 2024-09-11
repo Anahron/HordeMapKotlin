@@ -85,7 +85,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         super.onNewIntent(intent)
         if (intent?.action == ACTION_OPEN_MESSENGER) {
             navView.selectedItemId = R.id.messengerFragment
-            mainViewModel.resetNewMessageCount()
         }
     }
 
@@ -134,7 +133,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
                     showFragment(messengerFragment)
                     navView.hideToBottomAnimation()
-                    mainViewModel.resetNewMessageCount()
                     true
                 }
 
@@ -195,7 +193,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 
     override fun onChangeUserGroup() {
-        mainViewModel.resetNewMessageCount()
         syncJob?.cancel()
         newMessageJob?.cancel()
         newMessageHandler()
