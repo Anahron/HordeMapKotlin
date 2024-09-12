@@ -117,8 +117,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         this.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 currentFragment?.let {
-                    if (currentFragment != mainFragment)
+                    if (currentFragment != mainFragment) {
                         navView.selectedItemId = R.id.mapFragment
+                        currentFragment = mainFragment
+                    }
                 }
             }
         })

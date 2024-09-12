@@ -12,7 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:layout_weight="1"
-        android:background="@color/light_blue_900" />
+        android:background="@color/light_blue_600" />
 
     <TextView
         android:id="@+id/textView"
@@ -21,8 +21,8 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:fontFamily="@font/inter_bold"
-        android:textColor="@color/light_blue_900"
-        android:shadowRadius="2"
+        android:textColor="@color/light_blue_600"
+        android:shadowRadius="0"
         android:shadowColor="@color/white"
         android:text="@string/new_messages" />
 
@@ -30,6 +30,6 @@
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:layout_weight="1"
-        android:background="@color/light_blue_900" />
+        android:background="@color/light_blue_600" />
 
 </LinearLayout>

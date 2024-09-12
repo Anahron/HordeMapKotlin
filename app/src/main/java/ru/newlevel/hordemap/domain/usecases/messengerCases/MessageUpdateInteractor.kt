@@ -34,15 +34,15 @@ class MessageUpdateInteractor(private val messengerRepository: MessengerReposito
                         selectedMarker = remoteMessage.selectedMarker,
                         profileImageUrl = remoteMessage.profileImageUrl,
                     )
-                    messengerRepository.updateLocalMessage(newMessage) // Вызов suspend-функции напрямую
+                    messengerRepository.updateLocalMessage(newMessage)
                 }
             } else {
-                messengerRepository.insertLocalMessage(remoteMessage) // Вызов insert напрямую
+                messengerRepository.insertLocalMessage(remoteMessage)
             }
         }
         for (localMessage in localMessages) {
             if (remoteMessages.none { it.timestamp == localMessage.timestamp }) {
-                messengerRepository.deleteLocalMessage(localMessage) // Вызов delete напрямую
+                messengerRepository.deleteLocalMessage(localMessage)
             }
         }
     }
