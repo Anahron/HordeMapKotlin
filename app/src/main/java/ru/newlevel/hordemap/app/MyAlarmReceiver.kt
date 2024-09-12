@@ -14,9 +14,7 @@ import com.google.android.gms.tasks.OnTokenCanceledListener
 import org.koin.core.component.KoinComponent
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
-import java.util.*
 
-@SuppressLint("RestrictedApi")
 class MyAlarmReceiver : BroadcastReceiver(), KoinComponent {
 
     @SuppressLint("MissingPermission")

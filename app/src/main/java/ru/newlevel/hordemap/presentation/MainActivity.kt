@@ -34,7 +34,7 @@ import ru.newlevel.hordemap.presentation.sign_in.UserData
 import ru.newlevel.hordemap.presentation.tracks.TracksFragment
 
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationUi {
+class MainActivity : AppCompatActivity(R.layout.activity_main), UserInteractionUi {
 
     private lateinit var mainFragment: MapFragment
     private val tracksFragment: TracksFragment by lazy { TracksFragment() }
@@ -91,6 +91,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     private fun newMessageHandler() {
         navView.getOrCreateBadge(R.id.messengerFragment).apply {
             number = 0
+            isVisible = false
         }
         syncJob = lifecycleScope.launch {
             mainViewModel.syncMessageData()
@@ -231,7 +232,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 }
 
-interface DisplayLocationUi {
+interface UserInteractionUi {
     fun onChangeUserGroup()
     fun changeProfilePhoto(newPhotoUrl: Uri)
     fun displayLocationUI()

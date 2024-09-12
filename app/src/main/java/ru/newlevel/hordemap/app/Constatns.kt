@@ -3,6 +3,11 @@ package ru.newlevel.hordemap.app
 const val TAG = "AAA"
 
 
+const val PACKAGE = "ru.newlevel.hordemap.app"
+const val FILE_TAG =  "file_description_dialog"
+const val IMAGE_TAG =  "pick_image_description_dialog"
+const val PHOTO_TAG = "photo_description_dialog"
+
 // NotificationChannels
 const val CHANEL_GPS = "CHANNEL_1"
 const val CHANEL_MESSAGE = "CHANNEL_2"

@@ -52,7 +52,9 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
 
     override fun sendUserMarker(markerModel: MarkerEntity) {
         databaseReference.child("$GEO_USER_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
-            .child(markerModel.deviceId).setValue(markerModel)
+            .child(markerModel.deviceId).setValue(markerModel).addOnSuccessListener {
+                Log.e(TAG, "UserMarker успешно отправлен")
+            }
     }
 
     override fun getMessageUpdate(): Flow<List<MyMessageEntity>> = callbackFlow {
@@ -310,10 +312,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
-                    Log.e(
-                        TAG,
-                        "MyFirebaseDatabase updateAllUserMessages onCancelled = " + databaseError.message
-                    )
+                    Log.e(TAG, "MyFirebaseDatabase updateAllUserMessages onCancelled = " + databaseError.message)
                 }
             })
     }

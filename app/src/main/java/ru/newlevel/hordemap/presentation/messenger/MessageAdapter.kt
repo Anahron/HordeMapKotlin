@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TableLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
@@ -119,15 +120,14 @@ class MessagesAdapter(
         } else null
         var x = 0f
         var y = 0f
-        holder.itemView.setOnTouchListener { _, event ->
+        holder.itemView.findViewById<TableLayout>(R.id.rootLinear).setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 x = event.rawX
-                y =
-                    if (position + 1 == messageDataModels.size) event.rawY - bottomPadding else event.rawY - (bottomPadding / 2)
+                y = if (position + 1 == messageDataModels.size) event.rawY - bottomPadding else event.rawY - (bottomPadding / 2)
             }
             false
         }
-        holder.itemView.setOnClickListener {
+        holder.itemView.findViewById<TableLayout>(R.id.rootLinear).setOnClickListener {
             onMessageItemClickListener.onItemClick(message, holder.itemView, x, y, holder.isInMessage)
         }
         holder.bind(message, someUserMessage, replyMessage)

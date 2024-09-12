@@ -2,7 +2,6 @@ package ru.newlevel.hordemap.data.storage.implementation
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.DEFAULT_SIZE
 import ru.newlevel.hordemap.app.DEFAULT_TIME
@@ -17,7 +16,6 @@ import ru.newlevel.hordemap.app.KEY_USERS_MARKER_SIZE
 import ru.newlevel.hordemap.app.KEY_USER_GROUP
 import ru.newlevel.hordemap.app.KEY_USER_ID
 import ru.newlevel.hordemap.app.SHARE_PREFS_NAME
-import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.getMyDeviceId
 import ru.newlevel.hordemap.data.storage.interfaces.UserLocalStorage
 import ru.newlevel.hordemap.data.storage.models.UserDataModel
@@ -35,12 +33,11 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
         sharedPreferences.edit().putInt(KEY_USERS_MARKER_SIZE, userDataModel.usersMarkerSize).apply()
         sharedPreferences.edit().putString(KEY_PROFILE_URL, userDataModel.profileImageUrl).apply()
         sharedPreferences.edit().putString(KEY_AUTH_NAME, userDataModel.authName).apply()
-        sharedPreferences.edit().putString(KEY_USER_ID, userDataModel.deviceID).apply()
+        sharedPreferences.edit().putString(KEY_USER_ID, context.getMyDeviceId()).apply()
         sharedPreferences.edit().putInt(KEY_USER_GROUP, userDataModel.userGroup).apply()
     }
 
     override fun get(): UserDataModel {
-        Log.e(TAG, "get() in SharedPrefUserLocalStorage")
         val userName = sharedPreferences.getString(KEY_NAME, "") ?: ""
         val selectedMarker = sharedPreferences.getInt(KEY_MARKER, 0)
         val timeToSend = sharedPreferences.getInt(KEY_TIME_TO_SEND_DATA, DEFAULT_TIME)

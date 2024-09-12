@@ -20,9 +20,6 @@ class GeoDataRepositoryImpl(
             markersRemoteStorage.deleteStaticMarker(key)
     }
 
-    override fun sendCoordinates(markerModel: MarkerEntity) =
-        markersRemoteStorage.sendUserMarker(markerModel)
-
     override fun sendStaticMarkerRemote(markerModel: MarkerEntity) =
         markersRemoteStorage.sendStaticMarker(markerModel)
 

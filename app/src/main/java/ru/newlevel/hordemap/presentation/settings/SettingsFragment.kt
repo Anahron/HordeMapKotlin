@@ -40,7 +40,7 @@ import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentSettingBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.presentation.DisplayLocationUi
+import ru.newlevel.hordemap.presentation.UserInteractionUi
 import kotlin.properties.Delegates
 
 
@@ -51,7 +51,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
     private val settingsViewModel: SettingsViewModel by viewModel()
     private var checkedRadioButton by Delegates.notNull<Int>()
     private lateinit var currentUserSetting: UserDomainModel
-    private var activityListener: DisplayLocationUi? = null
+    private var activityListener: UserInteractionUi? = null
     private var isAnimatedCardChangeActive = false
     private val pickImage =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -80,7 +80,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is DisplayLocationUi) {
+        if (context is UserInteractionUi) {
             activityListener = context
         } else {
             throw RuntimeException("$context must implement DisplayLocationUi.displayLocationUI")
@@ -88,7 +88,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?): Unit = with(binding) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRadioButtonListeners()
         setupGoBackListener()
@@ -98,7 +98,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         setUpResetButton()
         setUpCircleImageListener()
         setUpDataObservers()
-        cardViewDragListeners()
+        return cardViewDragListeners()
     }
 
     private fun setUpDataObservers() = with(binding) {

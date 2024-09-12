@@ -30,18 +30,18 @@ import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.convertDpToPx
 import ru.newlevel.hordemap.app.loadAnimation
 import ru.newlevel.hordemap.databinding.FragmentSingInBinding
-import ru.newlevel.hordemap.presentation.DisplayLocationUi
+import ru.newlevel.hordemap.presentation.UserInteractionUi
 
 class SingInFragment : Fragment(R.layout.fragment_sing_in) {
 
     private val signInViewModel by viewModel<SignInViewModel>()
     private val binding: FragmentSingInBinding by viewBinding()
-    private var activityListener: DisplayLocationUi? = null
+    private var activityListener: UserInteractionUi? = null
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is DisplayLocationUi) {
+        if (context is UserInteractionUi) {
             activityListener = context
         } else {
             throw RuntimeException("$context must implement DisplayLocationUi.displayLocationUI")

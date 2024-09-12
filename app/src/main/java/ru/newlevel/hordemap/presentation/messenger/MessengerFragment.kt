@@ -1,13 +1,10 @@
 package ru.newlevel.hordemap.presentation.messenger
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.View.GONE
@@ -37,7 +34,6 @@ import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.button.MaterialButton
 import com.jsibbold.zoomage.ZoomageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,10 +41,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.newlevel.hordemap.R
+import ru.newlevel.hordemap.app.FILE_TAG
+import ru.newlevel.hordemap.app.IMAGE_TAG
+import ru.newlevel.hordemap.app.PACKAGE
+import ru.newlevel.hordemap.app.PHOTO_TAG
 import ru.newlevel.hordemap.app.REQUEST_CODE_CAMERA_PERMISSION
 import ru.newlevel.hordemap.app.REQUEST_CODE_WRITE_EXTERNAL_STORAGE
 import ru.newlevel.hordemap.app.SelectFilesContract
-import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.animateButtonPadding
 import ru.newlevel.hordemap.app.animateButtonPaddingReverse
 import ru.newlevel.hordemap.app.blinkAndHideShadow
@@ -102,7 +101,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         isFirstLaunch = true
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUIComponents()
@@ -123,7 +122,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     this,
                     false
                 )
-                dialogFragment.show(childFragmentManager, "file_description_dialog")
+                dialogFragment.show(childFragmentManager, FILE_TAG)
             }
         }
         pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -136,7 +135,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     this,
                     true
                 )
-                dialogFragment.show(childFragmentManager, "pick_image_description_dialog")
+                dialogFragment.show(childFragmentManager, IMAGE_TAG)
             }
         }
         takePicture =
@@ -149,7 +148,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                         requireContext().getFileSizeFromUri(photoUri),
                         this, true
                     )
-                    dialogFragment.show(childFragmentManager, "photo_description_dialog")
+                    dialogFragment.show(childFragmentManager,  PHOTO_TAG)
                 }
             }
     }
@@ -261,7 +260,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                 }
 
             }
-            Log.e(TAG, " messengerViewModel.usersProfileLiveData.collect stop")
         }
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -271,7 +269,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
                     handleNewMessages(messages as MutableList)
                 }
             }
-            Log.e(TAG, "messengerViewModel.messagesLiveData.collect stop")
         }
     }
 
@@ -387,7 +384,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
             file?.let {
                 photoUri = FileProvider.getUriForFile(
                     requireContext(),
-                    "ru.newlevel.hordemap.app",
+                    PACKAGE,
                     it
                 )
             }
@@ -464,92 +461,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         binding.editTextMessage.setText("")
     }
 
-    private fun showOutMessagePopupMenu(itemView: View, message: MyMessageEntity, x: Float, y: Float) {
-        isPopUpShow = true
-        binding.shadow.showShadowAnimate()
-        val mainPopupMenu = PopupWindow(requireContext())
-        mainPopupMenu.inputMethodMode = PopupWindow.INPUT_METHOD_NEEDED
-        mainPopupMenu.contentView = layoutInflater.inflate(
-            R.layout.popup_message_out,
-            itemView.rootView as ViewGroup,
-            false
-        )
-        mainPopupMenu.setBackgroundDrawable(
-            ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.round_white
-            )
-        )
-        mainPopupMenu.elevation = 18f
-        mainPopupMenu.isFocusable = false
-        mainPopupMenu.isOutsideTouchable = true
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteMessage)
-            ?.setOnClickListener {
-                mainPopupMenu.dismiss()
-                CoroutineScope(Dispatchers.IO).launch {
-                    messengerViewModel.deleteMessage(message)
-                }
-            }
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnEditMessage)
-            ?.setOnClickListener {
-                mainPopupMenu.dismiss()
-                showEditWindow(message)
-                binding.editTextMessage.setText(message.message)
-            }
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnReplyMessage)
-            ?.setOnClickListener {
-                mainPopupMenu.dismiss()
-                showReplyWindow(message)
-            }
-        mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
-        mainPopupMenu.setOnDismissListener {
-            binding.shadow.hideShadowAnimate()
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(300)
-                isPopUpShow = false
-            }
-
-        }
-    }
-
-    private fun showInMessagePopupMenu(itemView: View, message: MyMessageEntity, x: Float, y: Float) {
-        isPopUpShow = true
-        binding.shadow.showShadowAnimate()
-        val mainPopupMenu = PopupWindow(requireContext())
-        mainPopupMenu.inputMethodMode = PopupWindow.INPUT_METHOD_NEEDED
-        mainPopupMenu.contentView = layoutInflater.inflate(
-            R.layout.popup_message_in,
-            itemView.rootView as ViewGroup,
-            false
-        )
-        mainPopupMenu.setBackgroundDrawable(
-            ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.round_white
-            )
-        )
-        mainPopupMenu.elevation = 18f
-        mainPopupMenu.isFocusable = false
-        mainPopupMenu.isOutsideTouchable = true
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnCopyMessage)?.setOnClickListener {
-            mainPopupMenu.dismiss()
-            requireContext().copyTextInSystem(message.message)
-        }
-        mainPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnReplyMessage)
-            ?.setOnClickListener {
-                mainPopupMenu.dismiss()
-                showReplyWindow(message)
-            }
-        mainPopupMenu.showAtLocation(itemView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
-        mainPopupMenu.setOnDismissListener {
-            binding.shadow.hideShadowAnimate()
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(300)
-                isPopUpShow = false
-            }
-        }
-    }
-
     private fun showReplyWindow(message: MyMessageEntity) {
         replyMessageId = message.timestamp
         editMessageId = null
@@ -576,14 +487,42 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         }
     }
 
+
     override fun onItemClick(message: MyMessageEntity, itemView: View, x: Float, y: Float, isInMessage: Boolean) {
         if (mBottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
             mBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        else {
-            if (isInMessage && !isPopUpShow)
-                showInMessagePopupMenu(message = message, itemView = itemView, x = x, y = y)
-            else if (!isPopUpShow)
-                showOutMessagePopupMenu(message = message, itemView = itemView, x = x, y = y)
+        else if (!isPopUpShow) {
+            MessagePopupMenu(
+                requireContext(),
+                layoutInflater,
+                binding,
+                onDeleteClicked = { msg ->
+                    messengerViewModel.deleteMessage(msg)
+                },
+                onEditClicked = { msg ->
+                    showEditWindow(msg)
+                    binding.editTextMessage.setText(msg.message)
+                },
+                onReplyClicked = { msg ->
+                    showReplyWindow(msg)
+                },
+                onCopyClicked = { msg ->
+                    requireContext().copyTextInSystem(msg.message)
+                },
+                onDismiss = {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        delay(300)
+                        isPopUpShow = it
+                    }
+                }
+            ).showPopupMenu(
+                message = message,
+                itemView = itemView,
+                layoutRes = if (isInMessage) R.layout.popup_message_in else R.layout.popup_message_out,
+                x = x,
+                y = y
+            )
+            isPopUpShow = true
         }
     }
 

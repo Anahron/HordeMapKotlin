@@ -9,7 +9,6 @@ import android.location.Location
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.provider.Settings
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.LatLng
@@ -129,7 +128,6 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
 @SuppressLint("HardwareIds")
 fun Context.getMyDeviceId(): String {
     val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-    Log.e(TAG, "androidId = $androidId")
     return androidId ?: UUID.randomUUID().toString()
 }
 
