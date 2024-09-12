@@ -2,11 +2,13 @@ package ru.newlevel.hordemap.presentation.map
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
@@ -68,6 +70,7 @@ class MapViewModel(
         val result = mapUseCases.loadGameMapFromServerUseCase.execute(context, url)
         result.onSuccess {
             _mapUri.postValue(it)
+            Log.e(TAG, it.toString())
         }
         return result.exceptionOrNull()
     }

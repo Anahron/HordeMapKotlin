@@ -4,13 +4,14 @@ import android.content.Context
 import android.net.Uri
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.domain.repository.GameMapRepository
+import ru.newlevel.hordemap.presentation.map.utils.KmzFileProcessor
 
 class LoadGameMapFromServerUseCase(private val gameMapRepository: GameMapRepository) {
     suspend fun execute(context: Context, url: String): Result<Uri> {
-        val uri = gameMapRepository.loadGameMapFromServer(context, url)
-        return if (uri != null)
-            Result.success(uri)
-        else
-            Result.failure(Throwable(context.getString(R.string.load_map_filed)))
+        return runCatching {
+            gameMapRepository.loadGameMapFromServer(context, url)?.let { uri ->
+                KmzFileProcessor(context).processKmzFromUri(uri)
+            } ?: return Result.failure(Throwable(context.getString(R.string.load_map_filed)))
+        }
     }
 }
