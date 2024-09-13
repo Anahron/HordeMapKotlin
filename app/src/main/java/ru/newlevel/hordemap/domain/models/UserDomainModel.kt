@@ -14,4 +14,6 @@ data class UserDomainModel(
     override var autoLoad: Boolean = false,
     override val authName: String = "",
     override val profileImageUrl: String = "",
-    override val userGroup: Int = DEFAULT_GROUP): UserModel
+    override val userGroup: Int = DEFAULT_GROUP,
+    override val lastSeen: Long = 0
+) : UserModel

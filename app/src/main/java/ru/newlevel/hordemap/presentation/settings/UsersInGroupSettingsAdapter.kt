@@ -1,4 +1,4 @@
-package ru.newlevel.hordemap.presentation.messenger
+package ru.newlevel.hordemap.presentation.settings
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -9,10 +9,11 @@ import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.databinding.ItemUserBinding
+import ru.newlevel.hordemap.databinding.ItemUserSettingsBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
+import ru.newlevel.hordemap.presentation.messenger.NameColors
 
-class UsersAdapter(private val onImageClick: (String) -> Unit) : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
+class UsersInGroupSettingsAdapter(private val onImageClick: (String) -> Unit) : RecyclerView.Adapter<UsersInGroupSettingsAdapter.UserViewHolder>() {
 
     private var usersData: List<UserDomainModel> = ArrayList()
 
@@ -23,7 +24,7 @@ class UsersAdapter(private val onImageClick: (String) -> Unit) : RecyclerView.Ad
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-        return UserViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_user, parent, false))
+        return UserViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_user_settings, parent, false))
     }
 
     override fun getItemCount(): Int {
@@ -39,15 +40,15 @@ class UsersAdapter(private val onImageClick: (String) -> Unit) : RecyclerView.Ad
         view: View,
     ) : RecyclerView.ViewHolder(view) {
 
-        private val binding = ItemUserBinding.bind(view)
+        private val binding = ItemUserSettingsBinding.bind(view)
         fun bind(userData: UserDomainModel, onImageClick: (String) -> Unit) {
             binding.imgUserPhoto.setOnClickListener {
                 onImageClick.invoke(userData.profileImageUrl)
             }
             binding.tvUserName.text = userData.name
-            NameColors.values().find { it.id ==userData.selectedMarker }?.let {
+            NameColors.entries.find { it.id ==userData.selectedMarker }?.let {
                 binding.tvUserName.setTextColor(ContextCompat.getColor(itemView.context, it.resourceId))
-            }
+           }
             Glide.with(itemView.context)
                 .load(
                     userData.profileImageUrl

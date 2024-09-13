@@ -1,41 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:minWidth="150dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="0dp"
-    android:orientation="horizontal">
+    android:minWidth="150dp"
+    android:layout_margin="3dp"
+    android:padding="4dp"
+    android:background="@drawable/round_white"
+    android:orientation="horizontal"
+    android:elevation="4dp"
+    android:paddingHorizontal="0dp">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imgUserPhoto"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:layout_gravity="center"
-        app:civ_border_color="@color/main_green_dark"
-        app:civ_border_width="1.5dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp"
         android:background="@color/transparent"
         android:contentDescription="@string/todo"
         android:elevation="2dp"
+        android:layout_marginEnd="4dp"
         android:foregroundGravity="center"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        app:civ_border_color="@color/main_green_dark"
+        app:civ_border_width="1.5dp"
         tools:src="@drawable/img_anonymous" />
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvUserName"
-        android:layout_marginStart="2dp"
-        android:layout_width="0dp"
-        android:paddingEnd="4dp"
-        android:gravity="center"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:maxLines="1"
-        android:layout_weight="1"
-        android:fontFamily="@font/inter_semibold"
-        android:textColor="@color/slate_800"
-        android:textSize="16sp"
-        tools:ignore="RtlSymmetry" />
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="0dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvUserName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginStart="2dp"
+            android:fontFamily="@font/inter_semibold"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/slate_800"
+            android:textSize="16sp" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="0dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/last_seen" />
+
+            <TextView
+                android:id="@+id/lastSeen"
+                android:layout_marginHorizontal="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="last seen"
+                android:textSize="13sp"/>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
 
 </androidx.appcompat.widget.LinearLayoutCompat>

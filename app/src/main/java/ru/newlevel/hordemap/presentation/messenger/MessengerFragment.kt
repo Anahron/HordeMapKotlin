@@ -8,12 +8,10 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.view.View.GONE
-import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
 import android.widget.TextView.VISIBLE
@@ -51,7 +49,6 @@ import ru.newlevel.hordemap.app.SelectFilesContract
 import ru.newlevel.hordemap.app.animateButtonPadding
 import ru.newlevel.hordemap.app.animateButtonPaddingReverse
 import ru.newlevel.hordemap.app.blinkAndHideShadow
-import ru.newlevel.hordemap.app.convertDpToPx
 import ru.newlevel.hordemap.app.copyTextInSystem
 import ru.newlevel.hordemap.app.createTempImageFile
 import ru.newlevel.hordemap.app.getFileNameFromUri
@@ -66,6 +63,7 @@ import ru.newlevel.hordemap.app.showFromBottomAnimation
 import ru.newlevel.hordemap.app.showShadowAnimate
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.databinding.FragmentMessengerBinding
+import ru.newlevel.hordemap.presentation.messenger.userGroup.UserListDialogFragment
 import java.io.File
 
 class MessengerFragment : Fragment(R.layout.fragment_messenger),
@@ -78,10 +76,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mMessageAdapter: MessagesAdapter
     private lateinit var mMessageLayoutManager: LinearLayoutManager
-    private lateinit var mUsersRecyclerView: RecyclerView
-    private lateinit var mUsersRecyclerViewAdapter: UsersAdapter
-    private lateinit var mUserLayoutManager: LinearLayoutManager
-    private lateinit var mUsersPopupMenu: PopupWindow
     private lateinit var mBottomSheetBehavior: BottomSheetBehavior<*>
     private lateinit var mActivityLauncher: ActivityResultLauncher<String>
     private lateinit var pickImage: ActivityResultLauncher<String>
@@ -154,7 +148,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun setupUIComponents() {
-        setupUsersRecyclerView()
         setupRecyclerView()
         setupUsersCountButton()
         setupBottomSheetBehavior()
@@ -169,65 +162,9 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
 
     private fun setupUsersCountButton() {
         binding.ibUsers.setOnClickListener {
-            showMainPopupMenu(it)
-        }
-    }
-
-    private fun setupUsersRecyclerView() {
-        mUsersPopupMenu = PopupWindow(requireContext())
-        mUsersPopupMenu.contentView = layoutInflater.inflate(
-            R.layout.popup_users,
-            binding.ibUsers.rootView as ViewGroup,
-            false
-        )
-        mUsersPopupMenu.setBackgroundDrawable(
-            ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.round_white
+            val dialogFragment = UserListDialogFragment(
             )
-        )
-        mUsersPopupMenu.height = requireContext().convertDpToPx(200)
-        mUsersPopupMenu.isFocusable = false
-        mUsersPopupMenu.isOutsideTouchable = true
-        mUsersPopupMenu.elevation = 18f
-        mUsersPopupMenu.contentView?.findViewById<RecyclerView>(R.id.rvUsersCount)?.let {
-            mUsersRecyclerView = it
-        }
-        mUsersRecyclerViewAdapter = UsersAdapter {
-            onImageClick(it)
-        }
-        mUserLayoutManager = LinearLayoutManager(requireContext()).apply {
-            stackFromEnd = false
-            initialPrefetchItemCount = 30
-        }
-        mUsersRecyclerView.apply {
-            layoutManager = mUserLayoutManager
-            adapter = mUsersRecyclerViewAdapter
-            setHasFixedSize(true)
-            isNestedScrollingEnabled = false
-        }
-        mUsersPopupMenu.setOnDismissListener {
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(300)
-                isPopUpShow = false
-            }
-        }
-    }
-
-    private fun showMainPopupMenu(itemDotsView: View) {
-        isPopUpShow = true
-        binding.shadow.showShadowAnimate()
-        mUsersPopupMenu.showAsDropDown(
-            itemDotsView,
-            -requireContext().convertDpToPx(64),
-            0
-        )
-        mUsersPopupMenu.setOnDismissListener {
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(300)
-                isPopUpShow = false
-            }
-            binding.shadow.hideShadowAnimate()
+            dialogFragment.show(childFragmentManager, "usersInGroup")
         }
     }
 
@@ -244,7 +181,7 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
     }
 
     private fun goToFirstUnreadMessage() {
-        mRecyclerView.scrollToPosition(mMessageAdapter.getFirstUnReadPosition() + 2)
+        mRecyclerView.scrollToPosition(mMessageAdapter.getFirstUnReadPosition() + 4)
         // binding.btnGoDown.showAtRight(500f)
         isFirstLaunch = false
     }
@@ -255,7 +192,6 @@ class MessengerFragment : Fragment(R.layout.fragment_messenger),
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 messengerViewModel.usersProfileDataFlow.collect { profiles ->
-                    mUsersRecyclerViewAdapter.setMessages(profiles)
                     binding.tvUsersCount.text = profiles.size.toString()
                 }
 

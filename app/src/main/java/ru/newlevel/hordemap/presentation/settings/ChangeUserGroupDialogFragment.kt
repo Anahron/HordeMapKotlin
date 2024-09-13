@@ -28,7 +28,6 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.DEFAULT_GROUP
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.databinding.ChangeUserGroupDialogBinding
-import ru.newlevel.hordemap.presentation.messenger.UsersAdapter
 
 class ChangeUserGroupDialogFragment(private val onConfirm: (Int) -> Unit) :
     DialogFragment(R.layout.change_user_group_dialog) {
@@ -37,7 +36,7 @@ class ChangeUserGroupDialogFragment(private val onConfirm: (Int) -> Unit) :
     private val changeGroupViewModel by viewModel<ChangeGroupViewModel>()
 
     private lateinit var mUsersRecyclerView: RecyclerView
-    private lateinit var mUsersRecyclerViewAdapter: UsersAdapter
+    private lateinit var mUsersRecyclerViewAdapter: UsersInGroupSettingsAdapter
     private lateinit var mUserLayoutManager: LinearLayoutManager
     private lateinit var mGroupRecyclerView: RecyclerView
     private lateinit var mGroupRecyclerViewAdapter: GroupsAdapter
@@ -116,9 +115,7 @@ class ChangeUserGroupDialogFragment(private val onConfirm: (Int) -> Unit) :
 
     private fun setupUsersRecyclerView() = with(binding) {
         mUsersRecyclerView = rvUsersInGroup
-        mUsersRecyclerViewAdapter = UsersAdapter {
-            // onImageClick(it)
-        }
+        mUsersRecyclerViewAdapter = UsersInGroupSettingsAdapter {  }
         mUserLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = false
             initialPrefetchItemCount = 30

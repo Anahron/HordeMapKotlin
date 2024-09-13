@@ -116,4 +116,10 @@
     <string name="map_list">Map list:</string>
     <string name="only_for_me">Only for me</string>
     <string name="new_messages">New messages</string>
+    <string name="users_in_group">Пользователи в группе</string>
+    <string name="members">members</string>
+    <string name="last_seen">last seen</string>
+    <string name="unknown">unknown</string>
+    <string name="default_group">default</string>
+    <string name="group_is">Group:</string>
 </resources>

@@ -11,4 +11,5 @@ interface UserModel {
     val authName: String
     val profileImageUrl: String
     val userGroup: Int
+    val lastSeen: Long
 }

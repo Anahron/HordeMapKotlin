@@ -53,8 +53,14 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
     override fun sendUserMarker(markerModel: MarkerEntity) {
         databaseReference.child("$GEO_USER_MARKERS_PATH${UserEntityProvider.userEntity.userGroup}")
             .child(markerModel.deviceId).setValue(markerModel).addOnSuccessListener {
-                Log.e(TAG, "UserMarker успешно отправлен")
+                Log.e(TAG, "UserMarker sended success")
             }
+        updateLastSeenTimestamp(markerModel)
+    }
+    private fun updateLastSeenTimestamp(markerModel: MarkerEntity){
+        databaseReference.child("$USERS_PROFILES_PATH/${UserEntityProvider.userEntity.userGroup}")
+            .child(markerModel.deviceId)
+            .updateChildren(mapOf("lastSeen" to markerModel.timestamp))
     }
 
     override fun getMessageUpdate(): Flow<List<MyMessageEntity>> = callbackFlow {
@@ -161,6 +167,7 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
 
 
     override fun getProfilesInMessenger(): Flow<List<UserDataModel>> = callbackFlow {
+        databaseReference.keepSynced(true)
         val listener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val savedUsers: ArrayList<UserDataModel> = ArrayList()
@@ -173,12 +180,15 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                         val deviceID = snapshot.child("deviceID").getValue(String::class.java) ?: ""
                         val profileImageUrl =
                             snapshot.child("profileImageUrl").getValue(String::class.java) ?: ""
+                        val lastSeen =
+                            snapshot.child("lastSeen").getValue(Long::class.java) ?: 0L
                         val user = UserDataModel(
                             deviceID = deviceID,
                             name = name,
                             profileImageUrl = profileImageUrl,
                             selectedMarker = selectedMarker,
-                            authName = authName
+                            authName = authName,
+                            lastSeen = lastSeen
                         )
                         savedUsers.add(user)
                     } catch (e: Exception) {
@@ -263,12 +273,15 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                                 snapshot.child("deviceID").getValue(String::class.java) ?: ""
                             val profileImageUrl =
                                 snapshot.child("profileImageUrl").getValue(String::class.java) ?: ""
+                            val lastSeen =
+                                snapshot.child("lastSeen").getValue(Long::class.java) ?: 0L
                             val user = UserDataModel(
                                 deviceID = deviceID,
                                 name = name,
                                 profileImageUrl = profileImageUrl,
                                 selectedMarker = selectedMarker,
-                                authName = authName
+                                authName = authName,
+                                lastSeen = lastSeen
                             )
                             savedUsers.add(user)
                         } catch (e: Exception) {

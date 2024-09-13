@@ -217,7 +217,8 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             lifecycleScope.launch {
                 settingsViewModel.saveUser(
                     currentUserSetting.copy(
-                        autoLoad = false
+                        autoLoad = false,
+                        lastSeen = System.currentTimeMillis()
                     )
                 )
             }
@@ -328,7 +329,8 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         lifecycleScope.launch {
             settingsViewModel.saveUser(
                 currentUserSetting.copy(
-                    selectedMarker = selectedMarker
+                    selectedMarker = selectedMarker,
+                    lastSeen = System.currentTimeMillis()
                 )
             )
         }
@@ -403,7 +405,8 @@ class SettingsFragment(private val callback: OnChangeSettings) :
                     binding.shadow.hideShadowAnimate()
                     if (enteredText >= 0) {
                         val newUser = currentUserSetting.copy(
-                            userGroup = enteredText
+                            userGroup = enteredText,
+                            lastSeen = System.currentTimeMillis()
                         )
                         UserEntityProvider.userEntity = newUser
                         lifecycleScope.launch {
@@ -422,7 +425,8 @@ class SettingsFragment(private val callback: OnChangeSettings) :
                 mainPopupMenu.dismiss()
                 showInputDialog(requireContext(), onConfirm = { enteredText ->
                     val newUser = currentUserSetting.copy(
-                        name = enteredText
+                        name = enteredText,
+                        lastSeen = System.currentTimeMillis()
                     )
                     lifecycleScope.launch {
                         settingsViewModel.saveUser(
@@ -512,7 +516,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
 
             override fun onStopTrackingTouch(slider: Slider) {
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(currentUserSetting.copy(usersMarkerSize = slider.value.toInt()))
+                    settingsViewModel.saveUser(currentUserSetting.copy(usersMarkerSize = slider.value.toInt(), lastSeen = System.currentTimeMillis()))
                     callback.onChangeMarkerSettings()
                 }
             }
@@ -523,7 +527,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
 
             override fun onStopTrackingTouch(slider: Slider) {
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(currentUserSetting.copy(staticMarkerSize = slider.value.toInt()))
+                    settingsViewModel.saveUser(currentUserSetting.copy(staticMarkerSize = slider.value.toInt(), lastSeen = System.currentTimeMillis()))
                     callback.onChangeMarkerSettings()
                 }
             }
@@ -535,7 +539,10 @@ class SettingsFragment(private val callback: OnChangeSettings) :
 
             override fun onStopTrackingTouch(slider: Slider) {
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(currentUserSetting.copy(timeToSendData = slider.value.toInt()))
+                    settingsViewModel.saveUser(currentUserSetting.copy(
+                        timeToSendData = slider.value.toInt(),
+                        lastSeen = System.currentTimeMillis())
+                    )
                     Toast.makeText(
                         requireContext(),
                         requireContext().getString(R.string.time_after_restart),

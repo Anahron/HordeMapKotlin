@@ -106,7 +106,8 @@ fun UserDataModel.mapToDomainModel(): UserDomainModel {
         autoLoad = autoLoad,
         profileImageUrl = profileImageUrl,
         authName = authName,
-        userGroup = userGroup
+        userGroup = userGroup,
+        lastSeen = lastSeen
     )
 }
 
@@ -121,7 +122,8 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
         autoLoad = autoLoad,
         profileImageUrl = profileImageUrl,
         authName = authName,
-        userGroup = userGroup
+        userGroup = userGroup,
+        lastSeen = lastSeen
     )
 }
 
@@ -170,5 +172,21 @@ fun Context.createTempImageFile(): File? {
         e.printStackTrace()
     }
     return null
+}
+
+fun Long.getDateAndTimeFromTimestamp(): String{
+    val date = Date(this)
+    val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+    return dateFormat.format(date)
+}
+fun Long.getTimeFromTimestamp(): String{
+    val date = Date(this)
+    val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return dateFormat.format(date)
+}
+fun Long.getDateFromTimestamp(): String{
+    val date = Date(this)
+    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    return dateFormat.format(date)
 }
 
