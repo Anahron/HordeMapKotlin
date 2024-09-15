@@ -1,7 +1,6 @@
 package ru.newlevel.hordemap.presentation.messenger.userGroup
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,8 +46,6 @@ class UsersInGroupAdapter(private val onImageClick: (String) -> Unit) : Recycler
             binding.imgUserPhoto.setOnClickListener {
                 onImageClick.invoke(userData.profileImageUrl)
             }
-            Log.e("AAAAA", "userData.name = " + userData.name)
-            Log.e("AAAAA", "userData.lastSeen = " + userData.lastSeen)
             if (userData.lastSeen != 0L)
                 binding.lastSeen.text = userData.lastSeen.getDateAndTimeFromTimestamp()
             else

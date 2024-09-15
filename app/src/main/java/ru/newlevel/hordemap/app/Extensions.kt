@@ -176,7 +176,13 @@ fun Context.createTempImageFile(): File? {
 
 fun Long.getDateAndTimeFromTimestamp(): String{
     val date = Date(this)
-    val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("dd.MM.yy HH:mm", Locale.getDefault())
+    return dateFormat.format(date)
+}
+
+fun Long.getDateAndTimeWoYearFromTimestamp(): String{
+    val date = Date(this)
+    val dateFormat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
     return dateFormat.format(date)
 }
 fun Long.getTimeFromTimestamp(): String{
@@ -186,7 +192,7 @@ fun Long.getTimeFromTimestamp(): String{
 }
 fun Long.getDateFromTimestamp(): String{
     val date = Date(this)
-    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
     return dateFormat.format(date)
 }
 

@@ -12,15 +12,20 @@ import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
 import org.koin.core.component.KoinComponent
-import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.data.storage.interfaces.MarkersRemoteStorage
+import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 
 class MyAlarmReceiver : BroadcastReceiver(), KoinComponent {
 
     @SuppressLint("MissingPermission")
     override fun onReceive(context: Context, intent: Intent?) {
         getKoin().get<MyAlarmManager>().startAlarmManager()
-        val userEntity = UserEntityProvider.userEntity
+        val userEntity = try {
+            getKoin().get<GetUserSettingsUseCase>().execute()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting user settings", e)
+            return
+        }
         Log.e(TAG, "onReceive in MyAlarmReceiver")
         if (context.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || context.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION))
             LocationServices.getFusedLocationProviderClient(context).getCurrentLocation(

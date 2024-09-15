@@ -58,7 +58,8 @@ class SharedPrefUserLocalStorage(private val context: Context) : UserLocalStorag
             autoLoad = isAutoLoad,
             authName = authName,
             profileImageUrl = profileUrl,
-            userGroup = userGroup
+            userGroup = userGroup,
+            lastSeen = System.currentTimeMillis()
         )
     }
 

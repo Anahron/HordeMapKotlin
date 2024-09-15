@@ -2,7 +2,6 @@ package ru.newlevel.hordemap.presentation.messenger
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -16,15 +15,13 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.app.JPG_EXTENSION
-import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.convertDpToPx
+import ru.newlevel.hordemap.app.getDateAndTimeWoYearFromTimestamp
+import ru.newlevel.hordemap.app.getDateFromTimestamp
+import ru.newlevel.hordemap.app.getTimeFromTimestamp
 import ru.newlevel.hordemap.data.db.MyMessageEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.ItemMessageInBinding
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 class MessagesAdapter(
     private val onMessageItemClickListener: OnMessageItemClickListener, context: Context
@@ -50,7 +47,6 @@ class MessagesAdapter(
     }
 
     fun deleteSeparator() {
-        Log.e(TAG, "!!!!!!!!!!!!deleteSeparator")
         val messageSeparator = messageDataModels.find { it.timestamp == 0L }
         val separatorIndex = messageDataModels.indexOf(messageSeparator)
         if (separatorIndex != -1) {
@@ -138,7 +134,9 @@ class MessagesAdapter(
             messageDataModels[position].deviceID == UserEntityProvider.userEntity.deviceID -> ITEM_OUT
             messageDataModels[position].timestamp == 0L -> {
                 isFirstLaunch = false
-                ITEM_SEPARATOR}
+                ITEM_SEPARATOR
+            }
+
             else -> ITEM_IN
         }
     }
@@ -156,11 +154,14 @@ class MessagesAdapter(
     ) : RecyclerView.ViewHolder(view) {
 
         private val binding = if (viewType != ITEM_SEPARATOR) ItemMessageInBinding.bind(view) else null
-        private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+        private val today = System.currentTimeMillis().getDateFromTimestamp()
 
         private fun setUpTimeAndTimeZone(timestamp: Long) {
-            val localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
-            binding?.textViewTime?.text = localDateTime.format(formatter)
+            val messageDate = timestamp.getDateFromTimestamp()
+            if (messageDate == today)
+                binding?.textViewTime?.text = timestamp.getTimeFromTimestamp()
+            else
+                binding?.textViewTime?.text = timestamp.getDateAndTimeWoYearFromTimestamp()
         }
 
         fun bindSeparator() {
