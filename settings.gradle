@@ -14,6 +14,7 @@ dependencyResolutionManagement {
         mavenCentral()
         //noinspection JcenterRepositoryObsolete
         jcenter()
+
     }
 }
 rootProject.name = "Horde Map"

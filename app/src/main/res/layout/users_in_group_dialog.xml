@@ -8,15 +8,30 @@
     android:orientation="vertical"
     android:paddingHorizontal="16dp">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvGroupName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/horde_chat"
-        android:fontFamily="@font/inter_semibold"
-        android:textColor="@color/main_green_dark"
-        android:textSize="22sp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvGroupName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:text="@string/horde_chat"
+            android:fontFamily="@font/inter_semibold"
+            android:textColor="@color/main_green_dark"
+            android:textSize="22sp" />
+
+        <ImageView
+            android:id="@+id/iv_lock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/vector_lock_open"
+            android:contentDescription="@string/app_name"
+            android:layout_gravity="bottom" />
+
+    </LinearLayout>
 
 
     <com.google.android.material.textview.MaterialTextView

@@ -172,6 +172,8 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val savedUsers: ArrayList<UserDataModel> = ArrayList()
                 for (snapshot in dataSnapshot.children) {
+                    if (snapshot.key == "PASS")
+                        continue
                     try {
                         val name = snapshot.child("name").getValue(String::class.java) ?: ""
                         val authName = snapshot.child("authName").getValue(String::class.java) ?: ""
@@ -217,9 +219,17 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val nodes = snapshot.children.mapNotNull { childSnapshot ->
                         val nodeName = childSnapshot.key
-                        val childCount = childSnapshot.childrenCount.toInt()
+                        var childCount = childSnapshot.childrenCount.toInt()
+                        val password = childSnapshot.child("PASS").getValue(String::class.java)
+                        Log.e(TAG, "group = ${nodeName} Password = " + password)
+                        val safePassword = password?: ""
+                        if (password != null){
+                            childCount--
+                        }
                         if (nodeName != null) {
-                            GroupInfoModel(nodeName, childCount)
+                            val group = GroupInfoModel(nodeName, childCount, safePassword)
+                            Log.e(TAG, "GroupInfoModel = ${group} ")
+                            group
                         } else {
                             null
                         }
@@ -248,15 +258,55 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
             if (updateTask.isSuccessful) updateAllUserMessages(userData)
         }
     }
+    override suspend fun setPasswordForGroup(userGroup: Int, password: String) {
+        databaseReference.child("$USERS_PROFILES_PATH/$userGroup").child("PASS").setValue(password)
+            .addOnSuccessListener {
+                Log.e(TAG, "Password set successfully")
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Failed to set password: ${it.message}")
+            }
+    }
 
     override suspend fun deleteUserDataRemote(deviceId: String, userGroup: Int) {
         databaseReference.child("$USERS_PROFILES_PATH/${userGroup}").child(deviceId).removeValue()
             .addOnSuccessListener {
                 Log.e(TAG, "Profile deleted successfully")
+                checkAndDeleteGroupIfNeeded(userGroup)
             }.addOnFailureListener {
                 Log.e(TAG, "Failed to delete profile: ${it.message}")
             }
     }
+    private fun checkAndDeleteGroupIfNeeded(userGroup: Int) {
+        databaseReference.child("$USERS_PROFILES_PATH/$userGroup").get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.childrenCount.toInt() == 1 && snapshot.child("PASS").exists()) {
+                    databaseReference.child("$USERS_PROFILES_PATH/$userGroup").removeValue()
+                        .addOnSuccessListener {
+                            Log.e(TAG, "Group deleted successfully")
+                        }
+                        .addOnFailureListener {
+                            Log.e(TAG, "Failed to delete group: ${it.message}")
+                        }
+                }
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Failed to check group data: ${it.message}")
+            }
+    }
+    override suspend fun getPasswordForGroup(userGroup: Int): String = suspendCoroutine { continuation ->
+        databaseReference.child("$USERS_PROFILES_PATH/$userGroup").child("PASS").get()
+            .addOnSuccessListener { snapshot ->
+                val password = snapshot.getValue(String::class.java).orEmpty() // Получаем пароль
+                continuation.resume(password) // Возвращаем результат через continuation
+            }
+            .addOnFailureListener { exception ->
+                Log.e(TAG, "Failed to retrieve password: ${exception.message}")
+                continuation.resume("") // Возвращаем null при ошибке
+            }
+    }
+
+
     override suspend fun getProfilesInGroup(groupNumber: Int): List<UserDataModel> =
         suspendCoroutine { continuation ->
             val listener = object : ValueEventListener {
@@ -264,6 +314,8 @@ class MyFirebaseDatabase : MarkersRemoteStorage, MessageRemoteStorage, ProfileRe
                     val savedUsers: ArrayList<UserDataModel> = ArrayList()
                     for (snapshot in dataSnapshot.children) {
                         try {
+                            if (snapshot.key == "PASS")
+                                continue
                             val name = snapshot.child("name").getValue(String::class.java) ?: ""
                             val authName =
                                 snapshot.child("authName").getValue(String::class.java) ?: ""

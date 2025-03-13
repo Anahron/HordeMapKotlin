@@ -2,7 +2,7 @@
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:paddingHorizontal="4dp"
     android:minWidth="70dp"
     android:layout_height="wrap_content"
@@ -10,12 +10,11 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvGroupNumbSym"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:paddingEnd="8dp"
         android:gravity="center"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:layout_weight="1"
         android:fontFamily="@font/inter_semibold"
         android:textColor="@color/slate_500"
         android:textSize="16sp"
@@ -25,12 +24,11 @@
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvGroupName"
         android:layout_marginStart="0dp"
-        android:layout_width="0dp"
+        android:layout_width="50dp"
         android:paddingEnd="4dp"
         android:gravity="center"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:layout_weight="1"
         android:fontFamily="@font/inter_semibold"
         android:textColor="@color/slate_800"
         android:textSize="16sp"
@@ -51,14 +49,29 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvUserCount"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:gravity="center"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:layout_weight="1"
         android:fontFamily="@font/inter_semibold"
         android:textColor="@color/slate_800"
         android:textSize="16sp"
+        tools:text="1"
         tools:ignore="RtlSymmetry" />
+
+    <ImageView
+        android:id="@+id/iv_lock"
+        android:layout_width="15dp"
+        android:layout_height="36dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:civ_border_color="@color/main_green_dark"
+        app:civ_border_width="1.5dp"
+        android:paddingVertical="6dp"
+        android:background="@color/transparent"
+        android:contentDescription="@string/todo"
+        android:elevation="2dp"
+        android:foregroundGravity="center"
+        android:src="@drawable/vector_lock" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

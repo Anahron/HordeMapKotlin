@@ -31,7 +31,7 @@ class SettingsViewModel(
     private val saveAutoLoadUseCase: SaveAutoLoadUseCase,
     private val loadProfilePhotoUseCase: LoadProfilePhotoUseCase,
     private val sendUserToStorageUseCase: SendUserToStorageUseCase,
-    private val getAllMapsAsListUseCase: GetAllMapsAsListUseCase
+    private val getAllMapsAsListUseCase: GetAllMapsAsListUseCase,
 ) : ViewModel() {
     private val resultLiveDataMutable = MutableLiveData<UserDomainModel>()
     val resultData: LiveData<UserDomainModel> = resultLiveDataMutable

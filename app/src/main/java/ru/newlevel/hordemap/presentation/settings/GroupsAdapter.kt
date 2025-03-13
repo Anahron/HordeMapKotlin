@@ -14,7 +14,8 @@ class GroupsAdapter(private val onItemClick: (Int) -> Unit) :
 
     private var groupData: List<GroupInfoModel> = ArrayList()
     private var selectedPosition: Int = RecyclerView.NO_POSITION
-    private var  originalGroupData: List<GroupInfoModel> = ArrayList()
+    private var originalGroupData: List<GroupInfoModel> = ArrayList()
+
     @SuppressLint("NotifyDataSetChanged")
     fun setMessages(newList: List<GroupInfoModel>) {
         groupData = newList
@@ -39,6 +40,7 @@ class GroupsAdapter(private val onItemClick: (Int) -> Unit) :
             updateSelection(position)
         }
     }
+
     @SuppressLint("NotifyDataSetChanged")
     fun filter(query: String) {
         groupData = if (query.isEmpty()) {
@@ -51,12 +53,14 @@ class GroupsAdapter(private val onItemClick: (Int) -> Unit) :
         selectedPosition = RecyclerView.NO_POSITION
         notifyDataSetChanged()
     }
+
     private fun updateSelection(newPosition: Int) {
         val oldPosition = selectedPosition
         selectedPosition = newPosition
         notifyItemChanged(oldPosition)
         notifyItemChanged(newPosition)
     }
+
     class GroupsViewHolder(
         view: View,
     ) : RecyclerView.ViewHolder(view) {
@@ -69,12 +73,22 @@ class GroupsAdapter(private val onItemClick: (Int) -> Unit) :
                 binding.tvGroupNumbSym.visibility = View.GONE
             } else
                 binding.tvGroupName.text = itemData.nodeName
+            if (itemData.password.isNotEmpty())
+                binding.ivLock.visibility = View.VISIBLE
+            else
+                binding.ivLock.visibility = View.GONE
             binding.tvUserCount.text = itemData.childCount.toString()
             itemView.setBackgroundColor(
                 if (isSelected)
-                    ContextCompat.getColor(itemView.context, R.color.main_green_middle_transparent) // цвет для выделенного элемента
+                    ContextCompat.getColor(
+                        itemView.context,
+                        R.color.main_green_middle_transparent
+                    ) // цвет для выделенного элемента
                 else
-                    ContextCompat.getColor(itemView.context, R.color.white) //  цвет для невыделенного элемента
+                    ContextCompat.getColor(
+                        itemView.context,
+                        R.color.white
+                    ) //  цвет для невыделенного элемента
             )
         }
     }

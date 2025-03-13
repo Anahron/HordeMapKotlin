@@ -1,11 +1,15 @@
 package ru.newlevel.hordemap.presentation.messenger.userGroup
 
+import android.app.AlertDialog
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
+import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
@@ -22,7 +26,6 @@ import ru.newlevel.hordemap.R
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.UsersInGroupDialogBinding
 import ru.newlevel.hordemap.domain.models.UserDomainModel
-import ru.newlevel.hordemap.presentation.sign_in.UserData
 
 class UserListDialogFragment : DialogFragment(R.layout.users_in_group_dialog), KoinComponent {
 
@@ -44,23 +47,83 @@ class UserListDialogFragment : DialogFragment(R.layout.users_in_group_dialog), K
         )
         setupRecyclerView()
         setupUsersUpdates()
-        val text = requireContext().getText(R.string.group_is).toString() + " " +if (UserEntityProvider.userEntity.userGroup == 0) requireContext().getString(R.string.default_group)else UserEntityProvider.userEntity.userGroup.toString()
+        setupLockUpdates()
+        val text = requireContext().getText(R.string.group_is)
+            .toString() + " " + if (UserEntityProvider.userEntity.userGroup == 0) requireContext().getString(
+            R.string.default_group
+        ) else UserEntityProvider.userEntity.userGroup.toString()
         binding.tvGroupName.text = text
         cancelButtonSetup()
+
+        binding.ivLock.setOnClickListener {
+            if (usersGroupViewModel.lockState.value.isNotEmpty()) {
+                Toast.makeText(
+                    requireContext(),
+                    "${getString(R.string.password)}  ${usersGroupViewModel.lockState.value}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } else {
+                setPasswordDialog()
+            }
+        }
     }
 
-    private fun cancelButtonSetup(){
+    private fun setPasswordDialog() {
+        val input = EditText(requireContext()).apply {
+            inputType = InputType.TYPE_CLASS_TEXT  // Убираем скрытие текста
+            hint = "Введите пароль"
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Введите пароль")
+            .setView(input)
+            .setPositiveButton("OK") { _, _ ->
+                val enteredPassword = input.text.toString()
+                if (enteredPassword.isNotEmpty()) {
+                    usersGroupViewModel.setPassword(enteredPassword)
+                    dismiss()
+                } else {
+                    Toast.makeText(requireContext(), "Слишком короткий пароль", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun setupLockUpdates() {
+        val lifecycle = viewLifecycleOwner.lifecycle
+        if (UserEntityProvider.userEntity.userGroup != 0) {
+            binding.ivLock.visibility = View.VISIBLE
+            lifecycle.coroutineScope.launch {
+                usersGroupViewModel.getGroupPass(userGroup = UserEntityProvider.userEntity.userGroup)
+                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    usersGroupViewModel.lockState.collect { pass ->
+                        if (pass.isNotEmpty())
+                            binding.ivLock.setImageResource(R.drawable.vector_lock)
+                        else
+                            binding.ivLock.setImageResource(R.drawable.vector_lock_open)
+                    }
+                }
+            }
+        } else {
+            binding.ivLock.visibility = View.GONE
+        }
+    }
+
+    private fun cancelButtonSetup() {
         binding.btnCancel.setOnClickListener {
             dialog?.dismiss()
         }
     }
+
     private fun setupUsersUpdates() {
         val lifecycle = viewLifecycleOwner.lifecycle
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 usersGroupViewModel.usersProfileDataFlow.collect { profiles ->
                     mUsersInGroupRecyclerViewAdapter.setMessages(profiles)
-                    val text = profiles.size.toString() + " " + requireContext().getString(R.string.members)
+                    val text =
+                        profiles.size.toString() + " " + requireContext().getString(R.string.members)
                     binding.tvUsersCount.text = text
                 }
 
@@ -86,6 +149,7 @@ class UserListDialogFragment : DialogFragment(R.layout.users_in_group_dialog), K
             dialog.show()
         }
     }
+
     private fun setupRecyclerView() {
         mUsersInGroupRecyclerView = binding.rvUsersCount
         mUsersInGroupRecyclerViewAdapter = UsersInGroupAdapter {
@@ -119,3 +183,4 @@ class UserListDialogFragment : DialogFragment(R.layout.users_in_group_dialog), K
 //            mUsersInGroupRecyclerView.visibility = View.VISIBLE
     }
 }
+

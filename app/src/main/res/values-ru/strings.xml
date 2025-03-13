@@ -123,4 +123,5 @@
     <string name="unknown">неизвестно</string>
     <string name="default_group">общая</string>
     <string name="group_is">Группа:</string>
+    <string name="password">Пароль: </string>
 </resources>

@@ -298,8 +298,6 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         binding.btnGoBackSettings.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
-
-
     }
 
     private fun setLayoutParams(user: UserDomainModel) {
@@ -563,3 +561,5 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         fun onClearMapClick()
     }
 }
+
+

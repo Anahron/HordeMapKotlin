@@ -6,13 +6,17 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.DialogFragment
@@ -48,7 +52,6 @@ class ChangeUserGroupDialogFragment(private val onConfirm: (Int) -> Unit) :
         super.onViewCreated(view, savedInstanceState)
 
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
         setupConfirmBtn()
         setupResetBtn()
         setupCancelBtn()
@@ -115,7 +118,7 @@ class ChangeUserGroupDialogFragment(private val onConfirm: (Int) -> Unit) :
 
     private fun setupUsersRecyclerView() = with(binding) {
         mUsersRecyclerView = rvUsersInGroup
-        mUsersRecyclerViewAdapter = UsersInGroupSettingsAdapter {  }
+        mUsersRecyclerViewAdapter = UsersInGroupSettingsAdapter { }
         mUserLayoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = false
             initialPrefetchItemCount = 30
@@ -198,9 +201,61 @@ class ChangeUserGroupDialogFragment(private val onConfirm: (Int) -> Unit) :
         btnUserGroupConfirm.isEnabled = false
         btnUserGroupConfirm.alpha = 0.4f
         btnUserGroupConfirm.setOnClickListener {
-            Log.e(TAG, "  onConfirm(selectedGroup) = " + selectedGroup)
-            onConfirm(selectedGroup)
-            dismiss()
+            val group = groups.find { it.nodeName.toIntOrNull() == selectedGroup }
+            if (group?.password.isNullOrEmpty()) {
+                Log.e(TAG, "  onConfirm(selectedGroup) = " + selectedGroup)
+                onConfirm(selectedGroup)
+                dismiss()
+            } else {
+                group?.let {
+                    showPasswordDialog(it.password)
+                }
+            }
+        }
+    }
+
+    private fun showPasswordDialog(correctPassword: String) {
+        Log.e(TAG, "  showPasswordDialog password. = " + correctPassword)
+        val input = EditText(requireContext()).apply {
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            hint = "Введите пароль"
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Введите пароль")
+            .setView(input)
+            .setPositiveButton("OK") { _, _ ->
+                val enteredPassword = input.text.toString()
+                if (enteredPassword == correctPassword) {
+                    Log.e(TAG, "Пароль верный, onConfirm(selectedGroup) = $selectedGroup")
+                    onConfirm(selectedGroup)
+                    dismiss()
+                } else {
+                    Toast.makeText(requireContext(), "Неверный пароль", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        dialog?.window?.let { window ->
+            val layoutParams = window.attributes
+
+            // Получаем размер экрана
+            val displayMetrics = resources.displayMetrics
+            val screenWidth = displayMetrics.widthPixels  // Ширина экрана в пикселях
+
+            // Конвертируем 20 dp в пиксели для отступов
+            val density = displayMetrics.density
+            val margin = (20 * density).toInt()
+
+            // Устанавливаем ширину с учетом отступов
+            layoutParams.width = screenWidth - (2 * margin)
+            layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT  // Высота контента
+
+            window.attributes = layoutParams
         }
     }
 }

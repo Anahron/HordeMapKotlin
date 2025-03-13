@@ -75,7 +75,9 @@ val presentationModule = module {
 
     viewModel {
         UserGroupViewModel(
-            messengerUseCases = get()
+            messengerUseCases = get(),
+            getGroupPassword = get(),
+            setGroupPassword = get()
         )
     }
 }

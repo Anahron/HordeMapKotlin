@@ -15,8 +15,8 @@ android {
         applicationId "ru.newlevel.hordemap"
         minSdk 26
         targetSdk 34
-        versionCode 30
-        versionName "4.5"
+        versionCode 31
+        versionName "4.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         kapt {
@@ -111,7 +111,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
 
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
-    implementation 'com.github.warkiz.widget:indicatorseekbar:2.1.2'
+ //   implementation("com.github.warkiz.widget:indicatorseekbar:2.1.2")
 
     apply plugin: 'com.google.gms.google-services'
 }
