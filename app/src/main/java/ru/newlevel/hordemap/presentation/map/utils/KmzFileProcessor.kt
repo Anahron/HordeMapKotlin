@@ -1,23 +1,12 @@
-package ru.newlevel.hordemap.presentation.map.utils
-
 import android.content.Context
 import android.net.Uri
 import ru.newlevel.hordemap.app.BASE_LAST_MAP_FILENAME
 import ru.newlevel.hordemap.app.KMZ_EXTENSION
-import java.io.BufferedInputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
-import java.util.zip.ZipOutputStream
-
-/*
-    В некоторых KML присутствует тег <Document> который не понимает KMLLayer
-    Распаковываем kmz, удаляем тег, запаковываем обратно
-    */
+import java.io.*
+import java.util.zip.*
 
 class KmzFileProcessor(private val context: Context) {
+
     private fun unzipKmzFromStream(inputStream: InputStream, outputDir: File) {
         ZipInputStream(BufferedInputStream(inputStream)).use { zipInputStream ->
             generateSequence { zipInputStream.nextEntry }.forEach { zipEntry ->
@@ -25,9 +14,8 @@ class KmzFileProcessor(private val context: Context) {
                 if (zipEntry.isDirectory) {
                     file.mkdirs()
                 } else {
-                    file.outputStream().use { fileOutputStream ->
-                        zipInputStream.copyTo(fileOutputStream)
-                    }
+                    file.parentFile?.mkdirs() // Создаем директории для вложенных файлов
+                    file.outputStream().use { zipInputStream.copyTo(it) }
                 }
                 zipInputStream.closeEntry()
             }
@@ -42,10 +30,10 @@ class KmzFileProcessor(private val context: Context) {
     }
 
     private fun zipKmz(sourceDir: File, kmzFile: File) {
-        ZipOutputStream(FileOutputStream(kmzFile)).use { zipOut ->
+        ZipOutputStream(BufferedOutputStream(FileOutputStream(kmzFile))).use { zipOut ->
             sourceDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                val zipEntry = ZipEntry(file.relativeTo(sourceDir).path)
-                zipOut.putNextEntry(zipEntry)
+                val relativePath = file.relativeTo(sourceDir).path.replace(File.separator, "/")
+                zipOut.putNextEntry(ZipEntry(relativePath))
                 file.inputStream().use { it.copyTo(zipOut) }
                 zipOut.closeEntry()
             }
@@ -53,8 +41,10 @@ class KmzFileProcessor(private val context: Context) {
     }
 
     fun processKmzFromUri(kmzUri: Uri): Uri {
-        val outputDir = File(context.cacheDir, "kmz_temp").apply { mkdir() }
-        context.contentResolver.openInputStream(kmzUri)?.use { inputStream -> unzipKmzFromStream(inputStream, outputDir) }
+        val outputDir = File(context.cacheDir, "kmz_temp").apply { mkdirs() }
+        context.contentResolver.openInputStream(kmzUri)?.use { inputStream ->
+            unzipKmzFromStream(inputStream, outputDir)
+        }
 
         outputDir.walkTopDown().find { it.extension == "kml" }?.let { kmlFile ->
             removeDocumentTags(kmlFile)
