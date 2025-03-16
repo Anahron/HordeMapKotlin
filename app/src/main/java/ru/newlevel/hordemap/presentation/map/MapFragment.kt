@@ -14,6 +14,7 @@ import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.text.isDigitsOnly
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
@@ -45,6 +46,7 @@ import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideToRight
 import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.toDistanceText
+import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
@@ -315,21 +317,50 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         myAlarmManager.startAlarmManager()
     }
 
-    private fun buildRoute(destination: LatLng) {
-        try {
+    private fun buildRoute(destination: LatLng): Boolean {
+        return try {
             mapOverlayManager.createRoute(
                 googleMap.myLocation,
                 destination,
                 requireContext()
             )
+            true
         } catch (e: Exception) {
             makeLongText(getString(R.string.no_gps_connection))
+            false
         }
     }
 
+    private fun onMarkerLongClickMenu(marker: Marker) {
+        val projection = googleMap.projection
+        val point =
+            projection.toScreenLocation(LatLng(marker.position.latitude, marker.position.longitude))
+        val timestamp =
+            if (marker.tag.toString().isDigitsOnly()) marker.tag.toString().toLong() else 0
+        val dialog = MarkerLongClickDialog(
+            point = point, MarkerEntity(
+                timestamp = timestamp,
+                title = marker.title.toString(),
+                latitude = marker.position.latitude,
+                longitude = marker.position.longitude
+            ), onDelete = {
+                lifecycleScope.launch {
+                    mapOverlayManager.deleteMarker(marker)
+                }
+            }, onShowDistance = { position ->
+                if (buildRoute(position))
+                    showOrHideTrackBtn(true)
+            })
+        dialog.show(requireActivity().supportFragmentManager, "MarkerLongClickDialog")
+    }
+
+
     @SuppressLint("SetTextI18n", "DefaultLocale")
     private fun mapListenersSetup() {
-        mapOverlayManager.setOnInfoWindowLongClickListener {
+//        mapOverlayManager.setOnInfoWindowLongClickListener {
+//            onMarkerLongClickMenu(it)
+//        }
+        mapOverlayManager.setOnMarkerClickListener {
             onMarkerLongClickMenu(it)
         }
 
@@ -352,17 +383,20 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
             if (mapOverlayManager.isRoutePolylineNotNull()) {
                 mapOverlayManager.updateRoute(location)
             }
-            if (UserEntityProvider.userEntity.showCoordinates){
+            if (UserEntityProvider.userEntity.showCoordinates) {
                 binding.linearCoordinates.visibility = View.VISIBLE
-                binding.tvLatitude.text =  String.format("%.5f° N", location.latitude)
-                binding.tvLongitude.text =  String.format("%.5f° E", location.longitude)
+                binding.tvLatitude.text = String.format("%.5f° N", location.latitude)
+                binding.tvLongitude.text = String.format("%.5f° E", location.longitude)
             } else {
                 binding.linearCoordinates.visibility = View.GONE
             }
-            if (UserEntityProvider.userEntity.showGaussCoordinates){
+            if (UserEntityProvider.userEntity.showGaussCoordinates) {
                 binding.linearCoordinatesGauss.visibility = View.VISIBLE
-                val (x, y) = GaussKrugerConverter().wgs84ToSK42(location.latitude, location.longitude)
-                binding.tvGaussLeft.text =   "X: $x"
+                val (x, y) = GaussKrugerConverter().wgs84ToSK42(
+                    location.latitude,
+                    location.longitude
+                )
+                binding.tvGaussLeft.text = "X: $x"
                 binding.tvGaussRight.text = "Y: $y"
             } else {
                 binding.linearCoordinatesGauss.visibility = View.GONE
@@ -375,38 +409,38 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
 
     }
 
-    private fun onMarkerLongClickMenu(marker: Marker) {
-        // location -> pixels window for popup
-        val projection = googleMap.projection
-        val point = projection.toScreenLocation(marker.position)
-        val markerPopupMenu = PopupWindow(requireContext())
-        markerPopupMenu.contentView = layoutInflater.inflate(
-            R.layout.popup_marker_long_click, binding.root as ViewGroup, false
-        )
-        markerPopupMenu.setBackgroundDrawable(
-            ContextCompat.getDrawable(
-                requireContext(), R.drawable.round_white
-            )
-        )
-        markerPopupMenu.elevation = 18f
-        markerPopupMenu.isFocusable = true
-        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteMarker)
-            ?.setOnClickListener {
-                markerPopupMenu.dismiss()
-                lifecycleScope.launch {
-                    mapOverlayManager.deleteMarker(marker)
-                }
-            }
-        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMarkerShowDistance)
-            ?.setOnClickListener {
-                markerPopupMenu.dismiss()
-                if (!mapOverlayManager.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
-                buildRoute(marker.position)
-            }
-        markerPopupMenu.showAtLocation(
-            binding.root, Gravity.NO_GRAVITY, point.x, point.y
-        )
-    }
+//    private fun onMarkerLongClickMenu(marker: Marker) {
+//        // location -> pixels window for popup
+//        val projection = googleMap.projection
+//        val point = projection.toScreenLocation(marker.position)
+//        val markerPopupMenu = PopupWindow(requireContext())
+//        markerPopupMenu.contentView = layoutInflater.inflate(
+//            R.layout.popup_marker_long_click, binding.root as ViewGroup, false
+//        )
+//        markerPopupMenu.setBackgroundDrawable(
+//            ContextCompat.getDrawable(
+//                requireContext(), R.drawable.round_white
+//            )
+//        )
+//        markerPopupMenu.elevation = 18f
+//        markerPopupMenu.isFocusable = true
+//        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnDeleteMarker)
+//            ?.setOnClickListener {
+//                markerPopupMenu.dismiss()
+//                lifecycleScope.launch {
+//                    mapOverlayManager.deleteMarker(marker)
+//                }
+//            }
+//        markerPopupMenu.contentView?.findViewById<MaterialButton>(R.id.btnMarkerShowDistance)
+//            ?.setOnClickListener {
+//                markerPopupMenu.dismiss()
+//                if (!mapOverlayManager.isRoutePolylineNotNull()) showOrHideTrackBtn(true)
+//                buildRoute(marker.position)
+//            }
+//        markerPopupMenu.showAtLocation(
+//            binding.root, Gravity.NO_GRAVITY, point.x, point.y
+//        )
+//    }
 
 
     private fun onMapLongClickMenu(latLng: LatLng) {

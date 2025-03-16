@@ -47,7 +47,7 @@ fun Context.getFileNameFromUri(uri: Uri): String {
         val file = uri.path?.let { File(it) }
         fileName = file?.name.orEmpty()
     }
-    return fileName
+    return fileName.toString()
 }
 
 fun Context.getFileSizeFromUri(uri: Uri): Long {
