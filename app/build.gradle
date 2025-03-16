@@ -20,7 +20,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         kapt {
-            arguments {arg("room.schemaLocation", "$projectDir/schemas")}
+            arguments { arg("room.schemaLocation", "$projectDir/schemas") }
         }
     }
 
@@ -62,7 +62,7 @@ dependencies {
     implementation 'com.github.kirich1409:viewbindingpropertydelegate-full:1.5.9'
 
     //DI
-    def koin_version= "3.5.0"
+    def koin_version = "3.5.0"
     implementation "io.insert-koin:koin-core:$koin_version"
     implementation "io.insert-koin:koin-android:$koin_version"
     implementation "io.insert-koin:koin-test:$koin_version"
@@ -72,7 +72,6 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:2.7.6"
 
     implementation 'de.hdodenhof:circleimageview:3.1.0'
-
     //firebase
     implementation 'com.firebaseui:firebase-ui-storage:8.0.0'
     implementation 'com.google.firebase:firebase-analytics'
@@ -111,7 +110,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
 
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
- //   implementation("com.github.warkiz.widget:indicatorseekbar:2.1.2")
+    //   implementation("com.github.warkiz.widget:indicatorseekbar:2.1.2")
 
     apply plugin: 'com.google.gms.google-services'
 }

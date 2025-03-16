@@ -47,7 +47,7 @@ fun Context.getFileNameFromUri(uri: Uri): String {
         val file = uri.path?.let { File(it) }
         fileName = file?.name.orEmpty()
     }
-    return fileName.orEmpty()
+    return fileName
 }
 
 fun Context.getFileSizeFromUri(uri: Uri): Long {
@@ -107,7 +107,12 @@ fun UserDataModel.mapToDomainModel(): UserDomainModel {
         profileImageUrl = profileImageUrl,
         authName = authName,
         userGroup = userGroup,
-        lastSeen = lastSeen
+        lastSeen = lastSeen,
+        showRuler = showRuler,
+        showCoordinates = showCoordinates,
+        showGaussCoordinates = showGaussCoordinates,
+        showCompass = showCompass,
+        zoomByVolume = zoomByVolume
     )
 }
 
@@ -123,7 +128,12 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
         profileImageUrl = profileImageUrl,
         authName = authName,
         userGroup = userGroup,
-        lastSeen = lastSeen
+        lastSeen = lastSeen,
+        showRuler = showRuler,
+        showCoordinates = showCoordinates,
+        showGaussCoordinates = showGaussCoordinates,
+        showCompass = showCompass,
+        zoomByVolume = zoomByVolume
     )
 }
 

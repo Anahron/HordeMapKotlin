@@ -230,6 +230,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), UserInteractionU
         fragmentManager.replaceFragment(PermissionRequestFragment())
         navView.visibility = ViewGroup.GONE
     }
+
 }
 
 interface UserInteractionUi {

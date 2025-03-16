@@ -7,141 +7,254 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <fragment
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="55dp"
-            tools:context=".presentation.MainActivity"
-            tools:ignore="FragmentTagUsage">
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="55dp"
+        tools:context=".presentation.MainActivity"
+        tools:ignore="FragmentTagUsage">
 
-            <TextView
-                android:id="@+id/distance_text_view"
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:layout_marginBottom="4dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/linear_coordinates"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="140dp"
-                android:layout_marginTop="10dp"
+                android:layout_gravity="bottom|center"
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_marginBottom="2dp"
                 android:background="@drawable/text_view_bg"
-                android:paddingStart="7dp"
-                android:paddingEnd="7dp"
-                android:shadowColor="#a89c6a"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="3"
-                android:textColor="@color/main_green"
-                android:textSize="25sp"
-                android:visibility="gone"
-                tools:ignore="RtlSymmetry" />
+                android:orientation="horizontal"
+                android:visibility="gone">
 
-            <TextView
-                android:id="@+id/bearing_text_view"
+                <TextView
+                    android:id="@+id/tvLatitude"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:padding="4dp"
+                    android:textColor="@color/main_green"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvLongitude"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:padding="4dp"
+                    android:textColor="@color/main_green"
+                    android:textSize="14sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/linear_coordinates_gauss"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="140dp"
-                android:layout_marginTop="47dp"
+                android:layout_gravity="bottom|center"
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_marginBottom="2dp"
                 android:background="@drawable/text_view_bg"
-                android:paddingStart="7dp"
-                android:paddingEnd="7dp"
-                android:shadowColor="#a89c6a"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="3"
-                android:textColor="@color/main_green"
-                android:textSize="25sp"
-                android:visibility="gone"
-                tools:ignore="RtlSymmetry" />
+                android:orientation="horizontal"
+                android:visibility="gone">
 
-            <TextView
-                android:id="@+id/tv_compass"
-                android:layout_width="70sp"
-                android:gravity="end"
+                <TextView
+                    android:id="@+id/tvGaussLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:padding="4dp"
+                    android:textColor="@color/main_green"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvGaussRight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:padding="4dp"
+                    android:textColor="@color/main_green"
+                    android:textSize="14sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/linear_ruler"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="60dp"
-                android:layout_marginTop="10dp"
+                android:layout_gravity="bottom|center"
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_marginBottom="2dp"
                 android:background="@drawable/text_view_bg"
-                android:paddingStart="7dp"
-                android:shadowColor="#a89c6a"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="3"
-                android:textColor="@color/main_green"
-                android:textSize="25sp"
-                android:visibility="gone"
-                tools:ignore="RtlSymmetry" />
+                android:orientation="vertical"
+                android:visibility="gone">
 
-            <ImageButton
-                android:id="@+id/ibMyLocation"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginEnd="8dp"
-                android:layout_gravity="end|top"
-                android:background="@drawable/img_map_location"
-                android:contentDescription="@string/todo" />
+                <ru.newlevel.hordemap.presentation.views.ScaleBarView
+                    android:id="@+id/scaleBarView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="8dp"
+                    android:layout_gravity="start"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_marginTop="8dp"
+                    android:clickable="false"
+                    android:focusable="false" />
 
-            <ImageButton
-                android:id="@+id/ib_markers"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_marginTop="75dp"
-                android:layout_marginEnd="8dp"
-                android:layout_gravity="end|top"
-                android:background="@drawable/img_map_show_markers"
-                android:contentDescription="@string/todo" />
-
-            <ImageButton
-                android:id="@+id/ib_map_type"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_gravity="end|top"
-                android:layout_marginTop="135dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/img_btn_map_type_hybrid"
-                android:contentDescription="@string/todo" />
-
-            <ImageButton
-                android:id="@+id/ibTrackHide"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_gravity="end|top"
-                android:translationX="55dp"
-                android:layout_marginTop="355dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/img_track_hide"
-                android:contentDescription="@string/todo" />
+                <TextView
+                    android:id="@+id/scaleTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:paddingBottom="2dp"
+                    android:textColor="@color/main_green"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
 
 
-            <ImageView
-                android:visibility="visible"
-                android:id="@+id/imgMapRotate"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="55dp"
-                android:background="@drawable/img_map_rotate_off"
-                android:contentDescription="@string/todo" />
+        <TextView
+            android:id="@+id/distance_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="140dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/text_view_bg"
+            android:paddingStart="7dp"
+            android:paddingEnd="7dp"
+            android:shadowColor="#a89c6a"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3"
+            android:textColor="@color/main_green"
+            android:textSize="25sp"
+            android:visibility="gone"
+            tools:ignore="RtlSymmetry" />
 
-            <ImageView
-                android:visibility="gone"
-                android:id="@+id/imgCompassBackground"
-                android:layout_width="55dp"
-                android:layout_height="65dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="115dp"
-                android:background="@drawable/img_map_empty"
-                android:contentDescription="@string/todo" />
+        <TextView
+            android:id="@+id/bearing_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="140dp"
+            android:layout_marginTop="47dp"
+            android:background="@drawable/text_view_bg"
+            android:paddingStart="7dp"
+            android:paddingEnd="7dp"
+            android:shadowColor="#a89c6a"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3"
+            android:textColor="@color/main_green"
+            android:textSize="25sp"
+            android:visibility="gone"
+            tools:ignore="RtlSymmetry" />
 
-            <ImageView
-                android:visibility="gone"
-                android:id="@+id/imgCompass"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="115dp"
-                android:foregroundGravity="center"
-                app:srcCompat="@drawable/compas"
-                android:contentDescription="@string/todo" />
-        </fragment>
+        <TextView
+            android:id="@+id/tv_compass"
+            android:layout_width="70sp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/text_view_bg"
+            android:gravity="end"
+            android:paddingStart="7dp"
+            android:shadowColor="#a89c6a"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3"
+            android:textColor="@color/main_green"
+            android:textSize="25sp"
+            android:visibility="gone"
+            tools:ignore="RtlSymmetry" />
+
+        <ImageButton
+            android:id="@+id/ibMyLocation"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/img_map_location"
+            android:contentDescription="@string/todo" />
+
+        <ImageButton
+            android:id="@+id/ib_markers"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="75dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/img_map_show_markers"
+            android:contentDescription="@string/todo" />
+
+        <ImageButton
+            android:id="@+id/ib_map_type"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="135dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/img_btn_map_type_hybrid"
+            android:contentDescription="@string/todo" />
+
+        <ImageButton
+            android:id="@+id/ibTrackHide"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="355dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/img_track_hide"
+            android:contentDescription="@string/todo"
+            android:translationX="55dp" />
+
+
+        <ImageView
+            android:id="@+id/imgMapRotate"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="55dp"
+            android:background="@drawable/img_map_rotate_off"
+            android:contentDescription="@string/todo"
+            android:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/imgCompassBackground"
+            android:layout_width="55dp"
+            android:layout_height="65dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="115dp"
+            android:background="@drawable/img_map_empty"
+            android:contentDescription="@string/todo"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/imgCompass"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="115dp"
+            android:contentDescription="@string/todo"
+            android:foregroundGravity="center"
+            android:visibility="gone"
+            app:srcCompat="@drawable/compas" />
+    </fragment>
 
 </FrameLayout>

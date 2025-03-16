@@ -33,11 +33,11 @@ class MapViewModel(
     private val _mapUri = MutableLiveData<Uri?>()
     val mapOverlayUri: LiveData<Uri?> = _mapUri
 
-    private val _isAutoLoadMap = MutableLiveData<Boolean>()
-    val isAutoLoadMap: LiveData<Boolean> = _isAutoLoadMap
+    private val _userSettings = MutableLiveData<Boolean>()
+    val userSettings: LiveData<Boolean> = _userSettings
 
     init {
-        _isAutoLoadMap.value = getUserSettingsUseCase.execute().autoLoad
+        _userSettings.value = getUserSettingsUseCase.execute().autoLoad
     }
 
     fun startLocationUpdates() = mapUseCases.locationUpdatesInteractor.startLocationUpdates()
@@ -55,7 +55,7 @@ class MapViewModel(
     }
 
     fun setIsAutoLoadMap(boolean: Boolean) {
-        _isAutoLoadMap.value = boolean
+        _userSettings.value = boolean
     }
 
     suspend fun saveGameMapToFile(uri: Uri, context: Context): Throwable? {

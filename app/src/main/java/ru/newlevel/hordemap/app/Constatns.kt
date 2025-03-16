@@ -24,6 +24,11 @@ const val KEY_USER_GROUP = "keyUserGroup"
 const val KEY_AUTH_NAME = "keyAuthName"
 const val KEY_PROFILE_URL = "keyProfileUrl"
 const val KEY_IS_AUTO_LOAD = "isAutoLoad"
+const val  KEY_IS_SHOW_RULER = "keyShowRuler"
+const val  KEY_IS_SHOW_COORDINATES = "keyShowCoordinates"
+const val KEY_IS_SHOW_COORDINATES_GAUSS = "keyShowCoordinatesGauss"
+const val  KEY_IS_SHOW_COMPASS = "keyShowCompass"
+const val KEY_IS_VOLUME_ZOOM = "keyVolumeZoom"
 
 const val DEFAULT_SIZE = 60
 const val DEFAULT_TIME = 30

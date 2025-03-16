@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
@@ -44,12 +45,16 @@ import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.app.hideToRight
 import ru.newlevel.hordemap.app.showAtRight
 import ru.newlevel.hordemap.app.toDistanceText
+import ru.newlevel.hordemap.data.db.UserEntityProvider
 import ru.newlevel.hordemap.databinding.FragmentMapsBinding
 import ru.newlevel.hordemap.presentation.MainActivity
+import ru.newlevel.hordemap.presentation.map.utils.GaussKrugerConverter
 import ru.newlevel.hordemap.presentation.map.utils.MapInteractionHandler
 import ru.newlevel.hordemap.presentation.map.utils.MapOverlayManager
+import ru.newlevel.hordemap.presentation.map.utils.ScaleBar
 import ru.newlevel.hordemap.presentation.settings.SettingsFragment
 import ru.newlevel.hordemap.presentation.tracks.TrackTransferViewModel
+import kotlin.lazy
 import kotlin.math.roundToInt
 
 
@@ -65,6 +70,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
     private var compassAngle = 0f
     private var isCompassActive = false
     private var isUserMoveCamera = true
+    private val scaleBar: ScaleBar by lazy { ScaleBar(requireView()) }
     private var mapFragment: SupportMapFragment? = null
     private var jobUsersMarkerUpdate: Job? = null
     private var jobStaticMarkerUpdate: Job? = null
@@ -95,7 +101,8 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
                 .tilt(googleMap.cameraPosition.tilt)
                 .build()
             isUserMoveCamera = false
-            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 100,
+            googleMap.animateCamera(
+                CameraUpdateFactory.newCameraPosition(cameraPosition), 100,
                 object : GoogleMap.CancelableCallback {
                     override fun onCancel() {
                         isUserMoveCamera = true
@@ -118,6 +125,24 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         if (mapFragment == null) {
             mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
             mapFragment?.getMapAsync(this@MapFragment)
+        }
+        view.isFocusableInTouchMode = true
+        view.requestFocus()
+        view.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && ::googleMap.isInitialized && UserEntityProvider.userEntity.zoomByVolume) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_VOLUME_UP -> {
+                        googleMap.animateCamera(CameraUpdateFactory.zoomIn())
+                        return@setOnKeyListener true
+                    }
+
+                    KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                        googleMap.animateCamera(CameraUpdateFactory.zoomOut())
+                        return@setOnKeyListener true
+                    }
+                }
+            }
+            false
         }
     }
 
@@ -187,20 +212,34 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         lifecycle.coroutineScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mapViewModel.compassAngleFlow.collectLatest { angle ->
-                    if (!isCompassActive) {
-                        setupCompassUi()
+                    if (UserEntityProvider.userEntity.showCompass) {
+                        if (!isCompassActive) {
+                            setupCompassUi()
+                        }
+                        compassAngle = angle
+                        binding.imgCompass.rotation = -angle
+                        binding.tvCompass.text =
+                            (if (angle > 0) angle else angle + 360).roundToInt()
+                                .toString() + "\u00B0 "
+                    } else {
+                        hideCompassUi()
                     }
-                    compassAngle = angle
-                    binding.imgCompass.rotation = -angle
-                    binding.tvCompass.text =
-                        (if (angle > 0) angle else angle + 360).roundToInt().toString() + "\u00B0 "
                 }
             }
         }
     }
 
+    private fun hideCompassUi() {
+        isCompassActive = false
+        binding.imgMapRotate.visibility = View.GONE
+        binding.imgCompassBackground.visibility = View.GONE
+        binding.imgCompass.visibility = View.GONE
+        binding.tvCompass.visibility = View.GONE
+    }
+
     private fun setupCompassUi() {
         isCompassActive = true
+        binding.imgMapRotate.visibility = View.VISIBLE
         binding.imgCompassBackground.visibility = View.VISIBLE
         binding.imgCompass.visibility = View.VISIBLE
         binding.tvCompass.visibility = View.VISIBLE
@@ -248,7 +287,7 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
                 }
             }
         }
-        mapViewModel.isAutoLoadMap.observe(viewLifecycleOwner) {
+        mapViewModel.userSettings.observe(viewLifecycleOwner) {
             if (it) onLoadLastGameMapClick()
         }
         mapViewModel.mapOverlayUri.observe(viewLifecycleOwner) { overlayUri ->
@@ -264,7 +303,6 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
             }
         }
     }
-
 
 
     private fun cameraUpdate(latLng: LatLng, zoom: Float = 14F) {
@@ -289,10 +327,12 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         }
     }
 
+    @SuppressLint("SetTextI18n", "DefaultLocale")
     private fun mapListenersSetup() {
         mapOverlayManager.setOnInfoWindowLongClickListener {
             onMarkerLongClickMenu(it)
         }
+
         googleMap.setOnMapClickListener {
             mapInteractionHandler.onCameraMove(true)
         }
@@ -301,10 +341,31 @@ class MapFragment : Fragment(R.layout.fragment_maps), OnMapReadyCallback,
         }
         googleMap.setOnCameraIdleListener {
             mapInteractionHandler.onCameraIdle()
+            if (UserEntityProvider.userEntity.showRuler) {
+                binding.linearRuler.visibility = View.VISIBLE
+                scaleBar.updateScaleBar(googleMap)
+            } else {
+                binding.linearRuler.visibility = View.GONE
+            }
         }
         googleMap.setOnMyLocationChangeListener { location ->
             if (mapOverlayManager.isRoutePolylineNotNull()) {
                 mapOverlayManager.updateRoute(location)
+            }
+            if (UserEntityProvider.userEntity.showCoordinates){
+                binding.linearCoordinates.visibility = View.VISIBLE
+                binding.tvLatitude.text =  String.format("%.5f° N", location.latitude)
+                binding.tvLongitude.text =  String.format("%.5f° E", location.longitude)
+            } else {
+                binding.linearCoordinates.visibility = View.GONE
+            }
+            if (UserEntityProvider.userEntity.showGaussCoordinates){
+                binding.linearCoordinatesGauss.visibility = View.VISIBLE
+                val (x, y) = GaussKrugerConverter().wgs84ToSK42(location.latitude, location.longitude)
+                binding.tvGaussLeft.text =   "X: $x"
+                binding.tvGaussRight.text = "Y: $y"
+            } else {
+                binding.linearCoordinatesGauss.visibility = View.GONE
             }
         }
         googleMap.setOnMapLongClickListener { latLng ->

@@ -12,4 +12,9 @@ interface UserModel {
     val profileImageUrl: String
     val userGroup: Int
     val lastSeen: Long
+    val showRuler: Boolean
+    val showCoordinates: Boolean
+    val showGaussCoordinates: Boolean
+    val showCompass: Boolean
+    val zoomByVolume: Boolean
 }

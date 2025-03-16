@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="password">Пароль</string>
+    <string name="show_ruler">Show ruler</string>
+    <string name="zoom_volume_btn">Zoom by volume buttons</string>
+    <string name="show_coordinates">Show coordinates</string>
+    <string name="show_coordinates_in_gauss">Show Gauss coordinates</string>
+    <string name="show_compass">Show compass</string>
 </resources>

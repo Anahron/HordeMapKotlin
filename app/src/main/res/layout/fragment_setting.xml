@@ -506,7 +506,147 @@
                                 android:tag="4"
                                 tools:ignore="ContentDescription,TouchTargetSizeCheck" />
                         </RadioGroup>
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
 
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="45dp"
+                                android:layout_height="45dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="8dp"
+                                android:src="@drawable/vector_compass" />
+
+                            <CheckBox
+                                android:id="@+id/checkBox_compass_show"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:checked="false"
+                                android:gravity="start"
+                                android:padding="5dp"
+                                android:text="@string/show_compass"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/text_green_dark"
+                                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="45dp"
+                                android:layout_height="45dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="8dp"
+                                android:src="@drawable/vector_ruler" />
+
+                            <CheckBox
+                                android:id="@+id/checkBox_ruler_show"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:checked="false"
+                                android:gravity="start"
+                                android:padding="5dp"
+                                android:text="@string/show_ruler"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/text_green_dark"
+                                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="45dp"
+                                android:layout_height="45dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="8dp"
+                                android:src="@drawable/vector_volume" />
+
+                            <CheckBox
+                                android:id="@+id/checkBox_volume_btn_active"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:checked="false"
+                                android:gravity="start"
+                                android:padding="5dp"
+                                android:text="@string/zoom_volume_btn"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/text_green_dark"
+                                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="45dp"
+                                android:layout_height="45dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="8dp"
+                                android:src="@drawable/vector_coordinates" />
+
+                            <CheckBox
+                                android:id="@+id/checkBox_show_coordinates"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:checked="false"
+                                android:gravity="start"
+                                android:padding="5dp"
+                                android:text="@string/show_coordinates"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/text_green_dark"
+                                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="45dp"
+                                android:layout_height="45dp"
+                                android:background="@color/transparent"
+                                android:contentDescription="@string/todo"
+                                android:padding="8dp"
+                                android:src="@drawable/vector_coordinates" />
+
+                            <CheckBox
+                                android:id="@+id/checkBox_show_coordinates_gauss"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:checked="false"
+                                android:gravity="start"
+                                android:padding="5dp"
+                                android:text="@string/show_coordinates_in_gauss"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                                android:textColor="@color/text_green_dark"
+                                tools:ignore="VisualLintButtonSize,TouchTargetSizeCheck" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="30dp"

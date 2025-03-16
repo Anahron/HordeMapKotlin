@@ -106,10 +106,15 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             currentUserSetting = user
             loadImageIntoProfile()
             setLayoutParams(user)
-            checkBox.isChecked = user.autoLoad
             tvUserAuthName.text = user.authName
             tvNickName.text = user.name
-            binding.checkBox.isChecked = user.autoLoad
+
+            checkBox.isChecked = user.autoLoad
+            checkBoxRulerShow.isChecked = user.showRuler
+            checkBoxShowCoordinates.isChecked = user.showCoordinates
+            checkBoxShowCoordinatesGauss.isChecked = user.showGaussCoordinates
+            checkBoxVolumeBtnActive.isChecked = user.zoomByVolume
+            checkBoxCompassShow.isChecked = user.showCompass
             tvCurrentUserGroup.text =
                 if (user.userGroup == 0) getString(R.string.group_general) else user.userGroup.toString()
             sbTimeToSendData.value = user.timeToSendData.toFloat()
@@ -198,7 +203,51 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             settingsViewModel.saveAutoLoad(checkBox.isChecked)
             callback.onAutoLoadClick(checkBox.isChecked)
         }
-
+        checkBoxVolumeBtnActive.setOnClickListener {
+            lifecycleScope.launch {
+                settingsViewModel.saveUser(
+                    currentUserSetting.copy(
+                        zoomByVolume = checkBoxVolumeBtnActive.isChecked
+                    )
+                )
+            }
+        }
+        checkBoxRulerShow.setOnClickListener {
+            lifecycleScope.launch {
+                settingsViewModel.saveUser(
+                    currentUserSetting.copy(
+                        showRuler = checkBoxRulerShow.isChecked
+                    )
+                )
+            }
+        }
+        checkBoxShowCoordinates.setOnClickListener {
+            lifecycleScope.launch {
+                settingsViewModel.saveUser(
+                    currentUserSetting.copy(
+                        showCoordinates = checkBoxShowCoordinates.isChecked
+                    )
+                )
+            }
+        }
+        checkBoxCompassShow.setOnClickListener {
+            lifecycleScope.launch {
+                settingsViewModel.saveUser(
+                    currentUserSetting.copy(
+                        showCompass = checkBoxCompassShow.isChecked
+                    )
+                )
+            }
+        }
+        checkBoxShowCoordinatesGauss.setOnClickListener {
+            lifecycleScope.launch {
+                settingsViewModel.saveUser(
+                    currentUserSetting.copy(
+                        showGaussCoordinates = checkBoxShowCoordinatesGauss.isChecked
+                    )
+                )
+            }
+        }
         btnFromServer.setOnClickListener {
             showFileDialog()
         }
@@ -230,9 +279,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         val dialogView = layoutInflater.inflate(R.layout.files_list_dialog, null)
         val mapRecyclerView: RecyclerView = dialogView.findViewById(R.id.rvMapList)
         val progress: ImageView = dialogView.findViewById(R.id.img_loading_files)
-        val dialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .create()
+        val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
         val anim = progress.loadAnimation()
         val mMapRecyclerViewAdapter = FileListAdapter {
             anim.cancel()
@@ -271,8 +318,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
                 progress.visibility = View.GONE
             }
         }
-        if (mMapRecyclerViewAdapter.itemCount < 1)
-            progress.visibility = View.VISIBLE
+        if (mMapRecyclerViewAdapter.itemCount < 1) progress.visibility = View.VISIBLE
 
     }
 
@@ -327,8 +373,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         lifecycleScope.launch {
             settingsViewModel.saveUser(
                 currentUserSetting.copy(
-                    selectedMarker = selectedMarker,
-                    lastSeen = System.currentTimeMillis()
+                    selectedMarker = selectedMarker, lastSeen = System.currentTimeMillis()
                 )
             )
         }
@@ -403,8 +448,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
                     binding.shadow.hideShadowAnimate()
                     if (enteredText >= 0) {
                         val newUser = currentUserSetting.copy(
-                            userGroup = enteredText,
-                            lastSeen = System.currentTimeMillis()
+                            userGroup = enteredText, lastSeen = System.currentTimeMillis()
                         )
                         UserEntityProvider.userEntity = newUser
                         lifecycleScope.launch {
@@ -423,8 +467,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
                 mainPopupMenu.dismiss()
                 showInputDialog(requireContext(), onConfirm = { enteredText ->
                     val newUser = currentUserSetting.copy(
-                        name = enteredText,
-                        lastSeen = System.currentTimeMillis()
+                        name = enteredText, lastSeen = System.currentTimeMillis()
                     )
                     lifecycleScope.launch {
                         settingsViewModel.saveUser(
@@ -453,10 +496,9 @@ class SettingsFragment(private val callback: OnChangeSettings) :
             onConfirm(editText.text.toString().trim())
             alertDialog.dismiss()
         }
-        customLayout.findViewById<AppCompatButton>(R.id.btnUserSettingsCancel)
-            .setOnClickListener {
-                alertDialog.dismiss()
-            }
+        customLayout.findViewById<AppCompatButton>(R.id.btnUserSettingsCancel).setOnClickListener {
+            alertDialog.dismiss()
+        }
         alertDialog.window?.setBackgroundDrawable(
             ContextCompat.getDrawable(
                 requireContext(), R.drawable.round_white
@@ -468,10 +510,7 @@ class SettingsFragment(private val callback: OnChangeSettings) :
         }
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(
-                s: CharSequence,
-                start: Int,
-                count: Int,
-                after: Int
+                s: CharSequence, start: Int, count: Int, after: Int
             ) {
             }
 
@@ -514,7 +553,12 @@ class SettingsFragment(private val callback: OnChangeSettings) :
 
             override fun onStopTrackingTouch(slider: Slider) {
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(currentUserSetting.copy(usersMarkerSize = slider.value.toInt(), lastSeen = System.currentTimeMillis()))
+                    settingsViewModel.saveUser(
+                        currentUserSetting.copy(
+                            usersMarkerSize = slider.value.toInt(),
+                            lastSeen = System.currentTimeMillis()
+                        )
+                    )
                     callback.onChangeMarkerSettings()
                 }
             }
@@ -525,7 +569,12 @@ class SettingsFragment(private val callback: OnChangeSettings) :
 
             override fun onStopTrackingTouch(slider: Slider) {
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(currentUserSetting.copy(staticMarkerSize = slider.value.toInt(), lastSeen = System.currentTimeMillis()))
+                    settingsViewModel.saveUser(
+                        currentUserSetting.copy(
+                            staticMarkerSize = slider.value.toInt(),
+                            lastSeen = System.currentTimeMillis()
+                        )
+                    )
                     callback.onChangeMarkerSettings()
                 }
             }
@@ -537,9 +586,11 @@ class SettingsFragment(private val callback: OnChangeSettings) :
 
             override fun onStopTrackingTouch(slider: Slider) {
                 lifecycleScope.launch {
-                    settingsViewModel.saveUser(currentUserSetting.copy(
-                        timeToSendData = slider.value.toInt(),
-                        lastSeen = System.currentTimeMillis())
+                    settingsViewModel.saveUser(
+                        currentUserSetting.copy(
+                            timeToSendData = slider.value.toInt(),
+                            lastSeen = System.currentTimeMillis()
+                        )
                     )
                     Toast.makeText(
                         requireContext(),
