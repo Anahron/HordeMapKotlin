@@ -7,3 +7,4 @@ import ru.newlevel.hordemap.domain.repository.SensorRepository
 class SensorRepositoryImpl(private val mySensorManager: MySensorManager): SensorRepository {
     override fun getCompassData(): Flow<FloatArray> = mySensorManager.getCompassData()
 }
+
