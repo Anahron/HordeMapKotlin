@@ -5,6 +5,7 @@ import org.koin.dsl.module
 import ru.newlevel.hordemap.presentation.MainViewModel
 import ru.newlevel.hordemap.presentation.map.MapViewModel
 import ru.newlevel.hordemap.presentation.messenger.MessengerViewModel
+import ru.newlevel.hordemap.presentation.messenger.userGroup.UserGroupViewModel
 import ru.newlevel.hordemap.presentation.permissions.PermissionViewModel
 import ru.newlevel.hordemap.presentation.settings.ChangeGroupViewModel
 import ru.newlevel.hordemap.presentation.settings.SettingsViewModel
@@ -69,6 +70,14 @@ val presentationModule = module {
     viewModel {
         MessengerViewModel(
             messengerUseCases = get()
+        )
+    }
+
+    viewModel {
+        UserGroupViewModel(
+            messengerUseCases = get(),
+            getGroupPassword = get(),
+            setGroupPassword = get()
         )
     }
 }

@@ -62,10 +62,6 @@ val dataModule = module {
         SharedPrefUserLocalStorage(context = get())
     }
 
-    single<MessagesCountLocalStorage> {
-        SharedPrefUserLocalStorage(context = get())
-    }
-
     single<MarkersRemoteStorage> {
         MyFirebaseDatabase()
     }
@@ -128,8 +124,7 @@ val dataModule = module {
         MessengerRepositoryImpl(
             messageRemoteStorage = get(),
             messageFilesStorage = get(),
-            messageDao = get(),
-            messagesCountLocalStorage = get()
+            messageDao = get()
         )
     }
 }

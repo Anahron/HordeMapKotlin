@@ -23,4 +23,10 @@ interface MessageDao {
     @Update
     suspend fun updateMessage(message: MyMessageEntity)
 
+    @Query("SELECT COUNT(*) FROM messages WHERE isRead = 0")
+    fun getUnreadMessagesCount(): Flow<Int>
+
+    @Query("UPDATE messages SET isRead = 1 WHERE timestamp = :messageId")
+    suspend fun markMessageAsRead(messageId: Long)
+
 }

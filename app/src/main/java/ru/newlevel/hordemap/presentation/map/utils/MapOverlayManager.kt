@@ -54,9 +54,14 @@ class MapOverlayManager(private val googleMap: GoogleMap) : KoinComponent {
     val distanceText: StateFlow<Pair<Double, String>> = _distanceText
 
     private var onInfoWindowLongClickListener: ((Marker) -> Unit)? = null
+    private var onMarkerClickListener: ((Marker) -> Unit)? = null
 
     fun setOnInfoWindowLongClickListener(listener: (Marker) -> Unit) {
         onInfoWindowLongClickListener = listener
+    }
+
+    fun setOnMarkerClickListener(listener: (Marker) -> Unit) {
+        onMarkerClickListener = listener
     }
 
     init {
@@ -64,7 +69,9 @@ class MapOverlayManager(private val googleMap: GoogleMap) : KoinComponent {
             it.hideInfoWindow()
         }
         staticMarkerCollection.setOnMarkerClickListener {
-            it.showInfoWindow()
+            if (it.title != null)
+                onMarkerClickListener?.invoke(it)
+            //     it.showInfoWindow()
             true
         }
 
@@ -73,6 +80,7 @@ class MapOverlayManager(private val googleMap: GoogleMap) : KoinComponent {
             it.hideInfoWindow()
         }
     }
+
 
     private fun createKmzLayer(context: Context, uri: Uri, googleMap: GoogleMap): Result<LatLng> {
         context.contentResolver.openInputStream(uri).use { stream ->
@@ -118,7 +126,10 @@ class MapOverlayManager(private val googleMap: GoogleMap) : KoinComponent {
     }
 
     private fun setDistanceText(currentLatLng: Location, destination: Location?) {
-        val distance = SphericalUtil.computeDistanceBetween(currentLatLng.getLatLng(), destination?.getLatLng())
+        val distance = SphericalUtil.computeDistanceBetween(
+            currentLatLng.getLatLng(),
+            destination?.getLatLng()
+        )
         destination?.let {
             var finalBearing = currentLatLng.bearingTo(it).toInt()
             if (finalBearing < 0)
@@ -148,7 +159,13 @@ class MapOverlayManager(private val googleMap: GoogleMap) : KoinComponent {
             longitude = destination.longitude
         }
         setDistanceText(currentLatLng, this.destination)
-        polylineCollection.addPolyline(createRouteUseCase.execute(currentLatLng.getLatLng(), destination, context))
+        polylineCollection.addPolyline(
+            createRouteUseCase.execute(
+                currentLatLng.getLatLng(),
+                destination,
+                context
+            )
+        )
     }
 
     fun createUsersMarkers(
@@ -169,7 +186,7 @@ class MapOverlayManager(private val googleMap: GoogleMap) : KoinComponent {
         circleList.forEach {
             it.remove()
         }
-       val circleList = markersUtils.createStaticMarkers(
+        val circleList = markersUtils.createStaticMarkers(
             data,
             markerCollection = staticMarkerCollection,
             context = context,

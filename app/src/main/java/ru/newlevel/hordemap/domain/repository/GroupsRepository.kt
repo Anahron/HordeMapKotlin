@@ -7,4 +7,7 @@ interface GroupsRepository {
     suspend fun getProfilesAndChildCounts(): List<GroupInfoModel>
 
     suspend fun getProfilesInGroup(groupNumber: Int): List<UserDataModel>
+
+    suspend fun getPasswordForGroup(userGroup: Int): String
+    suspend fun setPasswordForGroup(userGroup: Int, password: String)
 }

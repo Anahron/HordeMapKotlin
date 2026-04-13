@@ -3,6 +3,11 @@ package ru.newlevel.hordemap.app
 const val TAG = "AAA"
 
 
+const val PACKAGE = "ru.newlevel.hordemap.app"
+const val FILE_TAG =  "file_description_dialog"
+const val IMAGE_TAG =  "pick_image_description_dialog"
+const val PHOTO_TAG = "photo_description_dialog"
+
 // NotificationChannels
 const val CHANEL_GPS = "CHANNEL_1"
 const val CHANEL_MESSAGE = "CHANNEL_2"
@@ -19,7 +24,11 @@ const val KEY_USER_GROUP = "keyUserGroup"
 const val KEY_AUTH_NAME = "keyAuthName"
 const val KEY_PROFILE_URL = "keyProfileUrl"
 const val KEY_IS_AUTO_LOAD = "isAutoLoad"
-const val KEY_NEW_MESSAGES_COUNT = "keyNewMessages_count"
+const val  KEY_IS_SHOW_RULER = "keyShowRuler"
+const val  KEY_IS_SHOW_COORDINATES = "keyShowCoordinates"
+const val KEY_IS_SHOW_COORDINATES_GAUSS = "keyShowCoordinatesGauss"
+const val  KEY_IS_SHOW_COMPASS = "keyShowCompass"
+const val KEY_IS_VOLUME_ZOOM = "keyVolumeZoom"
 
 const val DEFAULT_SIZE = 60
 const val DEFAULT_TIME = 30
@@ -31,6 +40,7 @@ const val KMZ_EXTENSION = ".kmz"
 const val GPX_EXTENSION = ".gpx"
 const val JPG_EXTENSION = ".jpg"
 const val GARMIN_TAG = "Garmin_tag"
+const val ARTILLERY_RADIUS = 100.0
 
 //db keys
 const val MESSAGE_FILE_FOLDER = "MessengerFiles"

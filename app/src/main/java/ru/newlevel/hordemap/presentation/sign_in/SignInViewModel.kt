@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import ru.newlevel.hordemap.R
-import ru.newlevel.hordemap.app.getMyDeviceId
 import ru.newlevel.hordemap.domain.usecases.SendUserToStorageUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.SaveUserSettingsUseCase
@@ -36,7 +35,7 @@ class SignInViewModel(
             if (userData?.userName != null)
                 userData.userId
             else
-                context.getMyDeviceId()
+                user.deviceID
         val userPhoto = if (user.profileImageUrl.isEmpty()) userData?.profileImageUrl?: "" else ""
         val newUser = user.copy(
             authName = authName,

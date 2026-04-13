@@ -9,4 +9,5 @@ interface OnMessageItemClickListener {
     fun onImageClick(url: String)
     fun onItemClick(message: MyMessageEntity, itemView: View, x: Float, y: Float, isInMessage: Boolean)
     fun onReplyClick(message: MyMessageEntity)
+    fun isRead(id: Long)
 }

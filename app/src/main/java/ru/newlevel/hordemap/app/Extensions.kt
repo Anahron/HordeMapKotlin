@@ -9,7 +9,6 @@ import android.location.Location
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.provider.Settings
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.LatLng
@@ -48,7 +47,7 @@ fun Context.getFileNameFromUri(uri: Uri): String {
         val file = uri.path?.let { File(it) }
         fileName = file?.name.orEmpty()
     }
-    return fileName.orEmpty()
+    return fileName.toString()
 }
 
 fun Context.getFileSizeFromUri(uri: Uri): Long {
@@ -107,7 +106,13 @@ fun UserDataModel.mapToDomainModel(): UserDomainModel {
         autoLoad = autoLoad,
         profileImageUrl = profileImageUrl,
         authName = authName,
-        userGroup = userGroup
+        userGroup = userGroup,
+        lastSeen = lastSeen,
+        showRuler = showRuler,
+        showCoordinates = showCoordinates,
+        showGaussCoordinates = showGaussCoordinates,
+        showCompass = showCompass,
+        zoomByVolume = zoomByVolume
     )
 }
 
@@ -122,14 +127,19 @@ fun UserDomainModel.mapToDataModel(): UserDataModel {
         autoLoad = autoLoad,
         profileImageUrl = profileImageUrl,
         authName = authName,
-        userGroup = userGroup
+        userGroup = userGroup,
+        lastSeen = lastSeen,
+        showRuler = showRuler,
+        showCoordinates = showCoordinates,
+        showGaussCoordinates = showGaussCoordinates,
+        showCompass = showCompass,
+        zoomByVolume = zoomByVolume
     )
 }
 
 @SuppressLint("HardwareIds")
 fun Context.getMyDeviceId(): String {
     val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-    Log.e(TAG, "androidId = $androidId")
     return androidId ?: UUID.randomUUID().toString()
 }
 
@@ -172,5 +182,27 @@ fun Context.createTempImageFile(): File? {
         e.printStackTrace()
     }
     return null
+}
+
+fun Long.getDateAndTimeFromTimestamp(): String{
+    val date = Date(this)
+    val dateFormat = SimpleDateFormat("dd.MM.yy HH:mm", Locale.getDefault())
+    return dateFormat.format(date)
+}
+
+fun Long.getDateAndTimeWoYearFromTimestamp(): String{
+    val date = Date(this)
+    val dateFormat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
+    return dateFormat.format(date)
+}
+fun Long.getTimeFromTimestamp(): String{
+    val date = Date(this)
+    val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return dateFormat.format(date)
+}
+fun Long.getDateFromTimestamp(): String{
+    val date = Date(this)
+    val dateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
+    return dateFormat.format(date)
 }
 

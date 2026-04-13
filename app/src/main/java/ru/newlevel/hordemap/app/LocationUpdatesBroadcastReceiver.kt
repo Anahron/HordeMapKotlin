@@ -1,10 +1,10 @@
 package ru.newlevel.hordemap.app
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.util.Log
-import androidx.legacy.content.WakefulBroadcastReceiver
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationResult
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +19,7 @@ import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
 import java.util.Date
 
 
-class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinComponent {
+class LocationUpdatesBroadcastReceiver : BroadcastReceiver(), KoinComponent {
 
     override fun onReceive(context: Context, intent: Intent?) {
         Log.e(TAG, "onReceive in LocationUpdatesBroadcastReceiver")
@@ -39,29 +39,30 @@ class LocationUpdatesBroadcastReceiver : WakefulBroadcastReceiver(), KoinCompone
     }
 
     private fun saveLocation(locations: List<Location>) {
-        try {
-            val userEntity = getKoin().get<GetUserSettingsUseCase>().execute()
-            val location = locations[locations.lastIndex]
-            CoroutineScope(Dispatchers.IO).launch {
-                val locationDao = getKoin().get<MyDatabase>().locationDao()
-                locations.forEach { location ->
-                    if (location.accuracy < 25)
-                        locationDao.addLocation(
-                            MyLocationEntity(
-                                latitude = location.latitude,
-                                longitude = location.longitude,
-                                date = Date(location.time),
-                                sessionId = UserEntityProvider.sessionId.toString()
-                            )
+        val userEntity = try {
+            getKoin().get<GetUserSettingsUseCase>().execute()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting user settings", e)
+            return
+        }
+
+        val location = locations.last()
+        CoroutineScope(Dispatchers.IO).launch {
+            val locationDao = getKoin().get<MyDatabase>().locationDao()
+            locations.forEach { loc ->
+                if (loc.accuracy < 25) {
+                    locationDao.addLocation(
+                        MyLocationEntity(
+                            latitude = loc.latitude,
+                            longitude = loc.longitude,
+                            date = Date(loc.time),
+                            sessionId = UserEntityProvider.sessionId.toString()
                         )
-                }
-                userEntity.let {
-                    getKoin().get<MarkersRemoteStorage>()
-                        .sendUserMarker(location.toMarker(it))
+                    )
                 }
             }
-        } catch (e: UninitializedPropertyAccessException) {
-            e.printStackTrace()
+            getKoin().get<MarkersRemoteStorage>().sendUserMarker(location.toMarker(userEntity))
+            Log.e(TAG, "sendUserMarker in BroadcastReceiver")
         }
     }
 }

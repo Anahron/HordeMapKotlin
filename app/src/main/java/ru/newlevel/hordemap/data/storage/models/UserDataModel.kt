@@ -12,5 +12,10 @@ data class UserDataModel @JvmOverloads constructor(
     override var autoLoad: Boolean = false,
     override val authName: String,
     override val profileImageUrl: String,
-    override val userGroup: Int = 0
-) : UserModel
+    override val userGroup: Int = 0,
+    override val lastSeen: Long = 0,
+    override val showRuler: Boolean = false,
+    override val showCoordinates: Boolean = false,
+    override val showGaussCoordinates: Boolean = false,
+    override val showCompass: Boolean = false,
+    override val zoomByVolume: Boolean = false, ) : UserModel

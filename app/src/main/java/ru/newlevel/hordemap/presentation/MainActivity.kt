@@ -34,7 +34,7 @@ import ru.newlevel.hordemap.presentation.sign_in.UserData
 import ru.newlevel.hordemap.presentation.tracks.TracksFragment
 
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationUi {
+class MainActivity : AppCompatActivity(R.layout.activity_main), UserInteractionUi {
 
     private lateinit var mainFragment: MapFragment
     private val tracksFragment: TracksFragment by lazy { TracksFragment() }
@@ -85,13 +85,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         super.onNewIntent(intent)
         if (intent?.action == ACTION_OPEN_MESSENGER) {
             navView.selectedItemId = R.id.messengerFragment
-            mainViewModel.resetNewMessageCount()
         }
     }
 
     private fun newMessageHandler() {
         navView.getOrCreateBadge(R.id.messengerFragment).apply {
             number = 0
+            isVisible = false
         }
         syncJob = lifecycleScope.launch {
             mainViewModel.syncMessageData()
@@ -118,8 +118,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         this.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 currentFragment?.let {
-                    if (currentFragment != mainFragment)
+                    if (currentFragment != mainFragment) {
                         navView.selectedItemId = R.id.mapFragment
+                        currentFragment = mainFragment
+                    }
                 }
             }
         })
@@ -134,7 +136,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
                     showFragment(messengerFragment)
                     navView.hideToBottomAnimation()
-                    mainViewModel.resetNewMessageCount()
                     true
                 }
 
@@ -195,7 +196,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
     }
 
     override fun onChangeUserGroup() {
-        mainViewModel.resetNewMessageCount()
         syncJob?.cancel()
         newMessageJob?.cancel()
         newMessageHandler()
@@ -230,9 +230,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), DisplayLocationU
         fragmentManager.replaceFragment(PermissionRequestFragment())
         navView.visibility = ViewGroup.GONE
     }
+
 }
 
-interface DisplayLocationUi {
+interface UserInteractionUi {
     fun onChangeUserGroup()
     fun changeProfilePhoto(newPhotoUrl: Uri)
     fun displayLocationUI()

@@ -116,4 +116,17 @@
     <string name="numara">№</string>
     <string name="map_list">Список карт:</string>
     <string name="only_for_me">Только для меня</string>
+    <string name="new_messages">Новые сообщения</string>
+    <string name="users_in_group">Пользователи в группе</string>
+    <string name="members">members</string>
+    <string name="last_seen">last seen</string>
+    <string name="unknown">неизвестно</string>
+    <string name="default_group">общая</string>
+    <string name="group_is">Группа:</string>
+    <string name="password">Пароль: </string>
+    <string name="show_ruler">Показать линейку</string>
+    <string name="zoom_volume_btn">Зум кнопками громоксти</string>
+    <string name="show_coordinates">Показывать координаты</string>
+    <string name="show_coordinates_in_gauss">Показывать координаты Гаусса (СК42)</string>
+    <string name="show_compass">Показать компас</string>
 </resources>

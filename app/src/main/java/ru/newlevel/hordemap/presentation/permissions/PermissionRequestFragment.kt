@@ -25,7 +25,7 @@ import ru.newlevel.hordemap.app.REQUEST_FINE_LOCATION_PERMISSIONS_REQUEST_CODE
 import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.app.hasPermission
 import ru.newlevel.hordemap.databinding.FragmentPermissionRequestBinding
-import ru.newlevel.hordemap.presentation.DisplayLocationUi
+import ru.newlevel.hordemap.presentation.UserInteractionUi
 
 
 class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request) {
@@ -33,7 +33,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
     private val binding: FragmentPermissionRequestBinding by viewBinding()
 
     private val permissionViewModel by viewModel<PermissionViewModel>()
-    private var activityListener: DisplayLocationUi? = null
+    private var activityListener: UserInteractionUi? = null
 
     private val requestBatteryOptimizationLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -64,7 +64,7 @@ class PermissionRequestFragment : Fragment(R.layout.fragment_permission_request)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is DisplayLocationUi) {
+        if (context is UserInteractionUi) {
             activityListener = context
         } else {
             throw RuntimeException("$context must implement PermissionRequestFragment.Callbacks")

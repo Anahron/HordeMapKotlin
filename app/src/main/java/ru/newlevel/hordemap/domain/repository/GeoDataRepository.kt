@@ -13,8 +13,6 @@ interface GeoDataRepository {
     suspend fun insertStaticMarkers(data: List<MarkerEntity>)
     suspend fun deleteStaticMarker(key: String)
 
-    fun sendCoordinates(markerModel: MarkerEntity)
-
     fun sendStaticMarkerRemote(markerModel: MarkerEntity)
     fun startUserMarkerUpdatesLocal(): Flow<List<UserMarkerEntity>>
     fun startStaticMarkerUpdatesLocal(): Flow<List<MarkerEntity>>

@@ -2,11 +2,13 @@ package ru.newlevel.hordemap.presentation.map
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.Flow
+import ru.newlevel.hordemap.app.TAG
 import ru.newlevel.hordemap.data.db.MarkerEntity
 import ru.newlevel.hordemap.domain.usecases.LogOutUseCase
 import ru.newlevel.hordemap.domain.usecases.mapCases.GetUserSettingsUseCase
@@ -31,11 +33,11 @@ class MapViewModel(
     private val _mapUri = MutableLiveData<Uri?>()
     val mapOverlayUri: LiveData<Uri?> = _mapUri
 
-    private val _isAutoLoadMap = MutableLiveData<Boolean>()
-    val isAutoLoadMap: LiveData<Boolean> = _isAutoLoadMap
+    private val _userSettings = MutableLiveData<Boolean>()
+    val userSettings: LiveData<Boolean> = _userSettings
 
     init {
-        _isAutoLoadMap.value = getUserSettingsUseCase.execute().autoLoad
+        _userSettings.value = getUserSettingsUseCase.execute().autoLoad
     }
 
     fun startLocationUpdates() = mapUseCases.locationUpdatesInteractor.startLocationUpdates()
@@ -53,7 +55,7 @@ class MapViewModel(
     }
 
     fun setIsAutoLoadMap(boolean: Boolean) {
-        _isAutoLoadMap.value = boolean
+        _userSettings.value = boolean
     }
 
     suspend fun saveGameMapToFile(uri: Uri, context: Context): Throwable? {
@@ -68,6 +70,7 @@ class MapViewModel(
         val result = mapUseCases.loadGameMapFromServerUseCase.execute(context, url)
         result.onSuccess {
             _mapUri.postValue(it)
+            Log.e(TAG, it.toString())
         }
         return result.exceptionOrNull()
     }
